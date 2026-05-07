@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Presupuesto Construcción | Calculadora de Costos</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #f4f6f8;
+      --panel: #ffffff;
+      --panel-soft: #f8fafc;
+      --text: #172033;
+      --muted: #64748b;
+      --border: #d9e1ec;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --success: #16a34a;
+      --warning: #f59e0b;
+      --danger: #dc2626;
+      --info: #0891b2;
+      --shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+    }
+
+    aside {
+      background: #0f172a;
+      color: #fff;
+      padding: 24px 18px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .brand-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #2563eb, #22c55e);
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.2;
+    }
+
+    .brand p {
+      margin: 3px 0 0;
+      color: #94a3b8;
+      font-size: 12px;
+    }
+
+    .nav-button {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      color: #cbd5e1;
+      padding: 13px 14px;
+      margin-bottom: 6px;
+      border-radius: 14px;
+      text-align: left;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-button:hover,
+    .nav-button.active {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    main {
+      padding: 28px;
+      overflow: hidden;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .title h2 {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: -0.03em;
+    }
+
+    .title p {
+      margin: 7px 0 0;
+      color: var(--muted);
+      max-width: 780px;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    button,
+    .btn {
+      border: 0;
+      border-radius: 13px;
+      padding: 11px 15px;
+      font-weight: 650;
+      cursor: pointer;
+      font-size: 14px;
+      transition: 0.18s ease;
+    }
+
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-soft { background: #e2e8f0; color: #0f172a; }
+    .btn-soft:hover { background: #cbd5e1; }
+    .btn-danger { background: #fee2e2; color: var(--danger); }
+    .btn-success { background: #dcfce7; color: var(--success); }
+
+    .grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    .kpi-grid {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      margin-bottom: 18px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+
+    .kpi {
+      min-height: 138px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .kpi .label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .kpi .value {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      margin-top: 10px;
+    }
+
+    .kpi .sub {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 8px;
+    }
+
+    .two-col {
+      grid-template-columns: 1.2fr 0.8fr;
+    }
+
+    .section {
+      display: none;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .card-header h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .card-header p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th,
+    td {
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+      background: var(--panel-soft);
+    }
+
+    tr:hover td {
+      background: #f8fafc;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .badge.material { background: #e0f2fe; color: #0369a1; }
+    .badge.mano { background: #fef3c7; color: #92400e; }
+    .badge.servicio { background: #ede9fe; color: #5b21b6; }
+    .badge.otro { background: #e2e8f0; color: #334155; }
+
+    .progress-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .progress {
+      width: 90px;
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress span {
+      display: block;
+      height: 100%;
+      background: var(--success);
+      border-radius: 99px;
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      padding: 11px 12px;
+      font: inherit;
+      background: #fff;
+      color: var(--text);
+      outline: none;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 750;
+      margin-bottom: 6px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .form-grid .full { grid-column: 1 / -1; }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 100;
+    }
+
+    .modal-backdrop.active { display: flex; }
+
+    .modal {
+      width: min(980px, 100%);
+      max-height: 92vh;
+      overflow: auto;
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.22);
+      padding: 22px;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 18px;
+    }
+
+    .modal-header h3 { margin: 0; }
+    .modal-header p { margin: 6px 0 0; color: var(--muted); }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .empty {
+      padding: 28px;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+      background: var(--panel-soft);
+    }
+
+    .notice {
+      background: #eff6ff;
+      color: #1e40af;
+      border: 1px solid #bfdbfe;
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      font-size: 13px;
+      margin-bottom: 18px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      display: inline-block;
+    }
+
+    .action-cell {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .mini-btn {
+      padding: 7px 9px;
+      border-radius: 10px;
+      font-size: 12px;
+    }
+
+    @media (max-width: 1100px) {
+      .app { grid-template-columns: 1fr; }
+      aside {
+        height: auto;
+        position: relative;
+      }
+      .kpi-grid,
+      .two-col,
+      .filters,
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      .topbar { flex-direction: column; }
+      .toolbar { justify-content: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <div class="brand">
+        <div class="brand-icon">PC</div>
+        <div>
+          <h1>Presupuesto Construcción</h1>
+          <p>Costos, avances y pagos</p>
+        </div>
+      </div>
+
+      <button class="nav-button active" data-section="dashboard">Dashboard <span>›</span></button>
+      <button class="nav-button" data-section="presupuesto">Presupuesto <span>›</span></button>
+      <button class="nav-button" data-section="movimientos">Avances y pagos <span>›</span></button>
+      <button class="nav-button" data-section="responsables">Responsables <span>›</span></button>
+      <button class="nav-button" data-section="configuracion">Configuración <span>›</span></button>
+    </aside>
+
+    <main>
+      <div class="topbar">
+        <div class="title">
+          <h2 id="pageTitle">Dashboard general</h2>
+          <p id="pageSubtitle">Resumen ejecutivo del presupuesto, avances físicos, pagos realizados y desvíos del proyecto.</p>
+        </div>
+        <div class="toolbar">
+          <button class="btn-soft" onclick="loadData()">Actualizar datos</button>
+          <button class="btn-primary" onclick="openItemModal()">Agregar gasto / ítem</button>
+          <button class="btn-success" onclick="openMovimientoModal()">Registrar avance / pago</button>
+        </div>
+      </div>
+
+      <section id="dashboard" class="section active">
+        <div class="notice">
+          <strong>Versión HTML v1:</strong> esta maqueta ya tiene la estructura funcional preparada. Actualmente usa datos demo. Cuando conectemos Apps Script, leerá y actualizará Google Sheets.
+        </div>
+
+        <div class="grid kpi-grid">
+          <div class="card kpi">
+            <div>
+              <div class="label">Presupuesto total</div>
+              <div class="value" id="kpiPresupuesto">$0</div>
+            </div>
+            <div class="sub">Suma de todos los ítems presupuestados</div>
+          </div>
+          <div class="card kpi">
+            <div>
+              <div class="label">Costo ejecutado teórico</div>
+              <div class="value" id="kpiEjecutado">$0</div>
+            </div>
+            <div class="sub">Según cantidad ejecutada x costo unitario</div>
+          </div>
+          <div class="card kpi">
+            <div>
+              <div class="label">Total pagado</div>
+              <div class="value" id="kpiPagado">$0</div>
+            </div>
+            <div class="sub">Pagos reales registrados</div>
+          </div>
+          <div class="card kpi">
+            <div>
+              <div class="label">Avance general</div>
+              <div class="value" id="kpiAvance">0%</div>
+            </div>
+            <div class="sub">Promedio ponderado por presupuesto</div>
+          </div>
+          <div class="card kpi">
+            <div>
+              <div class="label">Saldo presupuestario</div>
+              <div class="value" id="kpiSaldo">$0</div>
+            </div>
+            <div class="sub">Presupuesto menos pagos realizados</div>
+          </div>
+          <div class="card kpi">
+            <div>
+              <div class="label">Diferencia pago/avance</div>
+              <div class="value" id="kpiDesvio">$0</div>
+            </div>
+            <div class="sub">Pagado menos costo ejecutado teórico</div>
+          </div>
+        </div>
+
+        <div class="grid two-col">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3>Presupuesto vs ejecutado vs pagado</h3>
+                <p>Comparación general del proyecto.</p>
+              </div>
+            </div>
+            <canvas id="chartGeneral" height="120"></canvas>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3>Distribución por tipo</h3>
+                <p>Materiales, mano de obra, servicios y otros.</p>
+              </div>
+            </div>
+            <canvas id="chartTipo" height="180"></canvas>
+          </div>
+        </div>
+
+        <div class="grid two-col" style="margin-top:18px;">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3>Avance por sector</h3>
+                <p>Control visual por Frente, Casa, Galería, Garaje u otros sectores.</p>
+              </div>
+            </div>
+            <div id="avanceSectores"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3>Gastos recientes</h3>
+                <p>Últimos movimientos registrados.</p>
+              </div>
+            </div>
+            <div id="gastosRecientes"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="presupuesto" class="section">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h3>Listado de presupuesto</h3>
+              <p>Alta, edición y control de materiales, mano de obra, servicios y otros gastos.</p>
+            </div>
+            <button class="btn-primary" onclick="openItemModal()">Nuevo ítem</button>
+          </div>
+
+          <div class="filters">
+            <input id="filterSearch" placeholder="Buscar concepto, sector o responsable..." oninput="renderPresupuesto()" />
+            <select id="filterTipo" onchange="renderPresupuesto()">
+              <option value="">Todos los tipos</option>
+              <option>Material</option>
+              <option>Mano de obra</option>
+              <option>Servicio</option>
+              <option>Otro</option>
+            </select>
+            <select id="filterSector" onchange="renderPresupuesto()"></select>
+            <select id="filterEstado" onchange="renderPresupuesto()">
+              <option value="">Todos los estados</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="en_curso">En curso</option>
+              <option value="finalizado">Finalizado</option>
+            </select>
+          </div>
+
+          <div style="overflow:auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Tipo</th>
+                  <th>Concepto</th>
+                  <th>Sector</th>
+                  <th>Responsable / proveedor</th>
+                  <th>Unidad</th>
+                  <th>Cant. presup.</th>
+                  <th>Cant. ejec.</th>
+                  <th>Avance</th>
+                  <th>Costo unit.</th>
+                  <th>Total presup.</th>
+                  <th>Pagado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="presupuestoTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="movimientos" class="section">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h3>Registro de avances y pagos</h3>
+              <p>Cada modificación queda como un movimiento para mantener trazabilidad.</p>
+            </div>
+            <button class="btn-success" onclick="openMovimientoModal()">Nuevo movimiento</button>
+          </div>
+
+          <div style="overflow:auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Concepto</th>
+                  <th>Tipo movimiento</th>
+                  <th>Cantidad ejecutada</th>
+                  <th>Importe pagado</th>
+                  <th>Responsable</th>
+                  <th>Observación</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="movimientosTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="responsables" class="section">
+        <div class="grid two-col">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3>Resumen por responsable / proveedor</h3>
+                <p>Total presupuestado y pagado por persona o proveedor.</p>
+              </div>
+            </div>
+            <div id="responsablesResumen"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3>Uso recomendado</h3>
+                <p>Buenas prácticas para mantener la base ordenada.</p>
+              </div>
+            </div>
+            <ul style="line-height:1.75; color:var(--muted); margin-top:0;">
+              <li>Registrar primero el ítem presupuestado.</li>
+              <li>Usar siempre el mismo nombre para cada proveedor o responsable.</li>
+              <li>Registrar avances y pagos como movimientos separados.</li>
+              <li>No sobrescribir el histórico: editar solo cuando hubo error de carga.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="configuracion" class="section">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h3>Configuración técnica</h3>
+              <p>Datos necesarios para conectar el HTML con Apps Script y Google Sheets.</p>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="full">
+              <label>URL del Apps Script Web App</label>
+              <input id="apiUrl" placeholder="https://script.google.com/macros/s/.../exec" />
+            </div>
+            <div>
+              <label>Modo de datos</label>
+              <select id="dataMode">
+                <option value="demo">Demo local</option>
+                <option value="api">Conectado a Apps Script</option>
+              </select>
+            </div>
+            <div>
+              <label>Moneda</label>
+              <input id="currency" value="ARS" />
+            </div>
+            <div>
+              <label>Nombre del proyecto</label>
+              <input id="projectName" value="Proyecto de construcción" />
+            </div>
+            <div class="full">
+              <button class="btn-primary" onclick="saveSettings()">Guardar configuración</button>
+              <button class="btn-soft" onclick="loadData()">Probar carga de datos</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="itemModal" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <div>
+          <h3 id="itemModalTitle">Agregar gasto / ítem presupuestado</h3>
+          <p>Este registro define la base presupuestada del proyecto.</p>
+        </div>
+        <button class="btn-soft" onclick="closeModal('itemModal')">Cerrar</button>
+      </div>
+
+      <form id="itemForm" onsubmit="saveItem(event)">
+        <input type="hidden" id="itemId" />
+        <div class="form-grid">
+          <div>
+            <label>Tipo</label>
+            <select id="itemTipo" required>
+              <option value="Material">Material</option>
+              <option value="Mano de obra">Mano de obra</option>
+              <option value="Servicio">Servicio</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+          <div>
+            <label>Sector de obra</label>
+            <select id="itemSector" required></select>
+          </div>
+          <div>
+            <label>Responsable / proveedor</label>
+            <input id="itemResponsable" list="responsablesList" required placeholder="Ej: Albañiles, Corralón..." />
+          </div>
+          <div class="full">
+            <label>Concepto o tarea</label>
+            <input id="itemConcepto" required placeholder="Ej: Cemento, Viga apeo, Instalación eléctrica..." />
+          </div>
+          <div>
+            <label>Unidad de medida</label>
+            <select id="itemUnidad" required>
+              <option>unidad</option>
+              <option>m2</option>
+              <option>m3</option>
+              <option>ml</option>
+              <option>kg</option>
+              <option>bolsa</option>
+              <option>jornal</option>
+              <option>global</option>
+            </select>
+          </div>
+          <div>
+            <label>Cantidad presupuestada</label>
+            <input id="itemCantidad" type="number" min="0" step="0.01" required oninput="updateItemTotalPreview()" />
+          </div>
+          <div>
+            <label>Costo unitario</label>
+            <input id="itemCosto" type="number" min="0" step="0.01" required oninput="updateItemTotalPreview()" />
+          </div>
+          <div>
+            <label>Total presupuestado</label>
+            <input id="itemTotalPreview" readonly />
+          </div>
+          <div class="full">
+            <label>Observación</label>
+            <textarea id="itemObservacion" rows="3" placeholder="Notas útiles para entender el gasto o tarea..."></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-soft" onclick="closeModal('itemModal')">Cancelar</button>
+          <button type="submit" class="btn-primary">Guardar ítem</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="movimientoModal" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <div>
+          <h3 id="movimientoModalTitle">Registrar avance / pago</h3>
+          <p>Los avances y pagos se guardan como movimientos asociados a un ítem.</p>
+        </div>
+        <button class="btn-soft" onclick="closeModal('movimientoModal')">Cerrar</button>
+      </div>
+
+      <form id="movimientoForm" onsubmit="saveMovimiento(event)">
+        <input type="hidden" id="movimientoId" />
+        <div class="form-grid">
+          <div>
+            <label>Fecha</label>
+            <input id="movimientoFecha" type="date" required />
+          </div>
+          <div>
+            <label>Ítem asociado</label>
+            <select id="movimientoItem" required></select>
+          </div>
+          <div>
+            <label>Tipo de movimiento</label>
+            <select id="movimientoTipo" required>
+              <option value="Avance">Avance</option>
+              <option value="Pago">Pago</option>
+              <option value="Avance y pago">Avance y pago</option>
+              <option value="Ajuste">Ajuste</option>
+            </select>
+          </div>
+          <div>
+            <label>Cantidad ejecutada</label>
+            <input id="movimientoCantidad" type="number" min="0" step="0.01" value="0" oninput="syncAvanceFromCantidad()" />
+          </div>
+          <div>
+            <label>Avance a registrar (%)</label>
+            <input id="movimientoPorcentaje" type="number" min="0" max="100" step="0.01" value="0" oninput="syncCantidadFromAvance()" />
+          </div>
+          <div>
+            <label>Importe pagado</label>
+            <input id="movimientoImporte" type="number" min="0" step="0.01" value="0" />
+          </div>
+          <div>
+            <label>Responsable / a quién se paga</label>
+            <input id="movimientoResponsable" list="responsablesList" placeholder="Ej: Albañiles, Corralón..." />
+          </div>
+          <div class="full">
+            <label>Observación</label>
+            <textarea id="movimientoObservacion" rows="3" placeholder="Detalle del avance, pago o ajuste..."></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-soft" onclick="closeModal('movimientoModal')">Cancelar</button>
+          <button type="submit" class="btn-success">Guardar movimiento</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <datalist id="responsablesList"></datalist>
+
+  <script>
+    const state = {
+      settings: {
+        apiUrl: localStorage.getItem('pc_apiUrl') || '',
+        dataMode: localStorage.getItem('pc_dataMode') || 'demo',
+        currency: localStorage.getItem('pc_currency') || 'ARS',
+        projectName: localStorage.getItem('pc_projectName') || 'Proyecto de construcción'
+      },
+      sectores: ['Frente', 'Casa', 'Galería', 'Garaje'],
+      items: [],
+      movimientos: [],
+      charts: {}
+    };
+
+    const demoItems = [
+      { item_id: 'ITM001', tipo: 'Mano de obra', concepto: 'Viga de apeo', sector: 'Frente', responsable: 'Albañiles', unidad: 'ml', cantidad_presupuestada: 38, costo_unitario: 22000, observacion: 'Trabajo estructural frente' },
+      { item_id: 'ITM002', tipo: 'Material', concepto: 'Cemento', sector: 'Casa', responsable: 'Corralón', unidad: 'bolsa', cantidad_presupuestada: 80, costo_unitario: 6500, observacion: '' },
+      { item_id: 'ITM003', tipo: 'Mano de obra', concepto: 'Revoque interior', sector: 'Casa', responsable: 'Albañiles', unidad: 'm2', cantidad_presupuestada: 120, costo_unitario: 8500, observacion: '' },
+      { item_id: 'ITM004', tipo: 'Material', concepto: 'Hierro', sector: 'Galería', responsable: 'Proveedor hierro', unidad: 'kg', cantidad_presupuestada: 250, costo_unitario: 1800, observacion: '' },
+      { item_id: 'ITM005', tipo: 'Servicio', concepto: 'Instalación eléctrica', sector: 'Casa', responsable: 'Electricista', unidad: 'global', cantidad_presupuestada: 1, costo_unitario: 950000, observacion: '' }
+    ];
+
+    const demoMovimientos = [
+      { movimiento_id: 'MOV001', fecha: '2026-05-01', item_id: 'ITM001', tipo_movimiento: 'Avance', cantidad_ejecutada: 12, importe_pagado: 0, responsable: 'Albañiles', observacion: 'Primer avance frente' },
+      { movimiento_id: 'MOV002', fecha: '2026-05-02', item_id: 'ITM001', tipo_movimiento: 'Pago', cantidad_ejecutada: 0, importe_pagado: 250000, responsable: 'Albañiles', observacion: 'Pago parcial' },
+      { movimiento_id: 'MOV003', fecha: '2026-05-03', item_id: 'ITM002', tipo_movimiento: 'Avance y pago', cantidad_ejecutada: 20, importe_pagado: 130000, responsable: 'Corralón', observacion: 'Compra inicial cemento' },
+      { movimiento_id: 'MOV004', fecha: '2026-05-04', item_id: 'ITM003', tipo_movimiento: 'Avance', cantidad_ejecutada: 30, importe_pagado: 0, responsable: 'Albañiles', observacion: 'Revoque sector cocina' }
+    ];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      bindNav();
+      hydrateSettings();
+      loadData();
+    });
+
+    function bindNav() {
+      document.querySelectorAll('.nav-button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.nav-button').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+
+          document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+          document.getElementById(btn.dataset.section).classList.add('active');
+
+          const titles = {
+            dashboard: ['Dashboard general', 'Resumen ejecutivo del presupuesto, avances físicos, pagos realizados y desvíos del proyecto.'],
+            presupuesto: ['Presupuesto de obra', 'Listado editable de materiales, mano de obra, servicios y otros gastos presupuestados.'],
+            movimientos: ['Avances y pagos', 'Registro histórico de cantidades ejecutadas, pagos realizados y ajustes.'],
+            responsables: ['Responsables y proveedores', 'Análisis por persona, equipo o proveedor asociado a la obra.'],
+            configuracion: ['Configuración', 'Parámetros técnicos de conexión y datos generales del proyecto.']
+          };
+
+          const [title, subtitle] = titles[btn.dataset.section];
+          document.getElementById('pageTitle').textContent = title;
+          document.getElementById('pageSubtitle').textContent = subtitle;
+        });
+      });
+    }
+
+    function hydrateSettings() {
+      document.getElementById('apiUrl').value = state.settings.apiUrl;
+      document.getElementById('dataMode').value = state.settings.dataMode;
+      document.getElementById('currency').value = state.settings.currency;
+      document.getElementById('projectName').value = state.settings.projectName;
+    }
+
+    function saveSettings() {
+      state.settings.apiUrl = document.getElementById('apiUrl').value.trim();
+      state.settings.dataMode = document.getElementById('dataMode').value;
+      state.settings.currency = document.getElementById('currency').value.trim() || 'ARS';
+      state.settings.projectName = document.getElementById('projectName').value.trim() || 'Proyecto de construcción';
+
+      Object.entries(state.settings).forEach(([key, value]) => localStorage.setItem(`pc_${key}`, value));
+      alert('Configuración guardada correctamente.');
+    }
+
+    async function loadData() {
+      state.settings.apiUrl = document.getElementById('apiUrl')?.value.trim() || state.settings.apiUrl;
+      state.settings.dataMode = document.getElementById('dataMode')?.value || state.settings.dataMode;
+      state.settings.currency = document.getElementById('currency')?.value.trim() || state.settings.currency;
+      state.settings.projectName = document.getElementById('projectName')?.value.trim() || state.settings.projectName;
+
+      if (state.settings.dataMode === 'api' && state.settings.apiUrl) {
+        try {
+          const url = `${state.settings.apiUrl}?action=getInitialData`;
+          const res = await fetch(url);
+          const data = await res.json();
+          state.items = data.items || [];
+          state.movimientos = data.movimientos || [];
+          state.sectores = data.sectores || state.sectores;
+        } catch (error) {
+          console.warn('No se pudo conectar con Apps Script. Se cargan datos demo.', error);
+          state.items = structuredClone(demoItems);
+          state.movimientos = structuredClone(demoMovimientos);
+        }
+      } else {
+        const localItems = localStorage.getItem('pc_demo_items');
+        const localMovimientos = localStorage.getItem('pc_demo_movimientos');
+        state.items = localItems ? JSON.parse(localItems) : structuredClone(demoItems);
+        state.movimientos = localMovimientos ? JSON.parse(localMovimientos) : structuredClone(demoMovimientos);
+      }
+
+      renderAll();
+    }
+
+    function renderAll() {
+      renderSelects();
+      renderDashboard();
+      renderPresupuesto();
+      renderMovimientos();
+      renderResponsables();
+    }
+
+    function renderSelects() {
+      const sectorOptions = ['<option value="">Todos los sectores</option>', ...state.sectores.map(s => `<option>${s}</option>`)].join('');
+      document.getElementById('filterSector').innerHTML = sectorOptions;
+      document.getElementById('itemSector').innerHTML = state.sectores.map(s => `<option>${s}</option>`).join('');
+      document.getElementById('movimientoItem').innerHTML = state.items.map(i => `<option value="${i.item_id}">${i.concepto} · ${i.sector}</option>`).join('');
+
+      const responsables = [...new Set([
+        ...state.items.map(i => i.responsable),
+        ...state.movimientos.map(m => m.responsable)
+      ].filter(Boolean))];
+      document.getElementById('responsablesList').innerHTML = responsables.map(r => `<option value="${r}"></option>`).join('');
+    }
+
+    function enrichItem(item) {
+      const movimientos = state.movimientos.filter(m => m.item_id === item.item_id);
+      const cantidadEjecutada = movimientos.reduce((acc, m) => acc + Number(m.cantidad_ejecutada || 0), 0);
+      const totalPagado = movimientos.reduce((acc, m) => acc + Number(m.importe_pagado || 0), 0);
+      const totalPresupuestado = Number(item.cantidad_presupuestada || 0) * Number(item.costo_unitario || 0);
+      const avance = Number(item.cantidad_presupuestada || 0) > 0 ? Math.min((cantidadEjecutada / Number(item.cantidad_presupuestada)) * 100, 100) : 0;
+      const costoEjecutado = cantidadEjecutada * Number(item.costo_unitario || 0);
+      const desvio = totalPagado - costoEjecutado;
+
+      return { ...item, cantidadEjecutada, totalPagado, totalPresupuestado, avance, costoEjecutado, desvio };
+    }
+
+    function getResumen() {
+      const enriched = state.items.map(enrichItem);
+      const totalPresupuestado = enriched.reduce((acc, i) => acc + i.totalPresupuestado, 0);
+      const totalEjecutado = enriched.reduce((acc, i) => acc + i.costoEjecutado, 0);
+      const totalPagado = enriched.reduce((acc, i) => acc + i.totalPagado, 0);
+      const avanceGeneral = totalPresupuestado > 0 ? (totalEjecutado / totalPresupuestado) * 100 : 0;
+      return { enriched, totalPresupuestado, totalEjecutado, totalPagado, avanceGeneral };
+    }
+
+    function renderDashboard() {
+      const { enriched, totalPresupuestado, totalEjecutado, totalPagado, avanceGeneral } = getResumen();
+
+      document.getElementById('kpiPresupuesto').textContent = money(totalPresupuestado);
+      document.getElementById('kpiEjecutado').textContent = money(totalEjecutado);
+      document.getElementById('kpiPagado').textContent = money(totalPagado);
+      document.getElementById('kpiAvance').textContent = `${avanceGeneral.toFixed(1)}%`;
+      document.getElementById('kpiSaldo').textContent = money(totalPresupuestado - totalPagado);
+      document.getElementById('kpiDesvio').textContent = money(totalPagado - totalEjecutado);
+
+      renderChartGeneral(totalPresupuestado, totalEjecutado, totalPagado);
+      renderChartTipo(enriched);
+      renderAvanceSectores(enriched);
+      renderGastosRecientes();
+    }
+
+    function renderChartGeneral(presupuestado, ejecutado, pagado) {
+      const ctx = document.getElementById('chartGeneral');
+      if (state.charts.general) state.charts.general.destroy();
+      state.charts.general = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Presupuestado', 'Ejecutado teórico', 'Pagado'],
+          datasets: [{ data: [presupuestado, ejecutado, pagado] }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: { y: { ticks: { callback: value => money(value) } } }
+        }
+      });
+    }
+
+    function renderChartTipo(items) {
+      const grouped = groupSum(items, 'tipo', 'totalPresupuestado');
+      const ctx = document.getElementById('chartTipo');
+      if (state.charts.tipo) state.charts.tipo.destroy();
+      state.charts.tipo = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(grouped),
+          datasets: [{ data: Object.values(grouped) }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { position: 'bottom' } }
+        }
+      });
+    }
+
+    function renderAvanceSectores(items) {
+      const sectores = {};
+      items.forEach(item => {
+        if (!sectores[item.sector]) sectores[item.sector] = { presupuestado: 0, ejecutado: 0 };
+        sectores[item.sector].presupuestado += item.totalPresupuestado;
+        sectores[item.sector].ejecutado += item.costoEjecutado;
+      });
+
+      const html = Object.entries(sectores).map(([sector, data]) => {
+        const avance = data.presupuestado > 0 ? (data.ejecutado / data.presupuestado) * 100 : 0;
+        return `
+          <div style="margin-bottom:16px;">
+            <div style="display:flex;justify-content:space-between;gap:12px;margin-bottom:8px;">
+              <strong>${sector}</strong>
+              <span style="color:var(--muted);font-size:13px;">${avance.toFixed(1)}%</span>
+            </div>
+            <div class="progress" style="width:100%;height:11px;"><span style="width:${Math.min(avance, 100)}%"></span></div>
+            <div style="color:var(--muted);font-size:12px;margin-top:6px;">Ejecutado ${money(data.ejecutado)} de ${money(data.presupuestado)}</div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('avanceSectores').innerHTML = html || '<div class="empty">Sin datos por sector.</div>';
+    }
+
+    function renderGastosRecientes() {
+      const recientes = [...state.movimientos]
+        .sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
+        .slice(0, 6);
+
+      const html = recientes.map(m => {
+        const item = state.items.find(i => i.item_id === m.item_id);
+        return `
+          <div style="display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--border);padding:11px 0;">
+            <div>
+              <strong>${item?.concepto || 'Ítem eliminado'}</strong>
+              <div style="font-size:12px;color:var(--muted);">${formatDate(m.fecha)} · ${m.tipo_movimiento}</div>
+            </div>
+            <div style="text-align:right;">
+              <strong>${money(Number(m.importe_pagado || 0))}</strong>
+              <div style="font-size:12px;color:var(--muted);">${m.responsable || '-'}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('gastosRecientes').innerHTML = html || '<div class="empty">Todavía no hay movimientos registrados.</div>';
+    }
+
+    function renderPresupuesto() {
+      const search = document.getElementById('filterSearch')?.value?.toLowerCase() || '';
+      const tipo = document.getElementById('filterTipo')?.value || '';
+      const sector = document.getElementById('filterSector')?.value || '';
+      const estado = document.getElementById('filterEstado')?.value || '';
+
+      let rows = state.items.map(enrichItem).filter(item => {
+        const itemEstado = item.avance === 0 ? 'pendiente' : item.avance >= 100 ? 'finalizado' : 'en_curso';
+        const text = `${item.concepto} ${item.sector} ${item.responsable}`.toLowerCase();
+        return (!search || text.includes(search)) &&
+          (!tipo || item.tipo === tipo) &&
+          (!sector || item.sector === sector) &&
+          (!estado || itemEstado === estado);
+      });
+
+      document.getElementById('presupuestoTable').innerHTML = rows.map(item => `
+        <tr>
+          <td>${typeBadge(item.tipo)}</td>
+          <td><strong>${item.concepto}</strong></td>
+          <td>${item.sector}</td>
+          <td>${item.responsable || '-'}</td>
+          <td>${item.unidad}</td>
+          <td>${number(item.cantidad_presupuestada)}</td>
+          <td>${number(item.cantidadEjecutada)}</td>
+          <td>
+            <div class="progress-wrap">
+              <div class="progress"><span style="width:${Math.min(item.avance, 100)}%"></span></div>
+              <span>${item.avance.toFixed(1)}%</span>
+            </div>
+          </td>
+          <td>${money(item.costo_unitario)}</td>
+          <td><strong>${money(item.totalPresupuestado)}</strong></td>
+          <td>${money(item.totalPagado)}</td>
+          <td>
+            <div class="action-cell">
+              <button class="mini-btn btn-soft" onclick="openItemModal('${item.item_id}')">Editar</button>
+              <button class="mini-btn btn-success" onclick="openMovimientoModal('${item.item_id}')">Movimiento</button>
+              <button class="mini-btn btn-danger" onclick="deleteItem('${item.item_id}')">Eliminar</button>
+            </div>
+          </td>
+        </tr>
+      `).join('') || `<tr><td colspan="12"><div class="empty">No hay ítems para mostrar.</div></td></tr>`;
+    }
+
+    function renderMovimientos() {
+      const rows = [...state.movimientos].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      document.getElementById('movimientosTable').innerHTML = rows.map(m => {
+        const item = state.items.find(i => i.item_id === m.item_id);
+        return `
+          <tr>
+            <td>${formatDate(m.fecha)}</td>
+            <td><strong>${item?.concepto || 'Ítem eliminado'}</strong></td>
+            <td>${m.tipo_movimiento}</td>
+            <td>${number(m.cantidad_ejecutada)}</td>
+            <td>${money(m.importe_pagado)}</td>
+            <td>${m.responsable || '-'}</td>
+            <td>${m.observacion || '-'}</td>
+            <td>
+              <div class="action-cell">
+                <button class="mini-btn btn-soft" onclick="openMovimientoModal(null, '${m.movimiento_id}')">Editar</button>
+                <button class="mini-btn btn-danger" onclick="deleteMovimiento('${m.movimiento_id}')">Eliminar</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('') || `<tr><td colspan="8"><div class="empty">Todavía no hay movimientos registrados.</div></td></tr>`;
+    }
+
+    function renderResponsables() {
+      const resumen = {};
+      state.items.map(enrichItem).forEach(item => {
+        const key = item.responsable || 'Sin responsable';
+        if (!resumen[key]) resumen[key] = { presupuestado: 0, pagado: 0, ejecutado: 0 };
+        resumen[key].presupuestado += item.totalPresupuestado;
+        resumen[key].pagado += item.totalPagado;
+        resumen[key].ejecutado += item.costoEjecutado;
+      });
+
+      const html = `
+        <table>
+          <thead><tr><th>Responsable</th><th>Presupuestado</th><th>Ejecutado</th><th>Pagado</th></tr></thead>
+          <tbody>
+            ${Object.entries(resumen).map(([r, d]) => `
+              <tr>
+                <td><strong>${r}</strong></td>
+                <td>${money(d.presupuestado)}</td>
+                <td>${money(d.ejecutado)}</td>
+                <td>${money(d.pagado)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+      document.getElementById('responsablesResumen').innerHTML = Object.keys(resumen).length ? html : '<div class="empty">Sin responsables registrados.</div>';
+    }
+
+    function openItemModal(itemId = null) {
+      document.getElementById('itemForm').reset();
+      document.getElementById('itemId').value = '';
+      document.getElementById('itemModalTitle').textContent = 'Agregar gasto / ítem presupuestado';
+
+      if (itemId) {
+        const item = state.items.find(i => i.item_id === itemId);
+        if (!item) return;
+        document.getElementById('itemModalTitle').textContent = 'Editar gasto / ítem presupuestado';
+        document.getElementById('itemId').value = item.item_id;
+        document.getElementById('itemTipo').value = item.tipo;
+        document.getElementById('itemSector').value = item.sector;
+        document.getElementById('itemResponsable').value = item.responsable;
+        document.getElementById('itemConcepto').value = item.concepto;
+        document.getElementById('itemUnidad').value = item.unidad;
+        document.getElementById('itemCantidad').value = item.cantidad_presupuestada;
+        document.getElementById('itemCosto').value = item.costo_unitario;
+        document.getElementById('itemObservacion').value = item.observacion || '';
+      }
+
+      updateItemTotalPreview();
+      document.getElementById('itemModal').classList.add('active');
+    }
+
+    function openMovimientoModal(itemId = null, movimientoId = null) {
+      document.getElementById('movimientoForm').reset();
+      document.getElementById('movimientoId').value = '';
+      document.getElementById('movimientoFecha').valueAsDate = new Date();
+      document.getElementById('movimientoCantidad').value = 0;
+      document.getElementById('movimientoImporte').value = 0;
+      document.getElementById('movimientoPorcentaje').value = 0;
+      document.getElementById('movimientoModalTitle').textContent = 'Registrar avance / pago';
+
+      if (itemId) document.getElementById('movimientoItem').value = itemId;
+
+      if (movimientoId) {
+        const mov = state.movimientos.find(m => m.movimiento_id === movimientoId);
+        if (!mov) return;
+        document.getElementById('movimientoModalTitle').textContent = 'Editar movimiento';
+        document.getElementById('movimientoId').value = mov.movimiento_id;
+        document.getElementById('movimientoFecha').value = mov.fecha;
+        document.getElementById('movimientoItem').value = mov.item_id;
+        document.getElementById('movimientoTipo').value = mov.tipo_movimiento;
+        document.getElementById('movimientoCantidad').value = mov.cantidad_ejecutada;
+        document.getElementById('movimientoImporte').value = mov.importe_pagado;
+        const item = state.items.find(i => i.item_id === mov.item_id);
+        const base = Number(item?.cantidad_presupuestada || 0);
+        document.getElementById('movimientoPorcentaje').value = base > 0 ? ((Number(mov.cantidad_ejecutada || 0) / base) * 100).toFixed(2) : 0;
+        document.getElementById('movimientoResponsable').value = mov.responsable || '';
+        document.getElementById('movimientoObservacion').value = mov.observacion || '';
+      }
+
+      document.getElementById('movimientoModal').classList.add('active');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+
+    async function saveItem(event) {
+      event.preventDefault();
+      const id = document.getElementById('itemId').value || generateId('ITM');
+      const item = {
+        item_id: id,
+        tipo: document.getElementById('itemTipo').value,
+        sector: document.getElementById('itemSector').value,
+        responsable: document.getElementById('itemResponsable').value.trim(),
+        concepto: document.getElementById('itemConcepto').value.trim(),
+        unidad: document.getElementById('itemUnidad').value,
+        cantidad_presupuestada: Number(document.getElementById('itemCantidad').value || 0),
+        costo_unitario: Number(document.getElementById('itemCosto').value || 0),
+        observacion: document.getElementById('itemObservacion').value.trim()
+      };
+
+      const index = state.items.findIndex(i => i.item_id === id);
+      if (index >= 0) state.items[index] = item;
+      else state.items.push(item);
+
+      await sendToApi(index >= 0 ? 'updateItem' : 'createItem', item);
+      persistDemoData();
+      closeModal('itemModal');
+      renderAll();
+    }
+
+    async function saveMovimiento(event) {
+      event.preventDefault();
+      const id = document.getElementById('movimientoId').value || generateId('MOV');
+      const movimiento = {
+        movimiento_id: id,
+        fecha: document.getElementById('movimientoFecha').value,
+        item_id: document.getElementById('movimientoItem').value,
+        tipo_movimiento: document.getElementById('movimientoTipo').value,
+        cantidad_ejecutada: Number(document.getElementById('movimientoCantidad').value || 0),
+        importe_pagado: Number(document.getElementById('movimientoImporte').value || 0),
+        responsable: document.getElementById('movimientoResponsable').value.trim(),
+        observacion: document.getElementById('movimientoObservacion').value.trim()
+      };
+
+      const index = state.movimientos.findIndex(m => m.movimiento_id === id);
+      if (index >= 0) state.movimientos[index] = movimiento;
+      else state.movimientos.push(movimiento);
+
+      await sendToApi(index >= 0 ? 'updateMovimiento' : 'createMovimiento', movimiento);
+      persistDemoData();
+      closeModal('movimientoModal');
+      renderAll();
+    }
+
+    async function sendToApi(action, payload) {
+      if (state.settings.dataMode !== 'api' || !state.settings.apiUrl) return;
+
+      try {
+        await fetch(state.settings.apiUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action, payload })
+        });
+      } catch (error) {
+        console.warn('No se pudo enviar a Apps Script.', error);
+      }
+    }
+
+    async function deleteItem(itemId) {
+      if (!confirm('¿Eliminar este ítem? También se ocultarán sus movimientos asociados en el análisis.')) return;
+      state.items = state.items.filter(i => i.item_id !== itemId);
+      await sendToApi('deleteItem', { item_id: itemId });
+      persistDemoData();
+      renderAll();
+    }
+
+    async function deleteMovimiento(movimientoId) {
+      if (!confirm('¿Eliminar este movimiento?')) return;
+      state.movimientos = state.movimientos.filter(m => m.movimiento_id !== movimientoId);
+      await sendToApi('deleteMovimiento', { movimiento_id: movimientoId });
+      persistDemoData();
+      renderAll();
+    }
+
+    function syncCantidadFromAvance() {
+      const itemId = document.getElementById('movimientoItem').value;
+      const item = state.items.find(i => i.item_id === itemId);
+      const porcentaje = Number(document.getElementById('movimientoPorcentaje').value || 0);
+      const base = Number(item?.cantidad_presupuestada || 0);
+      document.getElementById('movimientoCantidad').value = base > 0 ? ((base * porcentaje) / 100).toFixed(2) : 0;
+    }
+
+    function syncAvanceFromCantidad() {
+      const itemId = document.getElementById('movimientoItem').value;
+      const item = state.items.find(i => i.item_id === itemId);
+      const cantidad = Number(document.getElementById('movimientoCantidad').value || 0);
+      const base = Number(item?.cantidad_presupuestada || 0);
+      document.getElementById('movimientoPorcentaje').value = base > 0 ? ((cantidad / base) * 100).toFixed(2) : 0;
+    }
+
+    function persistDemoData() {
+      if (state.settings.dataMode !== 'demo') return;
+      localStorage.setItem('pc_demo_items', JSON.stringify(state.items));
+      localStorage.setItem('pc_demo_movimientos', JSON.stringify(state.movimientos));
+    }
+
+    function updateItemTotalPreview() {
+      const cantidad = Number(document.getElementById('itemCantidad').value || 0);
+      const costo = Number(document.getElementById('itemCosto').value || 0);
+      document.getElementById('itemTotalPreview').value = money(cantidad * costo);
+    }
+
+    function groupSum(arr, key, valueKey) {
+      return arr.reduce((acc, item) => {
+        const k = item[key] || 'Sin dato';
+        acc[k] = (acc[k] || 0) + Number(item[valueKey] || 0);
+        return acc;
+      }, {});
+    }
+
+    function typeBadge(tipo) {
+      const cls = tipo === 'Material' ? 'material' : tipo === 'Mano de obra' ? 'mano' : tipo === 'Servicio' ? 'servicio' : 'otro';
+      return `<span class="badge ${cls}"><span class="status-dot"></span>${tipo}</span>`;
+    }
+
+    function generateId(prefix) {
+      return `${prefix}${Date.now().toString().slice(-8)}`;
+    }
+
+    function money(value) {
+      return new Intl.NumberFormat('es-AR', {
+        style: 'currency',
+        currency: /^[A-Z]{3}$/.test(state.settings.currency || '') ? state.settings.currency : 'ARS',
+        maximumFractionDigits: 0
+      }).format(Number(value || 0));
+    }
+
+    function number(value) {
+      return new Intl.NumberFormat('es-AR', { maximumFractionDigits: 2 }).format(Number(value || 0));
+    }
+
+    function formatDate(date) {
+      if (!date) return '-';
+      return new Date(`${date}T00:00:00`).toLocaleDateString('es-AR');
+    }
+  </script>
+</body>
+</html>
