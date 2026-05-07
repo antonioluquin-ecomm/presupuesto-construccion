@@ -3,676 +3,663 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Presupuesto Construcción | Calculadora de Costos</title>
+  <title>Presupuesto Construcción v3</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
-      --bg: #f4f6f8;
-      --panel: #ffffff;
-      --panel-soft: #f8fafc;
-      --text: #172033;
-      --muted: #64748b;
-      --border: #d9e1ec;
-      --primary: #2563eb;
-      --primary-dark: #1d4ed8;
-      --success: #16a34a;
-      --warning: #f59e0b;
-      --danger: #dc2626;
-      --info: #0891b2;
-      --shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
-      --radius: 18px;
+      --bg:           #f0f2f5;
+      --panel:        #ffffff;
+      --panel-soft:   #f8f9fb;
+      --text:         #111827;
+      --muted:        #6b7280;
+      --border:       #e5e7eb;
+      --primary:      #1a56db;
+      --primary-dk:   #1447c0;
+      --success:      #059669;
+      --warning:      #d97706;
+      --danger:       #dc2626;
+      --info:         #0891b2;
+      --mo-color:     #7c3aed;
+      --mat-color:    #0284c7;
+      --radius:       14px;
+      --sidebar:      240px;
     }
 
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      margin: 0;
-      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: 'DM Sans', system-ui, sans-serif;
       background: var(--bg);
       color: var(--text);
+      font-size: 14px;
     }
 
-    .app {
-      min-height: 100vh;
-      display: grid;
-      grid-template-columns: 280px 1fr;
-    }
+    /* ── LAYOUT ── */
+    .app { display: grid; grid-template-columns: var(--sidebar) 1fr; min-height: 100vh; }
 
+    /* ── SIDEBAR ── */
     aside {
       background: #0f172a;
-      color: #fff;
-      padding: 24px 18px;
+      color: #e2e8f0;
+      padding: 20px 14px;
       position: sticky;
       top: 0;
       height: 100vh;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 28px;
+      gap: 10px;
+      padding: 0 6px 20px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      margin-bottom: 8px;
     }
 
     .brand-icon {
-      width: 42px;
-      height: 42px;
-      border-radius: 14px;
-      background: linear-gradient(135deg, #2563eb, #22c55e);
-      display: grid;
-      place-items: center;
-      font-weight: 800;
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #1a56db, #7c3aed);
+      display: grid; place-items: center;
+      font-family: 'DM Mono', monospace;
+      font-size: 13px; font-weight: 500;
+      color: #fff; flex-shrink: 0;
     }
 
-    .brand h1 {
-      margin: 0;
-      font-size: 16px;
-      line-height: 1.2;
+    .brand-text { font-size: 13px; font-weight: 600; line-height: 1.3; }
+    .brand-sub  { font-size: 11px; color: #64748b; margin-top: 2px; }
+
+    .nav-btn {
+      width: 100%; border: 0; background: transparent;
+      color: #94a3b8; padding: 9px 12px; border-radius: 10px;
+      text-align: left; cursor: pointer; font: inherit; font-size: 13px;
+      display: flex; align-items: center; gap: 9px; transition: .15s;
+    }
+    .nav-btn:hover  { background: rgba(255,255,255,.06); color: #e2e8f0; }
+    .nav-btn.active { background: rgba(255,255,255,.1); color: #fff; }
+    .nav-icon { font-size: 15px; opacity: .8; }
+
+    .nav-section {
+      font-size: 10px; font-weight: 600; letter-spacing: .08em;
+      color: #475569; text-transform: uppercase;
+      padding: 14px 12px 6px;
     }
 
-    .brand p {
-      margin: 3px 0 0;
-      color: #94a3b8;
-      font-size: 12px;
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 12px;
+      border-top: 1px solid rgba(255,255,255,.06);
+      font-size: 11px; color: #475569;
     }
 
-    .nav-button {
-      width: 100%;
-      border: 0;
-      background: transparent;
-      color: #cbd5e1;
-      padding: 13px 14px;
-      margin-bottom: 6px;
-      border-radius: 14px;
-      text-align: left;
-      cursor: pointer;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .nav-button:hover,
-    .nav-button.active {
-      background: rgba(255, 255, 255, 0.1);
-      color: #fff;
-    }
-
-    main {
-      padding: 28px;
-      overflow: hidden;
-    }
+    /* ── MAIN ── */
+    main { padding: 24px; overflow-x: hidden; }
 
     .topbar {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 24px;
+      display: flex; align-items: flex-start;
+      justify-content: space-between; gap: 16px;
+      margin-bottom: 22px;
     }
 
-    .title h2 {
-      margin: 0;
-      font-size: 28px;
-      letter-spacing: -0.03em;
-    }
+    .page-title { font-size: 22px; font-weight: 600; letter-spacing: -.02em; }
+    .page-sub   { color: var(--muted); font-size: 13px; margin-top: 4px; max-width: 680px; }
 
-    .title p {
-      margin: 7px 0 0;
-      color: var(--muted);
-      max-width: 780px;
-    }
+    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; flex-shrink: 0; }
 
-    .toolbar {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-
-    button,
+    /* ── BUTTONS ── */
     .btn {
-      border: 0;
-      border-radius: 13px;
-      padding: 11px 15px;
-      font-weight: 650;
-      cursor: pointer;
-      font-size: 14px;
-      transition: 0.18s ease;
+      border: 0; border-radius: 10px; padding: 9px 14px;
+      font: inherit; font-size: 13px; font-weight: 500;
+      cursor: pointer; transition: .15s; display: inline-flex;
+      align-items: center; gap: 6px;
     }
-
     .btn-primary { background: var(--primary); color: #fff; }
-    .btn-primary:hover { background: var(--primary-dark); }
-    .btn-soft { background: #e2e8f0; color: #0f172a; }
-    .btn-soft:hover { background: #cbd5e1; }
-    .btn-danger { background: #fee2e2; color: var(--danger); }
-    .btn-success { background: #dcfce7; color: var(--success); }
+    .btn-primary:hover { background: var(--primary-dk); }
+    .btn-soft { background: #fff; color: var(--text); border: 1px solid var(--border); }
+    .btn-soft:hover { background: var(--panel-soft); }
+    .btn-success { background: #ecfdf5; color: var(--success); border: 1px solid #bbf7d0; }
+    .btn-success:hover { background: #d1fae5; }
+    .btn-danger-soft { background: #fef2f2; color: var(--danger); border: 1px solid #fecaca; }
+    .btn-mo { background: #f5f3ff; color: var(--mo-color); border: 1px solid #ddd6fe; }
+    .btn-mo:hover { background: #ede9fe; }
+    .btn-sm { padding: 6px 10px; font-size: 12px; border-radius: 8px; }
 
-    .grid {
-      display: grid;
-      gap: 18px;
-    }
+    /* ── SECTION ── */
+    .section { display: none; }
+    .section.active { display: block; }
 
-    .kpi-grid {
-      grid-template-columns: repeat(6, minmax(0, 1fr));
-      margin-bottom: 18px;
-    }
-
+    /* ── CARDS ── */
     .card {
       background: var(--panel);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      box-shadow: var(--shadow);
       padding: 20px;
     }
+
+    .card-hd {
+      display: flex; align-items: flex-start;
+      justify-content: space-between; gap: 12px;
+      margin-bottom: 16px;
+    }
+    .card-hd h3 { font-size: 15px; font-weight: 600; }
+    .card-hd p  { color: var(--muted); font-size: 12px; margin-top: 3px; }
+
+    /* ── KPI GRID ── */
+    .kpi-grid { display: grid; gap: 12px; margin-bottom: 16px; }
+    .kpi-6 { grid-template-columns: repeat(6, 1fr); }
+    .kpi-3 { grid-template-columns: repeat(3, 1fr); }
 
     .kpi {
-      min-height: 138px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
-    .kpi .label {
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 650;
-    }
-
-    .kpi .value {
-      font-size: 28px;
-      font-weight: 800;
-      letter-spacing: -0.04em;
-      margin-top: 10px;
-    }
-
-    .kpi .sub {
-      color: var(--muted);
-      font-size: 12px;
-      margin-top: 8px;
-    }
-
-    .two-col {
-      grid-template-columns: 1.2fr 0.8fr;
-    }
-
-    .section {
-      display: none;
-    }
-
-    .section.active {
-      display: block;
-    }
-
-    .card-header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-
-    .card-header h3 {
-      margin: 0;
-      font-size: 18px;
-    }
-
-    .card-header p {
-      margin: 4px 0 0;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
-
-    th,
-    td {
-      padding: 12px 10px;
-      border-bottom: 1px solid var(--border);
-      text-align: left;
-      vertical-align: middle;
-    }
-
-    th {
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 750;
-      background: var(--panel-soft);
-    }
-
-    tr:hover td {
-      background: #f8fafc;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 5px 9px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 700;
-      white-space: nowrap;
-    }
-
-    .badge.material { background: #e0f2fe; color: #0369a1; }
-    .badge.mano { background: #fef3c7; color: #92400e; }
-    .badge.servicio { background: #ede9fe; color: #5b21b6; }
-    .badge.otro { background: #e2e8f0; color: #334155; }
-
-    .progress-wrap {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .progress {
-      width: 90px;
-      height: 8px;
-      background: #e2e8f0;
-      border-radius: 99px;
-      overflow: hidden;
-    }
-
-    .progress span {
-      display: block;
-      height: 100%;
-      background: var(--success);
-      border-radius: 99px;
-    }
-
-    .filters {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-
-    input,
-    select,
-    textarea {
-      width: 100%;
+      background: var(--panel);
       border: 1px solid var(--border);
-      border-radius: 13px;
-      padding: 11px 12px;
-      font: inherit;
-      background: #fff;
-      color: var(--text);
-      outline: none;
+      border-radius: var(--radius);
+      padding: 16px 18px;
     }
 
-    input:focus,
-    select:focus,
-    textarea:focus {
+    .kpi-label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+    .kpi-value { font-size: 22px; font-weight: 600; margin-top: 6px; letter-spacing: -.03em; font-family: 'DM Mono', monospace; }
+    .kpi-sub   { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+    .kpi.accent-mo   { border-left: 3px solid var(--mo-color); }
+    .kpi.accent-mat  { border-left: 3px solid var(--mat-color); }
+    .kpi.accent-warn { border-left: 3px solid var(--warning); }
+    .kpi.accent-ok   { border-left: 3px solid var(--success); }
+
+    /* ── CHARTS ROW ── */
+    .charts-row { display: grid; grid-template-columns: 1.4fr 1fr; gap: 14px; margin-bottom: 14px; }
+    .bottom-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    /* ── TIPO CARDS (MO vs Material) ── */
+    .tipo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+
+    .tipo-card {
+      border-radius: var(--radius);
+      padding: 16px;
+      border: 1px solid var(--border);
+    }
+    .tipo-card.mo  { background: #faf5ff; border-color: #ddd6fe; }
+    .tipo-card.mat { background: #f0f9ff; border-color: #bae6fd; }
+
+    .tipo-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .tipo-title  { font-size: 13px; font-weight: 600; }
+    .tipo-badge  { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 99px; }
+    .tipo-badge.mo  { background: #ede9fe; color: var(--mo-color); }
+    .tipo-badge.mat { background: #e0f2fe; color: #0369a1; }
+
+    .tipo-rows { display: grid; gap: 6px; }
+    .tipo-row  { display: flex; justify-content: space-between; font-size: 12px; }
+    .tipo-row .label { color: var(--muted); }
+    .tipo-row .val   { font-family: 'DM Mono', monospace; font-weight: 500; }
+    .tipo-row .val.danger  { color: var(--danger); }
+    .tipo-row .val.ok      { color: var(--success); }
+
+    .tipo-progress { height: 6px; background: #e5e7eb; border-radius: 99px; overflow: hidden; margin-top: 10px; }
+    .tipo-progress span { display: block; height: 100%; border-radius: 99px; }
+    .tipo-progress span.mo  { background: var(--mo-color); }
+    .tipo-progress span.mat { background: var(--mat-color); }
+
+    /* ── TABLE ── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 10px 10px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: middle; }
+    th { font-size: 11px; font-weight: 600; color: var(--muted); background: var(--panel-soft); text-transform: uppercase; letter-spacing: .05em; white-space: nowrap; }
+    tr:hover td { background: #fafafa; }
+    .mono { font-family: 'DM Mono', monospace; }
+
+    /* ── PROGRESS BAR ── */
+    .progress-wrap { display: flex; align-items: center; gap: 8px; }
+    .progress { height: 6px; width: 80px; background: #e5e7eb; border-radius: 99px; overflow: hidden; flex-shrink: 0; }
+    .progress span { display: block; height: 100%; border-radius: 99px; background: var(--success); }
+    .progress span.mo  { background: var(--mo-color); }
+
+    /* ── BADGES ── */
+    .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px; border-radius: 99px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+    .badge.material  { background: #e0f2fe; color: #0369a1; }
+    .badge.mo        { background: #f5f3ff; color: var(--mo-color); }
+    .badge.servicio  { background: #fef3c7; color: #92400e; }
+    .badge.otro      { background: #f3f4f6; color: #374151; }
+    .badge.global    { background: #fdf2f8; color: #9d174d; }
+
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; display: inline-block; }
+
+    .estado-badge { display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+    .estado-badge.finalizado { background: #ecfdf5; color: var(--success); }
+    .estado-badge.en_curso   { background: #fffbeb; color: var(--warning); }
+    .estado-badge.pendiente  { background: #f9fafb; color: var(--muted); }
+
+    /* ── FILTERS ── */
+    .filters { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+
+    input, select, textarea {
+      width: 100%; border: 1px solid var(--border);
+      border-radius: 10px; padding: 9px 11px;
+      font: inherit; font-size: 13px;
+      background: #fff; color: var(--text); outline: none;
+    }
+    input:focus, select:focus, textarea:focus {
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+      box-shadow: 0 0 0 3px rgba(26,86,219,.1);
     }
+    label { display: block; font-size: 11px; font-weight: 600; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .05em; }
 
-    label {
-      display: block;
-      font-size: 12px;
-      color: var(--muted);
-      font-weight: 750;
-      margin-bottom: 6px;
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
-    }
-
+    /* ── FORM GRID ── */
+    .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
     .form-grid .full { grid-column: 1 / -1; }
+    .form-grid .half { grid-column: span 2; }
 
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.55);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      z-index: 100;
+    .form-section-title {
+      font-size: 11px; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .08em;
+      padding: 12px 0 6px; border-top: 1px solid var(--border);
+      margin-top: 4px; grid-column: 1 / -1;
     }
 
+    /* ── MODAL ── */
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(15,23,42,.5);
+      display: none; align-items: center;
+      justify-content: center; padding: 20px; z-index: 100;
+      backdrop-filter: blur(2px);
+    }
     .modal-backdrop.active { display: flex; }
 
     .modal {
-      width: min(980px, 100%);
-      max-height: 92vh;
-      overflow: auto;
-      background: #fff;
-      border-radius: 24px;
-      box-shadow: 0 30px 80px rgba(0,0,0,0.22);
-      padding: 22px;
+      width: min(960px, 100%);
+      max-height: 92vh; overflow-y: auto;
+      background: #fff; border-radius: 18px;
+      box-shadow: 0 25px 60px rgba(0,0,0,.2);
+      padding: 24px;
     }
 
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: flex-start;
-      margin-bottom: 18px;
-    }
+    .modal-hd { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 20px; }
+    .modal-hd h3 { font-size: 17px; font-weight: 600; }
+    .modal-hd p  { color: var(--muted); font-size: 13px; margin-top: 4px; }
 
-    .modal-header h3 { margin: 0; }
-    .modal-header p { margin: 6px 0 0; color: var(--muted); }
-
-    .modal-footer {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      margin-top: 18px;
-      padding-top: 16px;
+    .modal-ft {
+      display: flex; justify-content: flex-end; gap: 8px;
+      margin-top: 20px; padding-top: 16px;
       border-top: 1px solid var(--border);
     }
 
+    /* ── EMPTY ── */
     .empty {
-      padding: 28px;
-      text-align: center;
-      color: var(--muted);
-      border: 1px dashed var(--border);
-      border-radius: var(--radius);
-      background: var(--panel-soft);
+      padding: 32px; text-align: center; color: var(--muted);
+      border: 1px dashed var(--border); border-radius: var(--radius);
+      background: var(--panel-soft); font-size: 13px;
     }
 
+    /* ── NOTICE ── */
     .notice {
-      background: #eff6ff;
-      color: #1e40af;
+      background: #eff6ff; color: #1d4ed8;
       border: 1px solid #bfdbfe;
       border-radius: var(--radius);
-      padding: 14px 16px;
-      font-size: 13px;
-      margin-bottom: 18px;
+      padding: 12px 16px; font-size: 13px;
+      margin-bottom: 16px; display: flex; gap: 10px; align-items: flex-start;
     }
+    .notice.warn  { background: #fffbeb; color: #92400e; border-color: #fde68a; }
+    .notice.ok    { background: #ecfdf5; color: #065f46; border-color: #bbf7d0; }
 
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--success);
-      display: inline-block;
+    /* ── SECTOR AVANCE ── */
+    .sector-list { display: grid; gap: 12px; }
+    .sector-item {}
+    .sector-row  { display: flex; justify-content: space-between; margin-bottom: 6px; }
+    .sector-name { font-size: 13px; font-weight: 500; }
+    .sector-pct  { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospace; }
+    .sector-bar  { height: 8px; background: #e5e7eb; border-radius: 99px; overflow: hidden; }
+    .sector-bar span { display: block; height: 100%; border-radius: 99px; background: var(--primary); }
+    .sector-meta { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+    /* ── RECIENTES ── */
+    .reciente-item {
+      display: flex; justify-content: space-between; gap: 12px;
+      padding: 10px 0; border-bottom: 1px solid var(--border);
     }
+    .reciente-item:last-child { border-bottom: 0; }
+    .reciente-concepto { font-size: 13px; font-weight: 500; }
+    .reciente-meta     { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .reciente-importe  { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; text-align: right; }
 
-    .action-cell {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
+    /* ── RESPONSABLES ── */
+    .resp-table-wrap table { font-size: 13px; }
+
+    /* ── CONFIG ── */
+    .config-section { max-width: 680px; }
+
+    /* ── DESVÍO INDICATOR ── */
+    .desvio-ok   { color: var(--success); }
+    .desvio-warn { color: var(--warning); }
+    .desvio-bad  { color: var(--danger); }
+
+    /* ── MIGRATION RESULT ── */
+    #migrationResult {
+      margin-top: 12px; padding: 10px 14px;
+      border-radius: 10px; font-size: 13px;
+      display: none;
     }
+    #migrationResult.ok   { background: #ecfdf5; color: #065f46; border: 1px solid #bbf7d0; }
+    #migrationResult.warn { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
 
-    .mini-btn {
-      padding: 7px 9px;
-      border-radius: 10px;
-      font-size: 12px;
-    }
-
+    /* ── RESPONSIVE ── */
     @media (max-width: 1100px) {
       .app { grid-template-columns: 1fr; }
-      aside {
-        height: auto;
-        position: relative;
-      }
-      .kpi-grid,
-      .two-col,
-      .filters,
-      .form-grid {
-        grid-template-columns: 1fr;
-      }
-      .topbar { flex-direction: column; }
-      .toolbar { justify-content: flex-start; }
+      aside { height: auto; position: relative; flex-direction: row; flex-wrap: wrap; padding: 12px; }
+      .brand { border-bottom: 0; padding-bottom: 0; margin-bottom: 0; }
+      .nav-section { display: none; }
+      .kpi-6 { grid-template-columns: repeat(3, 1fr); }
+      .charts-row, .bottom-row, .tipo-grid { grid-template-columns: 1fr; }
+      .filters { grid-template-columns: 1fr 1fr; }
+      .form-grid { grid-template-columns: 1fr 1fr; }
+      .sidebar-footer { display: none; }
+    }
+
+    @media (max-width: 680px) {
+      .kpi-6 { grid-template-columns: repeat(2, 1fr); }
+      .filters { grid-template-columns: 1fr; }
+      .form-grid { grid-template-columns: 1fr; }
+      .form-grid .half { grid-column: 1; }
     }
   </style>
 </head>
 <body>
-  <div class="app">
-    <aside>
-      <div class="brand">
-        <div class="brand-icon">PC</div>
-        <div>
-          <h1>Presupuesto Construcción</h1>
-          <p>Costos, avances y pagos</p>
+<div class="app">
+
+  <!-- ─── SIDEBAR ─── -->
+  <aside>
+    <div class="brand">
+      <div class="brand-icon">PC</div>
+      <div>
+        <div class="brand-text">Presupuesto Obra</div>
+        <div class="brand-sub">v3 · Apps Script</div>
+      </div>
+    </div>
+
+    <div class="nav-section">Gestión</div>
+    <button class="nav-btn active" data-section="dashboard">
+      <span class="nav-icon">▦</span> Dashboard
+    </button>
+    <button class="nav-btn" data-section="presupuesto">
+      <span class="nav-icon">☰</span> Presupuesto
+    </button>
+    <button class="nav-btn" data-section="movimientos">
+      <span class="nav-icon">↔</span> Avances y pagos
+    </button>
+
+    <div class="nav-section">Análisis</div>
+    <button class="nav-btn" data-section="responsables">
+      <span class="nav-icon">◉</span> Responsables
+    </button>
+    <button class="nav-btn" data-section="sectores">
+      <span class="nav-icon">⬡</span> Sectores
+    </button>
+
+    <div class="nav-section">Sistema</div>
+    <button class="nav-btn" data-section="configuracion">
+      <span class="nav-icon">⚙</span> Configuración
+    </button>
+
+    <div class="sidebar-footer">
+      ID: 13DQxb5C…xZPOI<br>
+      <span id="lastSync" style="color:#475569;">Sin sincronizar</span>
+    </div>
+  </aside>
+
+  <!-- ─── MAIN ─── -->
+  <main>
+    <div class="topbar">
+      <div>
+        <div class="page-title" id="pageTitle">Dashboard</div>
+        <div class="page-sub" id="pageSubtitle">Resumen ejecutivo del proyecto.</div>
+      </div>
+      <div class="toolbar">
+        <button class="btn btn-soft" onclick="loadData()">↻ Actualizar</button>
+        <button class="btn btn-mo" onclick="openMovimientoModal()">+ Avance / Pago</button>
+        <button class="btn btn-primary" onclick="openItemModal()">+ Nuevo ítem</button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════ DASHBOARD ══ -->
+    <section id="dashboard" class="section active">
+
+      <!-- KPIs globales -->
+      <div class="kpi-grid kpi-6">
+        <div class="kpi">
+          <div class="kpi-label">Presupuesto total</div>
+          <div class="kpi-value" id="kpiPresupuesto">—</div>
+          <div class="kpi-sub">Suma ítems presupuestados</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Costo ejecutado</div>
+          <div class="kpi-value" id="kpiEjecutado">—</div>
+          <div class="kpi-sub">Cant. ejec. × costo unitario</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Total pagado</div>
+          <div class="kpi-value" id="kpiPagado">—</div>
+          <div class="kpi-sub">Pagos reales registrados</div>
+        </div>
+        <div class="kpi accent-ok">
+          <div class="kpi-label">Avance general</div>
+          <div class="kpi-value" id="kpiAvance">—</div>
+          <div class="kpi-sub">Ponderado por presupuesto</div>
+        </div>
+        <div class="kpi accent-warn">
+          <div class="kpi-label">Saldo disponible</div>
+          <div class="kpi-value" id="kpiSaldo">—</div>
+          <div class="kpi-sub">Presupuesto − pagado</div>
+        </div>
+        <div class="kpi" id="kpiDesvioCard">
+          <div class="kpi-label">Desvío pago/avance</div>
+          <div class="kpi-value" id="kpiDesvio">—</div>
+          <div class="kpi-sub">Pagado − ejecutado teórico</div>
         </div>
       </div>
 
-      <button class="nav-button active" data-section="dashboard">Dashboard <span>›</span></button>
-      <button class="nav-button" data-section="presupuesto">Presupuesto <span>›</span></button>
-      <button class="nav-button" data-section="movimientos">Avances y pagos <span>›</span></button>
-      <button class="nav-button" data-section="responsables">Responsables <span>›</span></button>
-      <button class="nav-button" data-section="configuracion">Configuración <span>›</span></button>
-    </aside>
+      <!-- Tipo cards: MO vs Material -->
+      <div class="tipo-grid" id="tipoCards"></div>
 
-    <main>
-      <div class="topbar">
-        <div class="title">
-          <h2 id="pageTitle">Dashboard general</h2>
-          <p id="pageSubtitle">Resumen ejecutivo del presupuesto, avances físicos, pagos realizados y desvíos del proyecto.</p>
+      <!-- Charts + avance sectores -->
+      <div class="charts-row">
+        <div class="card">
+          <div class="card-hd">
+            <div>
+              <h3>Presupuesto · ejecutado · pagado</h3>
+              <p>Comparación global del proyecto</p>
+            </div>
+          </div>
+          <canvas id="chartGeneral" height="110"></canvas>
         </div>
-        <div class="toolbar">
-          <button class="btn-soft" onclick="loadData()">Actualizar datos</button>
-          <button class="btn-primary" onclick="openItemModal()">Agregar gasto / ítem</button>
-          <button class="btn-success" onclick="openMovimientoModal()">Registrar avance / pago</button>
+        <div class="card">
+          <div class="card-hd">
+            <div>
+              <h3>Distribución por tipo</h3>
+              <p>Materiales, MO, servicios y otros</p>
+            </div>
+          </div>
+          <canvas id="chartTipo" height="160"></canvas>
         </div>
       </div>
 
-      <section id="dashboard" class="section active">
-        <div class="notice">
-          <strong>Versión HTML v2:</strong> interfaz preparada para conectarse con Apps Script. Si la conexión falla, se cargan datos demo como respaldo.
-        </div>
-
-        <div class="grid kpi-grid">
-          <div class="card kpi">
-            <div>
-              <div class="label">Presupuesto total</div>
-              <div class="value" id="kpiPresupuesto">$0</div>
-            </div>
-            <div class="sub">Suma de todos los ítems presupuestados</div>
-          </div>
-          <div class="card kpi">
-            <div>
-              <div class="label">Costo ejecutado teórico</div>
-              <div class="value" id="kpiEjecutado">$0</div>
-            </div>
-            <div class="sub">Según cantidad ejecutada x costo unitario</div>
-          </div>
-          <div class="card kpi">
-            <div>
-              <div class="label">Total pagado</div>
-              <div class="value" id="kpiPagado">$0</div>
-            </div>
-            <div class="sub">Pagos reales registrados</div>
-          </div>
-          <div class="card kpi">
-            <div>
-              <div class="label">Avance general</div>
-              <div class="value" id="kpiAvance">0%</div>
-            </div>
-            <div class="sub">Promedio ponderado por presupuesto</div>
-          </div>
-          <div class="card kpi">
-            <div>
-              <div class="label">Saldo presupuestario</div>
-              <div class="value" id="kpiSaldo">$0</div>
-            </div>
-            <div class="sub">Presupuesto menos pagos realizados</div>
-          </div>
-          <div class="card kpi">
-            <div>
-              <div class="label">Diferencia pago/avance</div>
-              <div class="value" id="kpiDesvio">$0</div>
-            </div>
-            <div class="sub">Pagado menos costo ejecutado teórico</div>
-          </div>
-        </div>
-
-        <div class="grid two-col">
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <h3>Presupuesto vs ejecutado vs pagado</h3>
-                <p>Comparación general del proyecto.</p>
-              </div>
-            </div>
-            <canvas id="chartGeneral" height="120"></canvas>
-          </div>
-
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <h3>Distribución por tipo</h3>
-                <p>Materiales, mano de obra, servicios y otros.</p>
-              </div>
-            </div>
-            <canvas id="chartTipo" height="180"></canvas>
-          </div>
-        </div>
-
-        <div class="grid two-col" style="margin-top:18px;">
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <h3>Avance por sector</h3>
-                <p>Control visual por Frente, Casa, Galería, Garaje u otros sectores.</p>
-              </div>
-            </div>
-            <div id="avanceSectores"></div>
-          </div>
-
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <h3>Gastos recientes</h3>
-                <p>Últimos movimientos registrados.</p>
-              </div>
-            </div>
-            <div id="gastosRecientes"></div>
-          </div>
-        </div>
-      </section>
-
-      <section id="presupuesto" class="section">
+      <!-- Sectores + recientes -->
+      <div class="bottom-row">
         <div class="card">
-          <div class="card-header">
+          <div class="card-hd">
             <div>
-              <h3>Listado de presupuesto</h3>
-              <p>Alta, edición y control de materiales, mano de obra, servicios y otros gastos.</p>
+              <h3>Avance por sector</h3>
+              <p>Control por zona de obra</p>
             </div>
-            <button class="btn-primary" onclick="openItemModal()">Nuevo ítem</button>
           </div>
-
-          <div class="filters">
-            <input id="filterSearch" placeholder="Buscar concepto, sector o responsable..." oninput="renderPresupuesto()" />
-            <select id="filterTipo" onchange="renderPresupuesto()">
-              <option value="">Todos los tipos</option>
-              <option>Material</option>
-              <option>Mano de obra</option>
-              <option>Servicio</option>
-              <option>Otro</option>
-            </select>
-            <select id="filterSector" onchange="renderPresupuesto()"></select>
-            <select id="filterEstado" onchange="renderPresupuesto()">
-              <option value="">Todos los estados</option>
-              <option value="pendiente">Pendiente</option>
-              <option value="en_curso">En curso</option>
-              <option value="finalizado">Finalizado</option>
-            </select>
-          </div>
-
-          <div style="overflow:auto;">
-            <table>
-              <thead>
-                <tr>
-                  <th>Tipo</th>
-                  <th>Concepto</th>
-                  <th>Sector</th>
-                  <th>Responsable / proveedor</th>
-                  <th>Unidad</th>
-                  <th>Cant. presup.</th>
-                  <th>Cant. ejec.</th>
-                  <th>Avance</th>
-                  <th>Costo unit.</th>
-                  <th>Total presup.</th>
-                  <th>Pagado</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody id="presupuestoTable"></tbody>
-            </table>
-          </div>
+          <div class="sector-list" id="avanceSectores"></div>
         </div>
-      </section>
-
-      <section id="movimientos" class="section">
         <div class="card">
-          <div class="card-header">
+          <div class="card-hd">
             <div>
-              <h3>Registro de avances y pagos</h3>
-              <p>Cada modificación queda como un movimiento para mantener trazabilidad.</p>
+              <h3>Últimos movimientos</h3>
+              <p>Avances y pagos recientes</p>
             </div>
-            <button class="btn-success" onclick="openMovimientoModal()">Nuevo movimiento</button>
           </div>
+          <div id="gastosRecientes"></div>
+        </div>
+      </div>
+    </section>
 
-          <div style="overflow:auto;">
-            <table>
-              <thead>
-                <tr>
-                  <th>Fecha</th>
-                  <th>Concepto</th>
-                  <th>Tipo movimiento</th>
-                  <th>Cantidad ejecutada</th>
-                  <th>Importe pagado</th>
-                  <th>Responsable</th>
-                  <th>Observación</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody id="movimientosTable"></tbody>
-            </table>
+    <!-- ══════════════════════════════════════════ PRESUPUESTO ══ -->
+    <section id="presupuesto" class="section">
+      <div class="card">
+        <div class="card-hd">
+          <div>
+            <h3>Listado de presupuesto</h3>
+            <p>Alta, edición y control de ítems. El avance se calcula de los movimientos registrados.</p>
+          </div>
+          <button class="btn btn-primary" onclick="openItemModal()">+ Nuevo ítem</button>
+        </div>
+
+        <div class="filters">
+          <input id="filterSearch" placeholder="Buscar concepto, sector, responsable..." oninput="renderPresupuesto()" />
+          <select id="filterTipo" onchange="renderPresupuesto()">
+            <option value="">Todos los tipos</option>
+            <option>Material</option>
+            <option>Mano de obra</option>
+            <option>Servicio</option>
+            <option>Otro</option>
+          </select>
+          <select id="filterSector" onchange="renderPresupuesto()"></select>
+          <select id="filterEstado" onchange="renderPresupuesto()">
+            <option value="">Todos</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="en_curso">En curso</option>
+            <option value="finalizado">Finalizado</option>
+          </select>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Tipo</th>
+                <th>Concepto</th>
+                <th>Sector</th>
+                <th>Responsable</th>
+                <th>Unidad</th>
+                <th>Cant. Ppto.</th>
+                <th>Cant. Ejec.</th>
+                <th>Avance</th>
+                <th>Costo Unit.</th>
+                <th>Total Ppto.</th>
+                <th>Ejec. Teórico</th>
+                <th>Pagado</th>
+                <th>Desvío</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="presupuestoTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════ MOVIMIENTOS ══ -->
+    <section id="movimientos" class="section">
+      <div class="card">
+        <div class="card-hd">
+          <div>
+            <h3>Registro de avances y pagos</h3>
+            <p>Cada movimiento actualiza automáticamente el resumen y los KPIs. Los pagos globales (sin ítem) también se registran aquí.</p>
+          </div>
+          <button class="btn btn-mo" onclick="openMovimientoModal()">+ Movimiento</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Ítem</th>
+                <th>Tipo</th>
+                <th>Cant. ejec.</th>
+                <th>Importe</th>
+                <th>Medio pago</th>
+                <th>Responsable</th>
+                <th>Observación</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="movimientosTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════ RESPONSABLES ══ -->
+    <section id="responsables" class="section">
+      <div class="card">
+        <div class="card-hd">
+          <div>
+            <h3>Resumen por responsable / proveedor</h3>
+            <p>Total presupuestado, ejecutado y pagado por persona o empresa.</p>
           </div>
         </div>
-      </section>
+        <div class="table-wrap resp-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Responsable</th>
+                <th>Presupuestado</th>
+                <th>Ejec. teórico</th>
+                <th>Pagado</th>
+                <th>Saldo</th>
+                <th>Desvío</th>
+              </tr>
+            </thead>
+            <tbody id="responsablesTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
 
-      <section id="responsables" class="section">
-        <div class="grid two-col">
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <h3>Resumen por responsable / proveedor</h3>
-                <p>Total presupuestado y pagado por persona o proveedor.</p>
-              </div>
-            </div>
-            <div id="responsablesResumen"></div>
-          </div>
-
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <h3>Uso recomendado</h3>
-                <p>Buenas prácticas para mantener la base ordenada.</p>
-              </div>
-            </div>
-            <ul style="line-height:1.75; color:var(--muted); margin-top:0;">
-              <li>Registrar primero el ítem presupuestado.</li>
-              <li>Usar siempre el mismo nombre para cada proveedor o responsable.</li>
-              <li>Registrar avances y pagos como movimientos separados.</li>
-              <li>No sobrescribir el histórico: editar solo cuando hubo error de carga.</li>
-            </ul>
+    <!-- ══════════════════════════════════════════ SECTORES ══ -->
+    <section id="sectores" class="section">
+      <div class="card">
+        <div class="card-hd">
+          <div>
+            <h3>Avance detallado por sector</h3>
+            <p>Desglose de presupuesto, ejecución y pagos por zona de obra.</p>
           </div>
         </div>
-      </section>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Sector</th>
+                <th>Ítems</th>
+                <th>Presupuestado</th>
+                <th>Ejec. teórico</th>
+                <th>Pagado</th>
+                <th>Avance</th>
+                <th>Saldo</th>
+              </tr>
+            </thead>
+            <tbody id="sectoresTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
 
-      <section id="configuracion" class="section">
-        <div class="card">
-          <div class="card-header">
+    <!-- ══════════════════════════════════════════ CONFIGURACIÓN ══ -->
+    <section id="configuracion" class="section">
+      <div class="config-section">
+        <div class="card" style="margin-bottom:14px;">
+          <div class="card-hd">
             <div>
-              <h3>Configuración técnica</h3>
-              <p>Datos necesarios para conectar el HTML con Apps Script y Google Sheets.</p>
+              <h3>Conexión con Apps Script</h3>
+              <p>Configurá la URL del Web App publicado en Google Apps Script.</p>
             </div>
           </div>
-
           <div class="form-grid">
             <div class="full">
               <label>URL del Apps Script Web App</label>
@@ -681,707 +668,935 @@
             <div>
               <label>Modo de datos</label>
               <select id="dataMode">
-                <option value="demo">Demo local</option>
                 <option value="api">Conectado a Apps Script</option>
+                <option value="demo">Demo local</option>
               </select>
             </div>
             <div>
               <label>Moneda</label>
-              <input id="currency" value="ARS" />
+              <input id="currency" value="ARS" style="max-width:120px;" />
             </div>
             <div>
               <label>Nombre del proyecto</label>
               <input id="projectName" value="Proyecto de construcción" />
             </div>
-            <div class="full">
-              <button class="btn-primary" onclick="saveSettings()">Guardar configuración</button>
-              <button class="btn-soft" onclick="loadData()">Probar carga de datos</button>
+            <div class="full" style="display:flex;gap:10px;flex-wrap:wrap;">
+              <button class="btn btn-primary" onclick="saveSettings()">Guardar configuración</button>
+              <button class="btn btn-soft" onclick="loadData()">↻ Probar conexión</button>
             </div>
           </div>
         </div>
-      </section>
-    </main>
-  </div>
 
-  <div id="itemModal" class="modal-backdrop">
-    <div class="modal">
-      <div class="modal-header">
-        <div>
-          <h3 id="itemModalTitle">Agregar gasto / ítem presupuestado</h3>
-          <p>Este registro define la base presupuestada del proyecto.</p>
-        </div>
-        <button class="btn-soft" onclick="closeModal('itemModal')">Cerrar</button>
-      </div>
-
-      <form id="itemForm" onsubmit="saveItem(event)">
-        <input type="hidden" id="itemId" />
-        <div class="form-grid">
-          <div>
-            <label>Tipo</label>
-            <select id="itemTipo" required>
-              <option value="Material">Material</option>
-              <option value="Mano de obra">Mano de obra</option>
-              <option value="Servicio">Servicio</option>
-              <option value="Otro">Otro</option>
-            </select>
-          </div>
-          <div>
-            <label>Sector de obra</label>
-            <select id="itemSector" required></select>
-          </div>
-          <div>
-            <label>Responsable / proveedor</label>
-            <input id="itemResponsable" list="responsablesList" required placeholder="Ej: Albañiles, Corralón..." />
-          </div>
-          <div class="full">
-            <label>Concepto o tarea</label>
-            <input id="itemConcepto" required placeholder="Ej: Cemento, Viga apeo, Instalación eléctrica..." />
-          </div>
-          <div>
-            <label>Unidad de medida</label>
-            <select id="itemUnidad" required>
-              <option>unidad</option>
-              <option>m2</option>
-              <option>m3</option>
-              <option>ml</option>
-              <option>kg</option>
-              <option>bolsa</option>
-              <option>jornal</option>
-              <option>global</option>
-            </select>
-          </div>
-          <div>
-            <label>Cantidad presupuestada</label>
-            <input id="itemCantidad" type="number" min="0" step="0.01" required oninput="updateItemTotalPreview()" />
-          </div>
-          <div>
-            <label>Costo unitario</label>
-            <input id="itemCosto" type="number" min="0" step="0.01" required oninput="updateItemTotalPreview()" />
-          </div>
-          <div>
-            <label>Total presupuestado</label>
-            <input id="itemTotalPreview" readonly />
-          </div>
-          <div class="full">
-            <label>Observación</label>
-            <textarea id="itemObservacion" rows="3" placeholder="Notas útiles para entender el gasto o tarea..."></textarea>
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn-soft" onclick="closeModal('itemModal')">Cancelar</button>
-          <button type="submit" class="btn-primary">Guardar ítem</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <div id="movimientoModal" class="modal-backdrop">
-    <div class="modal">
-      <div class="modal-header">
-        <div>
-          <h3 id="movimientoModalTitle">Registrar avance / pago</h3>
-          <p>Los avances y pagos se guardan como movimientos asociados a un ítem.</p>
-        </div>
-        <button class="btn-soft" onclick="closeModal('movimientoModal')">Cerrar</button>
-      </div>
-
-      <form id="movimientoForm" onsubmit="saveMovimiento(event)">
-        <input type="hidden" id="movimientoId" />
-        <div class="form-grid">
-          <div>
-            <label>Fecha</label>
-            <input id="movimientoFecha" type="date" required />
-          </div>
-          <div>
-            <label>Ítem asociado</label>
-            <select id="movimientoItem" required></select>
-          </div>
-          <div>
-            <label>Tipo de movimiento</label>
-            <select id="movimientoTipo" required>
-              <option value="Avance">Avance</option>
-              <option value="Pago">Pago</option>
-              <option value="Avance y pago">Avance y pago</option>
-              <option value="Ajuste">Ajuste</option>
-            </select>
-          </div>
-          <div>
-            <label>Cantidad ejecutada</label>
-            <input id="movimientoCantidad" type="number" min="0" step="0.01" value="0" oninput="syncAvanceFromCantidad()" />
-          </div>
-          <div>
-            <label>Avance a registrar (%)</label>
-            <input id="movimientoPorcentaje" type="number" min="0" max="100" step="0.01" value="0" oninput="syncCantidadFromAvance()" />
-          </div>
-          <div>
-            <label>Importe pagado</label>
-            <input id="movimientoImporte" type="number" min="0" step="0.01" value="0" />
-          </div>
-          <div>
-            <label>Responsable / a quién se paga</label>
-            <input id="movimientoResponsable" list="responsablesList" placeholder="Ej: Albañiles, Corralón..." />
-          </div>
-          <div class="full">
-            <label>Observación</label>
-            <textarea id="movimientoObservacion" rows="3" placeholder="Detalle del avance, pago o ajuste..."></textarea>
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn-soft" onclick="closeModal('movimientoModal')">Cancelar</button>
-          <button type="submit" class="btn-success">Guardar movimiento</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <datalist id="responsablesList"></datalist>
-
-  <script>
-    const state = {
-      settings: {
-        apiUrl: localStorage.getItem('pc_apiUrl') || 'https://script.google.com/macros/s/AKfycbw8HGma9yzO1aSS10IZKcKGkQQJB6i2P3BrKZINvJugDGa0PzdW0ZfXqOQTnGnUk4goOQ/exec',
-        dataMode: localStorage.getItem('pc_dataMode') || 'api',
-        currency: localStorage.getItem('pc_currency') || 'ARS',
-        projectName: localStorage.getItem('pc_projectName') || 'Proyecto de construcción'
-      },
-      sectores: ['Frente', 'Casa', 'Galería', 'Garaje'],
-      items: [],
-      movimientos: [],
-      charts: {}
-    };
-
-    const demoItems = [
-      { item_id: 'ITM001', tipo: 'Mano de obra', concepto: 'Viga de apeo', sector: 'Frente', responsable: 'Albañiles', unidad: 'ml', cantidad_presupuestada: 38, costo_unitario: 22000, observacion: 'Trabajo estructural frente' },
-      { item_id: 'ITM002', tipo: 'Material', concepto: 'Cemento', sector: 'Casa', responsable: 'Corralón', unidad: 'bolsa', cantidad_presupuestada: 80, costo_unitario: 6500, observacion: '' },
-      { item_id: 'ITM003', tipo: 'Mano de obra', concepto: 'Revoque interior', sector: 'Casa', responsable: 'Albañiles', unidad: 'm2', cantidad_presupuestada: 120, costo_unitario: 8500, observacion: '' },
-      { item_id: 'ITM004', tipo: 'Material', concepto: 'Hierro', sector: 'Galería', responsable: 'Proveedor hierro', unidad: 'kg', cantidad_presupuestada: 250, costo_unitario: 1800, observacion: '' },
-      { item_id: 'ITM005', tipo: 'Servicio', concepto: 'Instalación eléctrica', sector: 'Casa', responsable: 'Electricista', unidad: 'global', cantidad_presupuestada: 1, costo_unitario: 950000, observacion: '' }
-    ];
-
-    const demoMovimientos = [
-      { movimiento_id: 'MOV001', fecha: '2026-05-01', item_id: 'ITM001', tipo_movimiento: 'Avance', cantidad_ejecutada: 12, importe_pagado: 0, responsable: 'Albañiles', observacion: 'Primer avance frente' },
-      { movimiento_id: 'MOV002', fecha: '2026-05-02', item_id: 'ITM001', tipo_movimiento: 'Pago', cantidad_ejecutada: 0, importe_pagado: 250000, responsable: 'Albañiles', observacion: 'Pago parcial' },
-      { movimiento_id: 'MOV003', fecha: '2026-05-03', item_id: 'ITM002', tipo_movimiento: 'Avance y pago', cantidad_ejecutada: 20, importe_pagado: 130000, responsable: 'Corralón', observacion: 'Compra inicial cemento' },
-      { movimiento_id: 'MOV004', fecha: '2026-05-04', item_id: 'ITM003', tipo_movimiento: 'Avance', cantidad_ejecutada: 30, importe_pagado: 0, responsable: 'Albañiles', observacion: 'Revoque sector cocina' }
-    ];
-
-    document.addEventListener('DOMContentLoaded', () => {
-      bindNav();
-      hydrateSettings();
-      loadData();
-    });
-
-    function bindNav() {
-      document.querySelectorAll('.nav-button').forEach(btn => {
-        btn.addEventListener('click', () => {
-          document.querySelectorAll('.nav-button').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-
-          document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-          document.getElementById(btn.dataset.section).classList.add('active');
-
-          const titles = {
-            dashboard: ['Dashboard general', 'Resumen ejecutivo del presupuesto, avances físicos, pagos realizados y desvíos del proyecto.'],
-            presupuesto: ['Presupuesto de obra', 'Listado editable de materiales, mano de obra, servicios y otros gastos presupuestados.'],
-            movimientos: ['Avances y pagos', 'Registro histórico de cantidades ejecutadas, pagos realizados y ajustes.'],
-            responsables: ['Responsables y proveedores', 'Análisis por persona, equipo o proveedor asociado a la obra.'],
-            configuracion: ['Configuración', 'Parámetros técnicos de conexión y datos generales del proyecto.']
-          };
-
-          const [title, subtitle] = titles[btn.dataset.section];
-          document.getElementById('pageTitle').textContent = title;
-          document.getElementById('pageSubtitle').textContent = subtitle;
-        });
-      });
-    }
-
-    function hydrateSettings() {
-      document.getElementById('apiUrl').value = state.settings.apiUrl;
-      document.getElementById('dataMode').value = state.settings.dataMode;
-      document.getElementById('currency').value = state.settings.currency;
-      document.getElementById('projectName').value = state.settings.projectName;
-    }
-
-    function saveSettings() {
-      state.settings.apiUrl = document.getElementById('apiUrl').value.trim();
-      state.settings.dataMode = document.getElementById('dataMode').value;
-      state.settings.currency = document.getElementById('currency').value.trim() || 'ARS';
-      state.settings.projectName = document.getElementById('projectName').value.trim() || 'Proyecto de construcción';
-
-      Object.entries(state.settings).forEach(([key, value]) => localStorage.setItem(`pc_${key}`, value));
-      alert('Configuración guardada correctamente.');
-    }
-
-    async function loadData() {
-      state.settings.apiUrl = document.getElementById('apiUrl')?.value.trim() || state.settings.apiUrl;
-      state.settings.dataMode = document.getElementById('dataMode')?.value || state.settings.dataMode;
-      state.settings.currency = document.getElementById('currency')?.value.trim() || state.settings.currency;
-      state.settings.projectName = document.getElementById('projectName')?.value.trim() || state.settings.projectName;
-
-      if (state.settings.dataMode === 'api' && state.settings.apiUrl) {
-        try {
-          const url = `${state.settings.apiUrl}?action=getInitialData`;
-          const res = await fetch(url);
-          const response = await res.json();
-          if (!response.ok) throw new Error(response.error || 'Error desconocido al leer Apps Script.');
-          const data = response.data || {};
-          state.items = data.items || [];
-          state.movimientos = data.movimientos || [];
-          state.sectores = data.sectores || state.sectores;
-        } catch (error) {
-          console.warn('No se pudo conectar con Apps Script. Se cargan datos demo.', error);
-          state.items = structuredClone(demoItems);
-          state.movimientos = structuredClone(demoMovimientos);
-        }
-      } else {
-        const localItems = localStorage.getItem('pc_demo_items');
-        const localMovimientos = localStorage.getItem('pc_demo_movimientos');
-        state.items = localItems ? JSON.parse(localItems) : structuredClone(demoItems);
-        state.movimientos = localMovimientos ? JSON.parse(localMovimientos) : structuredClone(demoMovimientos);
-      }
-
-      renderAll();
-    }
-
-    function renderAll() {
-      renderSelects();
-      renderDashboard();
-      renderPresupuesto();
-      renderMovimientos();
-      renderResponsables();
-    }
-
-    function renderSelects() {
-      const sectorOptions = ['<option value="">Todos los sectores</option>', ...state.sectores.map(s => `<option>${s}</option>`)].join('');
-      document.getElementById('filterSector').innerHTML = sectorOptions;
-      document.getElementById('itemSector').innerHTML = state.sectores.map(s => `<option>${s}</option>`).join('');
-      document.getElementById('movimientoItem').innerHTML = state.items.map(i => `<option value="${i.item_id}">${i.concepto} · ${i.sector}</option>`).join('');
-
-      const responsables = [...new Set([
-        ...state.items.map(i => i.responsable),
-        ...state.movimientos.map(m => m.responsable)
-      ].filter(Boolean))];
-      document.getElementById('responsablesList').innerHTML = responsables.map(r => `<option value="${r}"></option>`).join('');
-    }
-
-    function enrichItem(item) {
-      const movimientos = state.movimientos.filter(m => m.item_id === item.item_id);
-      const cantidadEjecutada = movimientos.reduce((acc, m) => acc + Number(m.cantidad_ejecutada || 0), 0);
-      const totalPagado = movimientos.reduce((acc, m) => acc + Number(m.importe_pagado || 0), 0);
-      const totalPresupuestado = Number(item.cantidad_presupuestada || 0) * Number(item.costo_unitario || 0);
-      const avance = Number(item.cantidad_presupuestada || 0) > 0 ? Math.min((cantidadEjecutada / Number(item.cantidad_presupuestada)) * 100, 100) : 0;
-      const costoEjecutado = cantidadEjecutada * Number(item.costo_unitario || 0);
-      const desvio = totalPagado - costoEjecutado;
-
-      return { ...item, cantidadEjecutada, totalPagado, totalPresupuestado, avance, costoEjecutado, desvio };
-    }
-
-    function getResumen() {
-      const enriched = state.items.map(enrichItem);
-      const totalPresupuestado = enriched.reduce((acc, i) => acc + i.totalPresupuestado, 0);
-      const totalEjecutado = enriched.reduce((acc, i) => acc + i.costoEjecutado, 0);
-      const totalPagado = enriched.reduce((acc, i) => acc + i.totalPagado, 0);
-      const avanceGeneral = totalPresupuestado > 0 ? (totalEjecutado / totalPresupuestado) * 100 : 0;
-      return { enriched, totalPresupuestado, totalEjecutado, totalPagado, avanceGeneral };
-    }
-
-    function renderDashboard() {
-      const { enriched, totalPresupuestado, totalEjecutado, totalPagado, avanceGeneral } = getResumen();
-
-      document.getElementById('kpiPresupuesto').textContent = money(totalPresupuestado);
-      document.getElementById('kpiEjecutado').textContent = money(totalEjecutado);
-      document.getElementById('kpiPagado').textContent = money(totalPagado);
-      document.getElementById('kpiAvance').textContent = `${avanceGeneral.toFixed(1)}%`;
-      document.getElementById('kpiSaldo').textContent = money(totalPresupuestado - totalPagado);
-      document.getElementById('kpiDesvio').textContent = money(totalPagado - totalEjecutado);
-
-      renderChartGeneral(totalPresupuestado, totalEjecutado, totalPagado);
-      renderChartTipo(enriched);
-      renderAvanceSectores(enriched);
-      renderGastosRecientes();
-    }
-
-    function renderChartGeneral(presupuestado, ejecutado, pagado) {
-      const ctx = document.getElementById('chartGeneral');
-      if (state.charts.general) state.charts.general.destroy();
-      state.charts.general = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: ['Presupuestado', 'Ejecutado teórico', 'Pagado'],
-          datasets: [{ data: [presupuestado, ejecutado, pagado] }]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: false } },
-          scales: { y: { ticks: { callback: value => money(value) } } }
-        }
-      });
-    }
-
-    function renderChartTipo(items) {
-      const grouped = groupSum(items, 'tipo', 'totalPresupuestado');
-      const ctx = document.getElementById('chartTipo');
-      if (state.charts.tipo) state.charts.tipo.destroy();
-      state.charts.tipo = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          labels: Object.keys(grouped),
-          datasets: [{ data: Object.values(grouped) }]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { position: 'bottom' } }
-        }
-      });
-    }
-
-    function renderAvanceSectores(items) {
-      const sectores = {};
-      items.forEach(item => {
-        if (!sectores[item.sector]) sectores[item.sector] = { presupuestado: 0, ejecutado: 0 };
-        sectores[item.sector].presupuestado += item.totalPresupuestado;
-        sectores[item.sector].ejecutado += item.costoEjecutado;
-      });
-
-      const html = Object.entries(sectores).map(([sector, data]) => {
-        const avance = data.presupuestado > 0 ? (data.ejecutado / data.presupuestado) * 100 : 0;
-        return `
-          <div style="margin-bottom:16px;">
-            <div style="display:flex;justify-content:space-between;gap:12px;margin-bottom:8px;">
-              <strong>${sector}</strong>
-              <span style="color:var(--muted);font-size:13px;">${avance.toFixed(1)}%</span>
-            </div>
-            <div class="progress" style="width:100%;height:11px;"><span style="width:${Math.min(avance, 100)}%"></span></div>
-            <div style="color:var(--muted);font-size:12px;margin-top:6px;">Ejecutado ${money(data.ejecutado)} de ${money(data.presupuestado)}</div>
-          </div>
-        `;
-      }).join('');
-
-      document.getElementById('avanceSectores').innerHTML = html || '<div class="empty">Sin datos por sector.</div>';
-    }
-
-    function renderGastosRecientes() {
-      const recientes = [...state.movimientos]
-        .sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
-        .slice(0, 6);
-
-      const html = recientes.map(m => {
-        const item = state.items.find(i => i.item_id === m.item_id);
-        return `
-          <div style="display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--border);padding:11px 0;">
+        <div class="card">
+          <div class="card-hd">
             <div>
-              <strong>${item?.concepto || 'Ítem eliminado'}</strong>
-              <div style="font-size:12px;color:var(--muted);">${formatDate(m.fecha)} · ${m.tipo_movimiento}</div>
-            </div>
-            <div style="text-align:right;">
-              <strong>${money(Number(m.importe_pagado || 0))}</strong>
-              <div style="font-size:12px;color:var(--muted);">${m.responsable || '-'}</div>
+              <h3>Mantenimiento de datos</h3>
+              <p>Herramientas para corregir datos y forzar recálculos.</p>
             </div>
           </div>
-        `;
-      }).join('');
-
-      document.getElementById('gastosRecientes').innerHTML = html || '<div class="empty">Todavía no hay movimientos registrados.</div>';
-    }
-
-    function renderPresupuesto() {
-      const search = document.getElementById('filterSearch')?.value?.toLowerCase() || '';
-      const tipo = document.getElementById('filterTipo')?.value || '';
-      const sector = document.getElementById('filterSector')?.value || '';
-      const estado = document.getElementById('filterEstado')?.value || '';
-
-      let rows = state.items.map(enrichItem).filter(item => {
-        const itemEstado = item.avance === 0 ? 'pendiente' : item.avance >= 100 ? 'finalizado' : 'en_curso';
-        const text = `${item.concepto} ${item.sector} ${item.responsable}`.toLowerCase();
-        return (!search || text.includes(search)) &&
-          (!tipo || item.tipo === tipo) &&
-          (!sector || item.sector === sector) &&
-          (!estado || itemEstado === estado);
-      });
-
-      document.getElementById('presupuestoTable').innerHTML = rows.map(item => `
-        <tr>
-          <td>${typeBadge(item.tipo)}</td>
-          <td><strong>${item.concepto}</strong></td>
-          <td>${item.sector}</td>
-          <td>${item.responsable || '-'}</td>
-          <td>${item.unidad}</td>
-          <td>${number(item.cantidad_presupuestada)}</td>
-          <td>${number(item.cantidadEjecutada)}</td>
-          <td>
-            <div class="progress-wrap">
-              <div class="progress"><span style="width:${Math.min(item.avance, 100)}%"></span></div>
-              <span>${item.avance.toFixed(1)}%</span>
+          <div style="display:grid;gap:10px;">
+            <div>
+              <button class="btn btn-soft" onclick="runRebuild()">↻ Recalcular resumen (rebuildResumen)</button>
+              <p style="font-size:12px;color:var(--muted);margin-top:6px;">Recalcula Resumen_Items y Dashboard en Sheets sin modificar datos.</p>
             </div>
-          </td>
-          <td>${money(item.costo_unitario)}</td>
-          <td><strong>${money(item.totalPresupuestado)}</strong></td>
-          <td>${money(item.totalPagado)}</td>
-          <td>
-            <div class="action-cell">
-              <button class="mini-btn btn-soft" onclick="openItemModal('${item.item_id}')">Editar</button>
-              <button class="mini-btn btn-success" onclick="openMovimientoModal('${item.item_id}')">Movimiento</button>
-              <button class="mini-btn btn-danger" onclick="deleteItem('${item.item_id}')">Eliminar</button>
+            <div>
+              <button class="btn btn-danger-soft" onclick="runMigration()">⚠ Migrar pagos huérfanos</button>
+              <p style="font-size:12px;color:var(--muted);margin-top:6px;">Asigna los pagos sin item_id a ítems globales por responsable. Ejecutar una sola vez si venís de la v2.</p>
+              <div id="migrationResult"></div>
             </div>
-          </td>
-        </tr>
-      `).join('') || `<tr><td colspan="12"><div class="empty">No hay ítems para mostrar.</div></td></tr>`;
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ══════════════════════════════════════════ MODAL ÍTEM ══ -->
+<div id="itemModal" class="modal-backdrop">
+  <div class="modal">
+    <div class="modal-hd">
+      <div>
+        <h3 id="itemModalTitle">Agregar ítem presupuestado</h3>
+        <p>Define la base presupuestada. El avance se registra luego como movimientos.</p>
+      </div>
+      <button class="btn btn-soft btn-sm" onclick="closeModal('itemModal')">✕ Cerrar</button>
+    </div>
+
+    <form id="itemForm" onsubmit="saveItem(event)">
+      <input type="hidden" id="itemId" />
+      <div class="form-grid">
+        <div>
+          <label>Tipo *</label>
+          <select id="itemTipo" required>
+            <option value="Material">Material</option>
+            <option value="Mano de obra">Mano de obra</option>
+            <option value="Servicio">Servicio</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+        <div>
+          <label>Sector de obra *</label>
+          <select id="itemSector" required></select>
+        </div>
+        <div>
+          <label>Responsable / proveedor *</label>
+          <input id="itemResponsable" list="responsablesList" required placeholder="Albañiles, Corralón..." />
+        </div>
+        <div class="full">
+          <label>Concepto o tarea *</label>
+          <input id="itemConcepto" required placeholder="Cemento, Viga apeo, Instalación eléctrica..." />
+        </div>
+        <div class="form-section-title">Cantidades y costos</div>
+        <div>
+          <label>Unidad de medida *</label>
+          <select id="itemUnidad" required>
+            <option>unidad</option><option>m2</option><option>m3</option>
+            <option>ml</option><option>kg</option><option>bolsa</option>
+            <option>jornal</option><option>global</option><option>viaje</option>
+            <option>barra</option><option>paño</option>
+          </select>
+        </div>
+        <div>
+          <label>Cantidad presupuestada *</label>
+          <input id="itemCantidad" type="number" min="0" step="0.01" required oninput="updateItemTotalPreview()" />
+        </div>
+        <div>
+          <label>Costo unitario *</label>
+          <input id="itemCosto" type="number" min="0" step="0.01" required oninput="updateItemTotalPreview()" />
+        </div>
+        <div>
+          <label>Total presupuestado</label>
+          <input id="itemTotalPreview" readonly style="background:var(--panel-soft);font-family:'DM Mono',monospace;" />
+        </div>
+        <div class="full">
+          <label>Observación</label>
+          <textarea id="itemObservacion" rows="2" placeholder="Notas útiles..."></textarea>
+        </div>
+      </div>
+      <div class="modal-ft">
+        <button type="button" class="btn btn-soft" onclick="closeModal('itemModal')">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Guardar ítem</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ MODAL MOVIMIENTO ══ -->
+<div id="movimientoModal" class="modal-backdrop">
+  <div class="modal">
+    <div class="modal-hd">
+      <div>
+        <h3 id="movimientoModalTitle">Registrar avance / pago</h3>
+        <p>Asociá el movimiento a un ítem. Para pagos globales (cuotas de MO sin ítem específico), dejá el ítem en blanco.</p>
+      </div>
+      <button class="btn btn-soft btn-sm" onclick="closeModal('movimientoModal')">✕ Cerrar</button>
+    </div>
+
+    <form id="movimientoForm" onsubmit="saveMovimiento(event)">
+      <input type="hidden" id="movimientoId" />
+      <div class="form-grid">
+        <div>
+          <label>Fecha *</label>
+          <input id="movimientoFecha" type="date" required />
+        </div>
+        <div>
+          <label>Tipo de movimiento *</label>
+          <select id="movimientoTipo" required>
+            <option value="Avance">Avance (sin pago)</option>
+            <option value="Pago">Pago (sin avance físico)</option>
+            <option value="Avance y pago">Avance y pago</option>
+            <option value="Ajuste">Ajuste / corrección</option>
+          </select>
+        </div>
+        <div>
+          <label>Ítem asociado</label>
+          <select id="movimientoItem">
+            <option value="">— Pago global (sin ítem) —</option>
+          </select>
+        </div>
+
+        <div class="form-section-title">Cantidad ejecutada y pago</div>
+
+        <div>
+          <label>Cantidad ejecutada</label>
+          <input id="movimientoCantidad" type="number" min="0" step="0.01" value="0" oninput="syncAvanceFromCantidad()" />
+        </div>
+        <div>
+          <label>Avance a registrar (%)</label>
+          <input id="movimientoPorcentaje" type="number" min="0" max="100" step="0.01" value="0" oninput="syncCantidadFromAvance()" />
+        </div>
+        <div>
+          <label>Importe pagado</label>
+          <input id="movimientoImporte" type="number" min="0" step="0.01" value="0" />
+        </div>
+        <div>
+          <label>Medio de pago</label>
+          <select id="movimientoMedioPago">
+            <option value="">— sin especificar —</option>
+            <option>Efectivo</option>
+            <option>Transferencia</option>
+            <option>Cheque</option>
+            <option>Tarjeta</option>
+          </select>
+        </div>
+        <div>
+          <label>Responsable / a quién se paga</label>
+          <input id="movimientoResponsable" list="responsablesList" placeholder="Albañiles, Corralón..." />
+        </div>
+        <div>
+          <label>Sector (si es pago global)</label>
+          <select id="movimientoSector"></select>
+        </div>
+        <div class="full">
+          <label>Observación</label>
+          <textarea id="movimientoObservacion" rows="2" placeholder="Detalle del avance, pago o ajuste..."></textarea>
+        </div>
+      </div>
+      <div class="modal-ft">
+        <button type="button" class="btn btn-soft" onclick="closeModal('movimientoModal')">Cancelar</button>
+        <button type="submit" class="btn btn-mo">Guardar movimiento</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<datalist id="responsablesList"></datalist>
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   STATE & SETTINGS
+══════════════════════════════════════════════════════════ */
+const state = {
+  settings: {
+    apiUrl:      localStorage.getItem('pc_apiUrl')      || 'https://script.google.com/macros/s/AKfycbw8HGma9yzO1aSS10IZKcKGkQQJB6i2P3BrKZINvJugDGa0PzdW0ZfXqOQTnGnUk4goOQ/exec',
+    dataMode:    localStorage.getItem('pc_dataMode')    || 'api',
+    currency:    localStorage.getItem('pc_currency')    || 'ARS',
+    projectName: localStorage.getItem('pc_projectName') || 'Proyecto de construcción',
+  },
+  sectores: ['Frente', 'Casa', 'Galería', 'Garaje', 'General'],
+  items: [], movimientos: [], charts: {}
+};
+
+/* ── DEMO DATA ── */
+const DEMO_ITEMS = [
+  { item_id:'ITM0026', tipo:'Mano de obra', concepto:'2 Portones + Puerta (MO)', sector:'Frente', responsable:'Albañiles', unidad:'unid', cantidad_presupuestada:1,  costo_unitario:1160000 },
+  { item_id:'ITM0027', tipo:'Mano de obra', concepto:'Viga Apeo',                sector:'Frente', responsable:'Albañiles', unidad:'ml',   cantidad_presupuestada:38, costo_unitario:22000  },
+  { item_id:'ITM0028', tipo:'Mano de obra', concepto:'Encadenado',               sector:'Frente', responsable:'Albañiles', unidad:'ml',   cantidad_presupuestada:40, costo_unitario:18000  },
+  { item_id:'ITM0001', tipo:'Material',     concepto:'2 Portones + Puerta',      sector:'General',responsable:'Corralón',  unidad:'unid', cantidad_presupuestada:1,  costo_unitario:1800000},
+  { item_id:'ITM0002', tipo:'Material',     concepto:'Ripio y arena',            sector:'General',responsable:'Corralón',  unidad:'viaje',cantidad_presupuestada:1,  costo_unitario:170000 },
+];
+const DEMO_MOVS = [
+  { movimiento_id:'MOV001', fecha:'2026-05-01', item_id:'ITM0026', tipo_movimiento:'Avance y pago', cantidad_ejecutada:1,  importe_pagado:1160000, responsable:'Albañiles', sector:'Frente', medio_pago:'Efectivo', observacion:'' },
+  { movimiento_id:'MOV002', fecha:'2026-05-08', item_id:'ITM0027', tipo_movimiento:'Avance',        cantidad_ejecutada:38, importe_pagado:0,       responsable:'Albañiles', sector:'Frente', medio_pago:'', observacion:'Viga completada' },
+  { movimiento_id:'MOV003', fecha:'2026-05-08', item_id:'ITM0027', tipo_movimiento:'Pago',          cantidad_ejecutada:0,  importe_pagado:836000,  responsable:'Albañiles', sector:'Frente', medio_pago:'Transferencia', observacion:'Pago viga' },
+  { movimiento_id:'MOV004', fecha:'2026-05-12', item_id:'ITM0028', tipo_movimiento:'Avance',        cantidad_ejecutada:24, importe_pagado:0,       responsable:'Albañiles', sector:'Frente', medio_pago:'', observacion:'60% encadenado' },
+  { movimiento_id:'MOV005', fecha:'2026-05-01', item_id:'ITM0001', tipo_movimiento:'Avance y pago', cantidad_ejecutada:1,  importe_pagado:1800000, responsable:'Corralón',  sector:'General',medio_pago:'Transferencia', observacion:'' },
+];
+
+/* ══════════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  bindNav();
+  hydrateSettings();
+  loadData();
+});
+
+function bindNav() {
+  const titles = {
+    dashboard:     ['Dashboard', 'Resumen ejecutivo del presupuesto, avances físicos, pagos y desvíos del proyecto.'],
+    presupuesto:   ['Presupuesto de obra', 'Listado de materiales, mano de obra, servicios y otros gastos presupuestados.'],
+    movimientos:   ['Avances y pagos', 'Registro histórico de cantidades ejecutadas, pagos realizados y ajustes.'],
+    responsables:  ['Responsables y proveedores', 'Análisis por persona, empresa o proveedor.'],
+    sectores:      ['Avance por sector', 'Desglose financiero y de avance por zona de obra.'],
+    configuracion: ['Configuración', 'Parámetros de conexión y mantenimiento.'],
+  };
+
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById(btn.dataset.section).classList.add('active');
+      const [t, s] = titles[btn.dataset.section] || ['', ''];
+      document.getElementById('pageTitle').textContent = t;
+      document.getElementById('pageSubtitle').textContent = s;
+    });
+  });
+}
+
+function hydrateSettings() {
+  document.getElementById('apiUrl').value      = state.settings.apiUrl;
+  document.getElementById('dataMode').value    = state.settings.dataMode;
+  document.getElementById('currency').value    = state.settings.currency;
+  document.getElementById('projectName').value = state.settings.projectName;
+}
+
+function saveSettings() {
+  state.settings.apiUrl      = document.getElementById('apiUrl').value.trim();
+  state.settings.dataMode    = document.getElementById('dataMode').value;
+  state.settings.currency    = document.getElementById('currency').value.trim() || 'ARS';
+  state.settings.projectName = document.getElementById('projectName').value.trim() || 'Proyecto de construcción';
+  Object.entries(state.settings).forEach(([k, v]) => localStorage.setItem(`pc_${k}`, v));
+  alert('Configuración guardada.');
+}
+
+/* ══════════════════════════════════════════════════════════
+   DATA LOAD
+══════════════════════════════════════════════════════════ */
+async function loadData() {
+  state.settings.apiUrl   = document.getElementById('apiUrl')?.value.trim()   || state.settings.apiUrl;
+  state.settings.dataMode = document.getElementById('dataMode')?.value         || state.settings.dataMode;
+  state.settings.currency = document.getElementById('currency')?.value.trim() || state.settings.currency;
+
+  if (state.settings.dataMode === 'api' && state.settings.apiUrl) {
+    try {
+      const res  = await fetch(`${state.settings.apiUrl}?action=getInitialData`);
+      const json = await res.json();
+      if (!json.ok) throw new Error(json.error || 'Error en Apps Script');
+      const d = json.data || {};
+      state.items       = d.items       || [];
+      state.movimientos = d.movimientos || [];
+      state.sectores    = d.sectores    || state.sectores;
+      document.getElementById('lastSync').textContent = 'Sync: ' + new Date().toLocaleTimeString('es-AR');
+    } catch(e) {
+      console.warn('Fallback a demo:', e);
+      state.items       = structuredClone(DEMO_ITEMS);
+      state.movimientos = structuredClone(DEMO_MOVS);
+      document.getElementById('lastSync').textContent = 'Demo local';
     }
+  } else {
+    const li = localStorage.getItem('pc_demo_items');
+    const lm = localStorage.getItem('pc_demo_movs');
+    state.items       = li ? JSON.parse(li) : structuredClone(DEMO_ITEMS);
+    state.movimientos = lm ? JSON.parse(lm) : structuredClone(DEMO_MOVS);
+  }
 
-    function renderMovimientos() {
-      const rows = [...state.movimientos].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-      document.getElementById('movimientosTable').innerHTML = rows.map(m => {
-        const item = state.items.find(i => i.item_id === m.item_id);
-        return `
-          <tr>
-            <td>${formatDate(m.fecha)}</td>
-            <td><strong>${item?.concepto || 'Ítem eliminado'}</strong></td>
-            <td>${m.tipo_movimiento}</td>
-            <td>${number(m.cantidad_ejecutada)}</td>
-            <td>${money(m.importe_pagado)}</td>
-            <td>${m.responsable || '-'}</td>
-            <td>${m.observacion || '-'}</td>
-            <td>
-              <div class="action-cell">
-                <button class="mini-btn btn-soft" onclick="openMovimientoModal(null, '${m.movimiento_id}')">Editar</button>
-                <button class="mini-btn btn-danger" onclick="deleteMovimiento('${m.movimiento_id}')">Eliminar</button>
-              </div>
-            </td>
-          </tr>
-        `;
-      }).join('') || `<tr><td colspan="8"><div class="empty">Todavía no hay movimientos registrados.</div></td></tr>`;
+  renderAll();
+}
+
+async function sendToApi(action, payload) {
+  if (state.settings.dataMode !== 'api' || !state.settings.apiUrl) return null;
+  try {
+    await fetch(state.settings.apiUrl, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action, payload })
+    });
+  } catch(e) { console.warn('API send error:', e); }
+}
+
+function persistDemo() {
+  if (state.settings.dataMode !== 'demo') return;
+  localStorage.setItem('pc_demo_items', JSON.stringify(state.items));
+  localStorage.setItem('pc_demo_movs',  JSON.stringify(state.movimientos));
+}
+
+/* ══════════════════════════════════════════════════════════
+   RENDER ALL
+══════════════════════════════════════════════════════════ */
+function renderAll() {
+  renderSelects();
+  renderDashboard();
+  renderPresupuesto();
+  renderMovimientos();
+  renderResponsables();
+  renderSectoresTab();
+}
+
+function renderSelects() {
+  const secOpts = ['<option value="">Todos los sectores</option>', ...state.sectores.map(s => `<option>${s}</option>`)].join('');
+  document.getElementById('filterSector').innerHTML = secOpts;
+  document.getElementById('itemSector').innerHTML   = state.sectores.map(s => `<option>${s}</option>`).join('');
+  document.getElementById('movimientoSector').innerHTML = ['<option value="">General</option>', ...state.sectores.map(s => `<option>${s}</option>`)].join('');
+
+  const movItems = ['<option value="">— Pago global (sin ítem) —</option>',
+    ...state.items.map(i => `<option value="${i.item_id}">${i.concepto} · ${i.sector}</option>`)
+  ].join('');
+  document.getElementById('movimientoItem').innerHTML = movItems;
+
+  const responsables = [...new Set([
+    ...state.items.map(i => i.responsable),
+    ...state.movimientos.map(m => m.responsable)
+  ].filter(Boolean))];
+  document.getElementById('responsablesList').innerHTML = responsables.map(r => `<option value="${r}"></option>`).join('');
+}
+
+/* ══════════════════════════════════════════════════════════
+   ENRICH
+══════════════════════════════════════════════════════════ */
+function enrichItem(item) {
+  const movs          = state.movimientos.filter(m => m.item_id === item.item_id);
+  const cantEjec      = movs.reduce((a, m) => a + n(m.cantidad_ejecutada), 0);
+  const totalPagado   = movs.reduce((a, m) => a + n(m.importe_pagado), 0);
+  const cantPresup    = n(item.cantidad_presupuestada);
+  const costoUnit     = n(item.costo_unitario);
+  const totalPresup   = cantPresup * costoUnit;
+  const avance        = cantPresup > 0 ? Math.min((cantEjec / cantPresup) * 100, 100) : 0;
+  const costoEjec     = cantEjec * costoUnit;
+  const desvio        = totalPagado - costoEjec;
+
+  return { ...item, cantEjec, totalPagado, totalPresup, avance, costoEjec, desvio };
+}
+
+function getResumen() {
+  const enriched = state.items.map(enrichItem);
+  // Pagos globales (movimientos sin item_id)
+  const globalPagos = state.movimientos
+    .filter(m => !m.item_id || m.item_id === '')
+    .reduce((a, m) => a + n(m.importe_pagado), 0);
+
+  const totalPresup   = enriched.reduce((a, i) => a + i.totalPresup, 0);
+  const totalEjecutado = enriched.reduce((a, i) => a + i.costoEjec, 0);
+  const totalPagadoItems = enriched.reduce((a, i) => a + i.totalPagado, 0);
+  const totalPagado   = totalPagadoItems + globalPagos;
+  const avanceGeneral = totalPresup > 0 ? (totalEjecutado / totalPresup) * 100 : 0;
+
+  // Por tipo
+  const porTipo = {};
+  enriched.forEach(i => {
+    const k = i.tipo || 'Otro';
+    if (!porTipo[k]) porTipo[k] = { presup: 0, ejec: 0, pagado: 0 };
+    porTipo[k].presup  += i.totalPresup;
+    porTipo[k].ejec    += i.costoEjec;
+    porTipo[k].pagado  += i.totalPagado;
+  });
+
+  return { enriched, totalPresup, totalEjecutado, totalPagado, avanceGeneral, porTipo, globalPagos };
+}
+
+/* ══════════════════════════════════════════════════════════
+   DASHBOARD
+══════════════════════════════════════════════════════════ */
+function renderDashboard() {
+  const { enriched, totalPresup, totalEjecutado, totalPagado, avanceGeneral, porTipo, globalPagos } = getResumen();
+  const desvio = totalPagado - totalEjecutado;
+
+  document.getElementById('kpiPresupuesto').textContent = money(totalPresup);
+  document.getElementById('kpiEjecutado').textContent   = money(totalEjecutado);
+  document.getElementById('kpiPagado').textContent      = money(totalPagado);
+  document.getElementById('kpiAvance').textContent      = `${avanceGeneral.toFixed(1)}%`;
+  document.getElementById('kpiSaldo').textContent       = money(totalPresup - totalPagado);
+  document.getElementById('kpiDesvio').textContent      = money(desvio);
+
+  const desvioCard = document.getElementById('kpiDesvioCard');
+  desvioCard.classList.remove('accent-ok','accent-warn');
+  if (desvio < -50000) desvioCard.classList.add('accent-warn'); // pagaste menos del avance
+  else if (desvio > 50000) desvioCard.classList.add('accent-warn'); // pagaste más del avance
+  else desvioCard.classList.add('accent-ok');
+
+  renderTipoCards(porTipo, globalPagos);
+  renderChartGeneral(totalPresup, totalEjecutado, totalPagado);
+  renderChartTipo(porTipo);
+  renderAvanceSectores(enriched);
+  renderGastosRecientes();
+}
+
+function renderTipoCards(porTipo, globalPagos) {
+  const mo  = porTipo['Mano de obra'] || { presup:0, ejec:0, pagado:0 };
+  const mat = porTipo['Material']     || { presup:0, ejec:0, pagado:0 };
+  const moAvance  = mo.presup  > 0 ? (mo.ejec  / mo.presup)  * 100 : 0;
+  const matAvance = mat.presup > 0 ? (mat.ejec / mat.presup) * 100 : 0;
+  const moDesvio  = mo.pagado  - mo.ejec;
+  const matDesvio = mat.pagado - mat.ejec;
+
+  document.getElementById('tipoCards').innerHTML = `
+    <div class="tipo-card mo">
+      <div class="tipo-header">
+        <div class="tipo-title">🧱 Mano de obra</div>
+        <div class="tipo-badge mo">${moAvance.toFixed(1)}% avance</div>
+      </div>
+      <div class="tipo-rows">
+        <div class="tipo-row"><span class="label">Presupuestado</span><span class="val">${money(mo.presup)}</span></div>
+        <div class="tipo-row"><span class="label">Ejec. teórico</span><span class="val">${money(mo.ejec)}</span></div>
+        <div class="tipo-row"><span class="label">Pagado</span><span class="val">${money(mo.pagado)}</span></div>
+        ${globalPagos > 0 ? `<div class="tipo-row"><span class="label">Pagos globales</span><span class="val">${money(globalPagos)}</span></div>` : ''}
+        <div class="tipo-row"><span class="label">Desvío pago/avance</span><span class="val ${moDesvio > 5000 ? 'danger' : moDesvio < -5000 ? 'danger' : 'ok'}">${money(moDesvio)}</span></div>
+      </div>
+      <div class="tipo-progress"><span class="mo" style="width:${Math.min(moAvance,100)}%"></span></div>
+    </div>
+
+    <div class="tipo-card mat">
+      <div class="tipo-header">
+        <div class="tipo-title">📦 Materiales</div>
+        <div class="tipo-badge mat">${matAvance.toFixed(1)}% avance</div>
+      </div>
+      <div class="tipo-rows">
+        <div class="tipo-row"><span class="label">Presupuestado</span><span class="val">${money(mat.presup)}</span></div>
+        <div class="tipo-row"><span class="label">Ejec. teórico</span><span class="val">${money(mat.ejec)}</span></div>
+        <div class="tipo-row"><span class="label">Pagado</span><span class="val">${money(mat.pagado)}</span></div>
+        <div class="tipo-row"><span class="label">Desvío pago/avance</span><span class="val ${matDesvio > 5000 ? 'danger' : matDesvio < -5000 ? 'danger' : 'ok'}">${money(matDesvio)}</span></div>
+      </div>
+      <div class="tipo-progress"><span class="mat" style="width:${Math.min(matAvance,100)}%"></span></div>
+    </div>
+  `;
+}
+
+function renderChartGeneral(presup, ejec, pagado) {
+  const ctx = document.getElementById('chartGeneral');
+  if (state.charts.general) state.charts.general.destroy();
+  state.charts.general = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Presupuestado', 'Ejec. teórico', 'Pagado'],
+      datasets: [{
+        data: [presup, ejec, pagado],
+        backgroundColor: ['#dbeafe','#ede9fe','#dcfce7'],
+        borderColor:     ['#3b82f6','#7c3aed','#16a34a'],
+        borderWidth: 1.5, borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: { y: { ticks: { callback: v => money(v) }, grid: { color: '#f3f4f6' } } }
     }
+  });
+}
 
-    function renderResponsables() {
-      const resumen = {};
-      state.items.map(enrichItem).forEach(item => {
-        const key = item.responsable || 'Sin responsable';
-        if (!resumen[key]) resumen[key] = { presupuestado: 0, pagado: 0, ejecutado: 0 };
-        resumen[key].presupuestado += item.totalPresupuestado;
-        resumen[key].pagado += item.totalPagado;
-        resumen[key].ejecutado += item.costoEjecutado;
-      });
+function renderChartTipo(porTipo) {
+  const labels = Object.keys(porTipo);
+  const data   = labels.map(k => porTipo[k].presup);
+  const colors = ['#7c3aed','#0284c7','#d97706','#6b7280'];
+  const ctx    = document.getElementById('chartTipo');
+  if (state.charts.tipo) state.charts.tipo.destroy();
+  state.charts.tipo = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data, backgroundColor: colors.slice(0, labels.length), borderWidth: 0 }] },
+    options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } }, cutout: '65%' }
+  });
+}
 
-      const html = `
-        <table>
-          <thead><tr><th>Responsable</th><th>Presupuestado</th><th>Ejecutado</th><th>Pagado</th></tr></thead>
-          <tbody>
-            ${Object.entries(resumen).map(([r, d]) => `
-              <tr>
-                <td><strong>${r}</strong></td>
-                <td>${money(d.presupuestado)}</td>
-                <td>${money(d.ejecutado)}</td>
-                <td>${money(d.pagado)}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      `;
-      document.getElementById('responsablesResumen').innerHTML = Object.keys(resumen).length ? html : '<div class="empty">Sin responsables registrados.</div>';
+function renderAvanceSectores(enriched) {
+  const sectores = {};
+  enriched.forEach(item => {
+    if (!sectores[item.sector]) sectores[item.sector] = { presup: 0, ejec: 0, pagado: 0 };
+    sectores[item.sector].presup  += item.totalPresup;
+    sectores[item.sector].ejec    += item.costoEjec;
+    sectores[item.sector].pagado  += item.totalPagado;
+  });
+
+  const html = Object.entries(sectores).map(([sector, d]) => {
+    const avance = d.presup > 0 ? (d.ejec / d.presup) * 100 : 0;
+    return `
+      <div class="sector-item">
+        <div class="sector-row">
+          <span class="sector-name">${sector}</span>
+          <span class="sector-pct">${avance.toFixed(1)}%</span>
+        </div>
+        <div class="sector-bar"><span style="width:${Math.min(avance,100)}%"></span></div>
+        <div class="sector-meta">Ejec. ${money(d.ejec)} · Pagado ${money(d.pagado)} de ${money(d.presup)}</div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('avanceSectores').innerHTML = html || '<div class="empty">Sin datos por sector.</div>';
+}
+
+function renderGastosRecientes() {
+  const recientes = [...state.movimientos]
+    .sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
+    .slice(0, 8);
+
+  const html = recientes.map(m => {
+    const item = state.items.find(i => i.item_id === m.item_id);
+    const tipo = m.tipo_movimiento;
+    return `
+      <div class="reciente-item">
+        <div>
+          <div class="reciente-concepto">${item?.concepto || 'Pago global'}</div>
+          <div class="reciente-meta">${formatDate(m.fecha)} · ${tipo} · ${m.responsable || '—'}</div>
+        </div>
+        <div>
+          ${n(m.importe_pagado) > 0 ? `<div class="reciente-importe">${money(n(m.importe_pagado))}</div>` : ''}
+          ${n(m.cantidad_ejecutada) > 0 ? `<div class="reciente-meta" style="text-align:right">${num(m.cantidad_ejecutada)} ${item?.unidad || ''}</div>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('gastosRecientes').innerHTML = html || '<div class="empty">Sin movimientos registrados.</div>';
+}
+
+/* ══════════════════════════════════════════════════════════
+   PRESUPUESTO TABLE
+══════════════════════════════════════════════════════════ */
+function renderPresupuesto() {
+  const search = document.getElementById('filterSearch')?.value?.toLowerCase() || '';
+  const tipo   = document.getElementById('filterTipo')?.value || '';
+  const sector = document.getElementById('filterSector')?.value || '';
+  const estado = document.getElementById('filterEstado')?.value || '';
+
+  const rows = state.items.map(enrichItem).filter(item => {
+    const itemEstado = item.avance === 0 ? 'pendiente' : item.avance >= 100 ? 'finalizado' : 'en_curso';
+    const text = `${item.concepto} ${item.sector} ${item.responsable}`.toLowerCase();
+    return (!search || text.includes(search))
+      && (!tipo   || item.tipo   === tipo)
+      && (!sector || item.sector === sector)
+      && (!estado || itemEstado  === estado);
+  });
+
+  const isMO = t => t === 'Mano de obra';
+
+  document.getElementById('presupuestoTable').innerHTML = rows.map(item => {
+    const estadoKey = item.avance === 0 ? 'pendiente' : item.avance >= 100 ? 'finalizado' : 'en_curso';
+    const estadoLabel = { pendiente: 'Pendiente', en_curso: 'En curso', finalizado: 'Finalizado' }[estadoKey];
+    return `
+      <tr>
+        <td>${typeBadge(item.tipo)}</td>
+        <td><strong>${item.concepto}</strong></td>
+        <td>${item.sector}</td>
+        <td>${item.responsable || '—'}</td>
+        <td>${item.unidad}</td>
+        <td class="mono">${num(item.cantidad_presupuestada)}</td>
+        <td class="mono">${num(item.cantEjec)}</td>
+        <td>
+          <div class="progress-wrap">
+            <div class="progress"><span class="${isMO(item.tipo)?'mo':''}" style="width:${Math.min(item.avance,100)}%"></span></div>
+            <span class="mono" style="font-size:12px">${item.avance.toFixed(1)}%</span>
+          </div>
+        </td>
+        <td class="mono">${money(item.costo_unitario)}</td>
+        <td class="mono"><strong>${money(item.totalPresup)}</strong></td>
+        <td class="mono">${money(item.costoEjec)}</td>
+        <td class="mono">${money(item.totalPagado)}</td>
+        <td class="mono ${item.desvio > 5000 ? 'desvio-bad' : item.desvio < -5000 ? 'desvio-warn' : 'desvio-ok'}">${money(item.desvio)}</td>
+        <td>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;">
+            <button class="btn btn-soft btn-sm" onclick="openItemModal('${item.item_id}')">Editar</button>
+            <button class="btn btn-mo btn-sm" onclick="openMovimientoModal('${item.item_id}')">+ Mov.</button>
+            <button class="btn btn-danger-soft btn-sm" onclick="deleteItem('${item.item_id}')">✕</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('') || `<tr><td colspan="14"><div class="empty">No hay ítems para mostrar.</div></td></tr>`;
+}
+
+/* ══════════════════════════════════════════════════════════
+   MOVIMIENTOS TABLE
+══════════════════════════════════════════════════════════ */
+function renderMovimientos() {
+  const rows = [...state.movimientos].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+  document.getElementById('movimientosTable').innerHTML = rows.map(m => {
+    const item = state.items.find(i => i.item_id === m.item_id);
+    return `
+      <tr>
+        <td>${formatDate(m.fecha)}</td>
+        <td>${item ? `<strong>${item.concepto}</strong><br><span style="font-size:11px;color:var(--muted)">${item.sector}</span>` : '<span style="color:var(--muted);font-size:12px">Pago global</span>'}</td>
+        <td><span class="estado-badge ${m.tipo_movimiento === 'Avance' ? 'en_curso' : m.tipo_movimiento === 'Pago' ? 'finalizado' : 'en_curso'}">${m.tipo_movimiento}</span></td>
+        <td class="mono">${n(m.cantidad_ejecutada) > 0 ? num(m.cantidad_ejecutada) : '—'}</td>
+        <td class="mono"><strong>${money(m.importe_pagado)}</strong></td>
+        <td>${m.medio_pago || '—'}</td>
+        <td>${m.responsable || '—'}</td>
+        <td style="max-width:180px;font-size:12px;color:var(--muted)">${m.observacion || '—'}</td>
+        <td>
+          <div style="display:flex;gap:5px;">
+            <button class="btn btn-soft btn-sm" onclick="openMovimientoModal(null,'${m.movimiento_id}')">Editar</button>
+            <button class="btn btn-danger-soft btn-sm" onclick="deleteMovimiento('${m.movimiento_id}')">✕</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('') || `<tr><td colspan="9"><div class="empty">Sin movimientos registrados.</div></td></tr>`;
+}
+
+/* ══════════════════════════════════════════════════════════
+   RESPONSABLES TABLE
+══════════════════════════════════════════════════════════ */
+function renderResponsables() {
+  const resumen = {};
+  state.items.map(enrichItem).forEach(item => {
+    const key = item.responsable || 'Sin responsable';
+    if (!resumen[key]) resumen[key] = { presup:0, ejec:0, pagado:0, saldo:0 };
+    resumen[key].presup  += item.totalPresup;
+    resumen[key].ejec    += item.costoEjec;
+    resumen[key].pagado  += item.totalPagado;
+    resumen[key].saldo   += item.totalPresup - item.totalPagado;
+  });
+
+  document.getElementById('responsablesTable').innerHTML = Object.entries(resumen).map(([r, d]) => {
+    const desvio = d.pagado - d.ejec;
+    return `
+      <tr>
+        <td><strong>${r}</strong></td>
+        <td class="mono">${money(d.presup)}</td>
+        <td class="mono">${money(d.ejec)}</td>
+        <td class="mono">${money(d.pagado)}</td>
+        <td class="mono">${money(d.saldo)}</td>
+        <td class="mono ${desvio > 5000 ? 'desvio-bad' : desvio < -5000 ? 'desvio-warn' : 'desvio-ok'}">${money(desvio)}</td>
+      </tr>
+    `;
+  }).join('') || `<tr><td colspan="6"><div class="empty">Sin datos.</div></td></tr>`;
+}
+
+/* ══════════════════════════════════════════════════════════
+   SECTORES TAB
+══════════════════════════════════════════════════════════ */
+function renderSectoresTab() {
+  const enriched = state.items.map(enrichItem);
+  const sectores = {};
+
+  enriched.forEach(item => {
+    if (!sectores[item.sector]) sectores[item.sector] = { items:0, presup:0, ejec:0, pagado:0 };
+    sectores[item.sector].items++;
+    sectores[item.sector].presup  += item.totalPresup;
+    sectores[item.sector].ejec    += item.costoEjec;
+    sectores[item.sector].pagado  += item.totalPagado;
+  });
+
+  document.getElementById('sectoresTable').innerHTML = Object.entries(sectores).map(([sector, d]) => {
+    const avance = d.presup > 0 ? (d.ejec / d.presup) * 100 : 0;
+    return `
+      <tr>
+        <td><strong>${sector}</strong></td>
+        <td class="mono">${d.items}</td>
+        <td class="mono">${money(d.presup)}</td>
+        <td class="mono">${money(d.ejec)}</td>
+        <td class="mono">${money(d.pagado)}</td>
+        <td>
+          <div class="progress-wrap">
+            <div class="progress" style="width:120px"><span style="width:${Math.min(avance,100)}%"></span></div>
+            <span class="mono" style="font-size:12px">${avance.toFixed(1)}%</span>
+          </div>
+        </td>
+        <td class="mono">${money(d.presup - d.pagado)}</td>
+      </tr>
+    `;
+  }).join('') || `<tr><td colspan="7"><div class="empty">Sin datos.</div></td></tr>`;
+}
+
+/* ══════════════════════════════════════════════════════════
+   MODAL ÍTEM
+══════════════════════════════════════════════════════════ */
+function openItemModal(itemId = null) {
+  document.getElementById('itemForm').reset();
+  document.getElementById('itemId').value = '';
+  document.getElementById('itemModalTitle').textContent = 'Agregar ítem presupuestado';
+
+  if (itemId) {
+    const item = state.items.find(i => i.item_id === itemId);
+    if (!item) return;
+    document.getElementById('itemModalTitle').textContent = 'Editar ítem presupuestado';
+    document.getElementById('itemId').value            = item.item_id;
+    document.getElementById('itemTipo').value          = item.tipo;
+    document.getElementById('itemSector').value        = item.sector;
+    document.getElementById('itemResponsable').value   = item.responsable;
+    document.getElementById('itemConcepto').value      = item.concepto;
+    document.getElementById('itemUnidad').value        = item.unidad;
+    document.getElementById('itemCantidad').value      = item.cantidad_presupuestada;
+    document.getElementById('itemCosto').value         = item.costo_unitario;
+    document.getElementById('itemObservacion').value   = item.observacion || '';
+  }
+
+  updateItemTotalPreview();
+  document.getElementById('itemModal').classList.add('active');
+}
+
+function updateItemTotalPreview() {
+  const cant  = n(document.getElementById('itemCantidad').value);
+  const costo = n(document.getElementById('itemCosto').value);
+  document.getElementById('itemTotalPreview').value = money(cant * costo);
+}
+
+async function saveItem(event) {
+  event.preventDefault();
+  const id   = document.getElementById('itemId').value || genId('ITM');
+  const item = {
+    item_id:               id,
+    tipo:                  document.getElementById('itemTipo').value,
+    sector:                document.getElementById('itemSector').value,
+    responsable:           document.getElementById('itemResponsable').value.trim(),
+    concepto:              document.getElementById('itemConcepto').value.trim(),
+    unidad:                document.getElementById('itemUnidad').value,
+    cantidad_presupuestada: n(document.getElementById('itemCantidad').value),
+    costo_unitario:        n(document.getElementById('itemCosto').value),
+    observacion:           document.getElementById('itemObservacion').value.trim(),
+  };
+
+  const idx = state.items.findIndex(i => i.item_id === id);
+  if (idx >= 0) state.items[idx] = item; else state.items.push(item);
+
+  await sendToApi(idx >= 0 ? 'updateItem' : 'createItem', item);
+  persistDemo();
+  closeModal('itemModal');
+  renderAll();
+}
+
+async function deleteItem(itemId) {
+  if (!confirm('¿Eliminar este ítem? Sus movimientos quedan en el historial.')) return;
+  state.items = state.items.filter(i => i.item_id !== itemId);
+  await sendToApi('deleteItem', { item_id: itemId });
+  persistDemo();
+  renderAll();
+}
+
+/* ══════════════════════════════════════════════════════════
+   MODAL MOVIMIENTO
+══════════════════════════════════════════════════════════ */
+function openMovimientoModal(itemId = null, movimientoId = null) {
+  document.getElementById('movimientoForm').reset();
+  document.getElementById('movimientoId').value          = '';
+  document.getElementById('movimientoFecha').valueAsDate = new Date();
+  document.getElementById('movimientoCantidad').value    = 0;
+  document.getElementById('movimientoImporte').value     = 0;
+  document.getElementById('movimientoPorcentaje').value  = 0;
+  document.getElementById('movimientoModalTitle').textContent = 'Registrar avance / pago';
+
+  if (itemId) document.getElementById('movimientoItem').value = itemId;
+
+  if (movimientoId) {
+    const mov = state.movimientos.find(m => m.movimiento_id === movimientoId);
+    if (!mov) return;
+    document.getElementById('movimientoModalTitle').textContent = 'Editar movimiento';
+    document.getElementById('movimientoId').value              = mov.movimiento_id;
+    document.getElementById('movimientoFecha').value           = mov.fecha;
+    document.getElementById('movimientoItem').value            = mov.item_id || '';
+    document.getElementById('movimientoTipo').value            = mov.tipo_movimiento;
+    document.getElementById('movimientoCantidad').value        = mov.cantidad_ejecutada;
+    document.getElementById('movimientoImporte').value         = mov.importe_pagado;
+    document.getElementById('movimientoMedioPago').value       = mov.medio_pago || '';
+    document.getElementById('movimientoResponsable').value     = mov.responsable || '';
+    document.getElementById('movimientoSector').value          = mov.sector || '';
+    document.getElementById('movimientoObservacion').value     = mov.observacion || '';
+
+    const item = state.items.find(i => i.item_id === mov.item_id);
+    const base = n(item?.cantidad_presupuestada || 0);
+    document.getElementById('movimientoPorcentaje').value = base > 0
+      ? ((n(mov.cantidad_ejecutada) / base) * 100).toFixed(2) : 0;
+  }
+
+  document.getElementById('movimientoModal').classList.add('active');
+}
+
+function syncCantidadFromAvance() {
+  const itemId = document.getElementById('movimientoItem').value;
+  const item   = state.items.find(i => i.item_id === itemId);
+  const pct    = n(document.getElementById('movimientoPorcentaje').value);
+  const base   = n(item?.cantidad_presupuestada || 0);
+  document.getElementById('movimientoCantidad').value = base > 0 ? ((base * pct) / 100).toFixed(2) : 0;
+}
+
+function syncAvanceFromCantidad() {
+  const itemId = document.getElementById('movimientoItem').value;
+  const item   = state.items.find(i => i.item_id === itemId);
+  const cant   = n(document.getElementById('movimientoCantidad').value);
+  const base   = n(item?.cantidad_presupuestada || 0);
+  document.getElementById('movimientoPorcentaje').value = base > 0 ? ((cant / base) * 100).toFixed(2) : 0;
+}
+
+async function saveMovimiento(event) {
+  event.preventDefault();
+  const id  = document.getElementById('movimientoId').value || genId('MOV');
+  const mov = {
+    movimiento_id:     id,
+    fecha:             document.getElementById('movimientoFecha').value,
+    item_id:           document.getElementById('movimientoItem').value,
+    tipo_movimiento:   document.getElementById('movimientoTipo').value,
+    cantidad_ejecutada: n(document.getElementById('movimientoCantidad').value),
+    importe_pagado:    n(document.getElementById('movimientoImporte').value),
+    medio_pago:        document.getElementById('movimientoMedioPago').value,
+    responsable:       document.getElementById('movimientoResponsable').value.trim(),
+    sector:            document.getElementById('movimientoSector').value,
+    observacion:       document.getElementById('movimientoObservacion').value.trim(),
+  };
+
+  const idx = state.movimientos.findIndex(m => m.movimiento_id === id);
+  if (idx >= 0) state.movimientos[idx] = mov; else state.movimientos.push(mov);
+
+  await sendToApi(idx >= 0 ? 'updateMovimiento' : 'createMovimiento', mov);
+  persistDemo();
+  closeModal('movimientoModal');
+  renderAll();
+}
+
+async function deleteMovimiento(movimientoId) {
+  if (!confirm('¿Eliminar este movimiento?')) return;
+  state.movimientos = state.movimientos.filter(m => m.movimiento_id !== movimientoId);
+  await sendToApi('deleteMovimiento', { movimiento_id: movimientoId });
+  persistDemo();
+  renderAll();
+}
+
+/* ══════════════════════════════════════════════════════════
+   MAINTENANCE
+══════════════════════════════════════════════════════════ */
+async function runRebuild() {
+  if (state.settings.dataMode !== 'api' || !state.settings.apiUrl) {
+    alert('Solo disponible en modo API conectado.'); return;
+  }
+  await sendToApi('rebuildResumen', {});
+  alert('Resumen recalculado en Sheets. Actualizando datos...');
+  loadData();
+}
+
+async function runMigration() {
+  if (!confirm('Esta acción migra pagos huérfanos de la v2 asignándoles ítems globales. ¿Continuar?')) return;
+
+  const el = document.getElementById('migrationResult');
+  el.style.display = 'block';
+  el.className = 'warn';
+  el.textContent = 'Ejecutando migración...';
+
+  if (state.settings.dataMode !== 'api' || !state.settings.apiUrl) {
+    el.textContent = 'Solo disponible en modo API. Conectá primero el Apps Script.';
+    return;
+  }
+
+  try {
+    const res  = await fetch(state.settings.apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'migrateOrphanPayments', payload: {} })
+    });
+    const json = await res.json();
+    if (json.ok) {
+      el.className = 'ok';
+      el.textContent = `✓ ${json.data?.message || 'Migración completada.'}`;
+      loadData();
+    } else {
+      el.textContent = `Error: ${json.error}`;
     }
+  } catch(e) {
+    el.textContent = `Error de red: ${e.message}`;
+  }
+}
 
-    function openItemModal(itemId = null) {
-      document.getElementById('itemForm').reset();
-      document.getElementById('itemId').value = '';
-      document.getElementById('itemModalTitle').textContent = 'Agregar gasto / ítem presupuestado';
+/* ══════════════════════════════════════════════════════════
+   UTILS
+══════════════════════════════════════════════════════════ */
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-      if (itemId) {
-        const item = state.items.find(i => i.item_id === itemId);
-        if (!item) return;
-        document.getElementById('itemModalTitle').textContent = 'Editar gasto / ítem presupuestado';
-        document.getElementById('itemId').value = item.item_id;
-        document.getElementById('itemTipo').value = item.tipo;
-        document.getElementById('itemSector').value = item.sector;
-        document.getElementById('itemResponsable').value = item.responsable;
-        document.getElementById('itemConcepto').value = item.concepto;
-        document.getElementById('itemUnidad').value = item.unidad;
-        document.getElementById('itemCantidad').value = item.cantidad_presupuestada;
-        document.getElementById('itemCosto').value = item.costo_unitario;
-        document.getElementById('itemObservacion').value = item.observacion || '';
-      }
+function typeBadge(tipo) {
+  const cls = tipo === 'Material' ? 'material' : tipo === 'Mano de obra' ? 'mo' : tipo === 'Servicio' ? 'servicio' : 'otro';
+  return `<span class="badge ${cls}"><span class="status-dot"></span>${tipo}</span>`;
+}
 
-      updateItemTotalPreview();
-      document.getElementById('itemModal').classList.add('active');
-    }
+function genId(prefix) { return `${prefix}${Date.now().toString().slice(-10)}`; }
 
-    function openMovimientoModal(itemId = null, movimientoId = null) {
-      document.getElementById('movimientoForm').reset();
-      document.getElementById('movimientoId').value = '';
-      document.getElementById('movimientoFecha').valueAsDate = new Date();
-      document.getElementById('movimientoCantidad').value = 0;
-      document.getElementById('movimientoImporte').value = 0;
-      document.getElementById('movimientoPorcentaje').value = 0;
-      document.getElementById('movimientoModalTitle').textContent = 'Registrar avance / pago';
+function n(v) {
+  if (v === null || v === undefined || v === '') return 0;
+  if (typeof v === 'number') return v;
+  const s = String(v).replace(/\./g,'').replace(',','.').replace(/[^0-9.-]/g,'');
+  const p = Number(s);
+  return isFinite(p) ? p : 0;
+}
 
-      if (itemId) document.getElementById('movimientoItem').value = itemId;
+function money(v) {
+  return new Intl.NumberFormat('es-AR', {
+    style: 'currency',
+    currency: /^[A-Z]{3}$/.test(state.settings.currency || '') ? state.settings.currency : 'ARS',
+    maximumFractionDigits: 0
+  }).format(Number(v || 0));
+}
 
-      if (movimientoId) {
-        const mov = state.movimientos.find(m => m.movimiento_id === movimientoId);
-        if (!mov) return;
-        document.getElementById('movimientoModalTitle').textContent = 'Editar movimiento';
-        document.getElementById('movimientoId').value = mov.movimiento_id;
-        document.getElementById('movimientoFecha').value = mov.fecha;
-        document.getElementById('movimientoItem').value = mov.item_id;
-        document.getElementById('movimientoTipo').value = mov.tipo_movimiento;
-        document.getElementById('movimientoCantidad').value = mov.cantidad_ejecutada;
-        document.getElementById('movimientoImporte').value = mov.importe_pagado;
-        const item = state.items.find(i => i.item_id === mov.item_id);
-        const base = Number(item?.cantidad_presupuestada || 0);
-        document.getElementById('movimientoPorcentaje').value = base > 0 ? ((Number(mov.cantidad_ejecutada || 0) / base) * 100).toFixed(2) : 0;
-        document.getElementById('movimientoResponsable').value = mov.responsable || '';
-        document.getElementById('movimientoObservacion').value = mov.observacion || '';
-      }
+function num(v) { return new Intl.NumberFormat('es-AR', { maximumFractionDigits: 2 }).format(Number(v || 0)); }
 
-      document.getElementById('movimientoModal').classList.add('active');
-    }
-
-    function closeModal(id) {
-      document.getElementById(id).classList.remove('active');
-    }
-
-    async function saveItem(event) {
-      event.preventDefault();
-      const id = document.getElementById('itemId').value || generateId('ITM');
-      const item = {
-        item_id: id,
-        tipo: document.getElementById('itemTipo').value,
-        sector: document.getElementById('itemSector').value,
-        responsable: document.getElementById('itemResponsable').value.trim(),
-        concepto: document.getElementById('itemConcepto').value.trim(),
-        unidad: document.getElementById('itemUnidad').value,
-        cantidad_presupuestada: Number(document.getElementById('itemCantidad').value || 0),
-        costo_unitario: Number(document.getElementById('itemCosto').value || 0),
-        observacion: document.getElementById('itemObservacion').value.trim()
-      };
-
-      const index = state.items.findIndex(i => i.item_id === id);
-      if (index >= 0) state.items[index] = item;
-      else state.items.push(item);
-
-      await sendToApi(index >= 0 ? 'updateItem' : 'createItem', item);
-      persistDemoData();
-      closeModal('itemModal');
-      renderAll();
-    }
-
-    async function saveMovimiento(event) {
-      event.preventDefault();
-      const id = document.getElementById('movimientoId').value || generateId('MOV');
-      const movimiento = {
-        movimiento_id: id,
-        fecha: document.getElementById('movimientoFecha').value,
-        item_id: document.getElementById('movimientoItem').value,
-        tipo_movimiento: document.getElementById('movimientoTipo').value,
-        cantidad_ejecutada: Number(document.getElementById('movimientoCantidad').value || 0),
-        importe_pagado: Number(document.getElementById('movimientoImporte').value || 0),
-        responsable: document.getElementById('movimientoResponsable').value.trim(),
-        observacion: document.getElementById('movimientoObservacion').value.trim()
-      };
-
-      const index = state.movimientos.findIndex(m => m.movimiento_id === id);
-      if (index >= 0) state.movimientos[index] = movimiento;
-      else state.movimientos.push(movimiento);
-
-      await sendToApi(index >= 0 ? 'updateMovimiento' : 'createMovimiento', movimiento);
-      persistDemoData();
-      closeModal('movimientoModal');
-      renderAll();
-    }
-
-    async function sendToApi(action, payload) {
-      if (state.settings.dataMode !== 'api' || !state.settings.apiUrl) return;
-
-      try {
-        await fetch(state.settings.apiUrl, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action, payload })
-        });
-      } catch (error) {
-        console.warn('No se pudo enviar a Apps Script.', error);
-      }
-    }
-
-    async function deleteItem(itemId) {
-      if (!confirm('¿Eliminar este ítem? También se ocultarán sus movimientos asociados en el análisis.')) return;
-      state.items = state.items.filter(i => i.item_id !== itemId);
-      await sendToApi('deleteItem', { item_id: itemId });
-      persistDemoData();
-      renderAll();
-    }
-
-    async function deleteMovimiento(movimientoId) {
-      if (!confirm('¿Eliminar este movimiento?')) return;
-      state.movimientos = state.movimientos.filter(m => m.movimiento_id !== movimientoId);
-      await sendToApi('deleteMovimiento', { movimiento_id: movimientoId });
-      persistDemoData();
-      renderAll();
-    }
-
-    function syncCantidadFromAvance() {
-      const itemId = document.getElementById('movimientoItem').value;
-      const item = state.items.find(i => i.item_id === itemId);
-      const porcentaje = Number(document.getElementById('movimientoPorcentaje').value || 0);
-      const base = Number(item?.cantidad_presupuestada || 0);
-      document.getElementById('movimientoCantidad').value = base > 0 ? ((base * porcentaje) / 100).toFixed(2) : 0;
-    }
-
-    function syncAvanceFromCantidad() {
-      const itemId = document.getElementById('movimientoItem').value;
-      const item = state.items.find(i => i.item_id === itemId);
-      const cantidad = Number(document.getElementById('movimientoCantidad').value || 0);
-      const base = Number(item?.cantidad_presupuestada || 0);
-      document.getElementById('movimientoPorcentaje').value = base > 0 ? ((cantidad / base) * 100).toFixed(2) : 0;
-    }
-
-    function persistDemoData() {
-      if (state.settings.dataMode !== 'demo') return;
-      localStorage.setItem('pc_demo_items', JSON.stringify(state.items));
-      localStorage.setItem('pc_demo_movimientos', JSON.stringify(state.movimientos));
-    }
-
-    function updateItemTotalPreview() {
-      const cantidad = Number(document.getElementById('itemCantidad').value || 0);
-      const costo = Number(document.getElementById('itemCosto').value || 0);
-      document.getElementById('itemTotalPreview').value = money(cantidad * costo);
-    }
-
-    function groupSum(arr, key, valueKey) {
-      return arr.reduce((acc, item) => {
-        const k = item[key] || 'Sin dato';
-        acc[k] = (acc[k] || 0) + Number(item[valueKey] || 0);
-        return acc;
-      }, {});
-    }
-
-    function typeBadge(tipo) {
-      const cls = tipo === 'Material' ? 'material' : tipo === 'Mano de obra' ? 'mano' : tipo === 'Servicio' ? 'servicio' : 'otro';
-      return `<span class="badge ${cls}"><span class="status-dot"></span>${tipo}</span>`;
-    }
-
-    function generateId(prefix) {
-      return `${prefix}${Date.now().toString().slice(-8)}`;
-    }
-
-    function money(value) {
-      return new Intl.NumberFormat('es-AR', {
-        style: 'currency',
-        currency: /^[A-Z]{3}$/.test(state.settings.currency || '') ? state.settings.currency : 'ARS',
-        maximumFractionDigits: 0
-      }).format(Number(value || 0));
-    }
-
-    function number(value) {
-      return new Intl.NumberFormat('es-AR', { maximumFractionDigits: 2 }).format(Number(value || 0));
-    }
-
-    function formatDate(date) {
-      if (!date) return '-';
-      return new Date(`${date}T00:00:00`).toLocaleDateString('es-AR');
-    }
-  </script>
+function formatDate(d) {
+  if (!d) return '—';
+  return new Date(`${d}T00:00:00`).toLocaleDateString('es-AR');
+}
+</script>
 </body>
 </html>
