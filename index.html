@@ -460,7 +460,7 @@
 
       <section id="dashboard" class="section active">
         <div class="notice">
-          <strong>Versión HTML v1:</strong> esta maqueta ya tiene la estructura funcional preparada. Actualmente usa datos demo. Cuando conectemos Apps Script, leerá y actualizará Google Sheets.
+          <strong>Versión HTML v2:</strong> interfaz preparada para conectarse con Apps Script. Si la conexión falla, se cargan datos demo como respaldo.
         </div>
 
         <div class="grid kpi-grid">
@@ -841,8 +841,8 @@
   <script>
     const state = {
       settings: {
-        apiUrl: localStorage.getItem('pc_apiUrl') || '',
-        dataMode: localStorage.getItem('pc_dataMode') || 'demo',
+        apiUrl: localStorage.getItem('pc_apiUrl') || 'https://script.google.com/macros/s/AKfycbw8HGma9yzO1aSS10IZKcKGkQQJB6i2P3BrKZINvJugDGa0PzdW0ZfXqOQTnGnUk4goOQ/exec',
+        dataMode: localStorage.getItem('pc_dataMode') || 'api',
         currency: localStorage.getItem('pc_currency') || 'ARS',
         projectName: localStorage.getItem('pc_projectName') || 'Proyecto de construcción'
       },
@@ -924,7 +924,9 @@
         try {
           const url = `${state.settings.apiUrl}?action=getInitialData`;
           const res = await fetch(url);
-          const data = await res.json();
+          const response = await res.json();
+          if (!response.ok) throw new Error(response.error || 'Error desconocido al leer Apps Script.');
+          const data = response.data || {};
           state.items = data.items || [];
           state.movimientos = data.movimientos || [];
           state.sectores = data.sectores || state.sectores;
