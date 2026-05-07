@@ -419,7 +419,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--alb);box-shadow:0 0 0
         <button class="tab-item" data-tab="Mano de obra:Plomería" onclick="setTab(this)">🔧 Plomería</button>
         <button class="tab-item" data-tab="Mano de obra:Electricidad" onclick="setTab(this)">⚡ Electricidad</button>
         <button class="tab-item" data-tab="Mano de obra:Herrería" onclick="setTab(this)">🔩 Herrería</button>
-        <button class="tab-item" data-tab="Material:" onclick="setTab(this)">📦 Materiales</button>
+        <button class="tab-item" data-tab="Material:" onclick="setTab(this)">📦 Materiales comprados</button>
       </div>
     </div>
 
@@ -431,26 +431,26 @@ input:focus,select:focus,textarea:focus{border-color:var(--alb);box-shadow:0 0 0
 <section id="pagos" class="section">
   <div class="topbar">
     <div>
-      <div class="page-title">Pagos</div>
-      <div class="page-sub">Registrá pagos a mano de obra y materiales.</div>
+      <div class="page-title">Pagos de mano de obra</div>
+      <div class="page-sub">Registrá lo que pagaste cada semana. Siempre en efectivo, por oficio.</div>
     </div>
   </div>
 
   <div class="content">
-    <!-- Formularios -->
-    <div class="pagos-cols">
-      <!-- Pago MO semanal -->
+
+    <!-- Formulario pago MO — simplificado al máximo -->
+    <div style="display:grid;grid-template-columns:360px 1fr;gap:16px;margin-bottom:20px;align-items:start">
       <div class="form-card">
-        <div class="form-card-title">💰 Pago semanal — Mano de obra</div>
-        <div class="form-card-sub">Lo que les pagaste esta semana. No hace falta asociarlo a una tarea específica — se registra por oficio y el sistema lo compara con el avance físico.</div>
+        <div class="form-card-title">💰 Registrar pago semanal</div>
+        <div class="form-card-sub">Ingresá cuánto pagaste esta semana. Siempre es en efectivo y va por oficio.</div>
         <form id="fPago" onsubmit="guardarPagoMO(event)">
           <div class="form-row">
-            <div class="form-label">Fecha *</div>
+            <div class="form-label">Fecha del pago *</div>
             <input type="date" id="pFecha" required/>
           </div>
           <div class="form-row">
             <div class="form-label">Oficio *</div>
-            <select id="pOficio" required>
+            <select id="pOficio" required onchange="onOficioChange()">
               <option value="">— seleccioná —</option>
               <option>Albañilería</option>
               <option>Plomería</option>
@@ -461,23 +461,15 @@ input:focus,select:focus,textarea:focus{border-color:var(--alb);box-shadow:0 0 0
           </div>
           <div class="form-row">
             <div class="form-label">A quién se paga *</div>
-            <input id="pResp" list="respList" placeholder="Albañiles, Juan…" required/>
+            <input id="pResp" list="respList" placeholder="Albañiles…" required/>
           </div>
           <div class="form-row">
-            <div class="form-label">Importe *</div>
+            <div class="form-label">Importe (efectivo) *</div>
             <input type="number" id="pImporte" min="0" step="100" placeholder="0" required/>
           </div>
           <div class="form-row">
-            <div class="form-label">Medio de pago</div>
-            <select id="pMedio">
-              <option value="">— sin especificar —</option>
-              <option>Efectivo</option><option>Transferencia</option>
-              <option>Cheque</option>
-            </select>
-          </div>
-          <div class="form-row">
             <div class="form-label">Observación</div>
-            <input id="pObs" placeholder="Cuota semana 4, portones…"/>
+            <input id="pObs" placeholder="Cuota semana 4, saldo portones…"/>
           </div>
           <div class="form-ft">
             <button type="submit" class="btn btn-dark">Guardar pago</button>
@@ -485,57 +477,35 @@ input:focus,select:focus,textarea:focus{border-color:var(--alb);box-shadow:0 0 0
         </form>
       </div>
 
-      <!-- Pago de material -->
-      <div class="form-card">
-        <div class="form-card-title">📦 Pago de material</div>
-        <div class="form-card-sub">Los materiales siempre se pagan al contado. Seleccioná el ítem — el sistema actualiza automáticamente el estado de ese material.</div>
-        <form id="fMat" onsubmit="guardarPagoMat(event)">
-          <div class="form-row">
-            <div class="form-label">Fecha *</div>
-            <input type="date" id="mFecha" required/>
-          </div>
-          <div class="form-row">
-            <div class="form-label">Material *</div>
-            <select id="mItem" required onchange="onMatItemChange()">
-              <option value="">— seleccioná —</option>
-            </select>
-          </div>
-          <!-- Preview del ítem -->
-          <div id="mPreview" style="display:none;background:var(--mat-l);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--mat)">
-            <strong id="mPreviewNombre">—</strong><br>
-            <span id="mPreviewDetalle">—</span>
-          </div>
-          <div class="form-row">
-            <div class="form-label">Importe pagado *</div>
-            <input type="number" id="mImporte" min="0" step="100" placeholder="0" required/>
-          </div>
-          <div class="form-row">
-            <div class="form-label">Cantidad comprada</div>
-            <input type="number" id="mCantidad" min="0" step="0.01" placeholder="0"/>
-          </div>
-          <div class="form-row">
-            <div class="form-label">Proveedor</div>
-            <input id="mResp" list="respList" placeholder="Corralón…"/>
-          </div>
-          <div class="form-row">
-            <div class="form-label">Observación</div>
-            <input id="mObs" placeholder="Factura, pedido…"/>
-          </div>
-          <div class="form-ft">
-            <button type="submit" class="btn btn-dark">Guardar pago</button>
-          </div>
-        </form>
+      <!-- KPIs rápidos MO -->
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="card card-sm">
+          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:6px">Total pagado MO</div>
+          <div style="font-family:'Instrument Serif',serif;font-size:28px" id="pKpiTotal">—</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:3px" id="pKpiTotalSub">—</div>
+        </div>
+        <div class="card card-sm">
+          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:6px">Ejecutado teórico</div>
+          <div style="font-family:'Instrument Serif',serif;font-size:28px" id="pKpiTeorico">—</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:3px">Avance físico × precio unitario</div>
+        </div>
+        <div class="card card-sm" id="pKpiDesvioCard">
+          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:6px">Diferencia</div>
+          <div style="font-family:'Instrument Serif',serif;font-size:28px" id="pKpiDesvio">—</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:3px" id="pKpiDesvioSub">—</div>
+        </div>
       </div>
     </div>
 
-    <!-- Historial semanal -->
+    <!-- Gráfico: solo MO -->
     <div class="chart-wrap">
-      <div class="chart-title">Pagos acumulados vs avance teórico</div>
-      <div class="chart-sub">Línea oscura = plata pagada · Línea verde = lo que correspondería por el avance físico</div>
+      <div class="chart-title">Pagos semanales acumulados vs avance físico</div>
+      <div class="chart-sub">Barras = pago de esa semana · Línea oscura = acumulado pagado · Línea verde = lo que correspondería por avance</div>
       <canvas id="chartPagos" height="75"></canvas>
     </div>
 
-    <div style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Semana a semana</div>
+    <!-- Historial semana a semana -->
+    <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.09em;margin-bottom:10px">Historial semana a semana</div>
     <div id="semanasHistorial"></div>
   </div>
 </section>
@@ -929,7 +899,85 @@ function renderTareas(){
     .map(enrich)
     .sort((a,b) => a.pct - b.pct); // pendientes primero
 
-  if(!filtrados.length){
+  // Para materiales: mostrar estado de pago, no avance físico
+  if(tipo === 'Material'){
+    const matItems = G.items.filter(i=>i.tipo==='Material').map(enrich)
+      .sort((a,b)=> a.pagado > 0 ? 1 : -1); // pendientes primero
+
+    const totalMat    = matItems.reduce((s,i)=>s+i.total,0);
+    const pagadoMat   = matItems.reduce((s,i)=>s+i.pagado,0);
+    const pendienteMat= totalMat - pagadoMat;
+    const pctPagado   = totalMat>0 ? pagadoMat/totalMat*100 : 0;
+
+    document.getElementById('tareasLista').innerHTML = `
+      <!-- Resumen materiales -->
+      <div class="card" style="margin-bottom:14px">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:14px">
+          <div>
+            <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:5px">Presupuestado</div>
+            <div class="mono" style="font-size:18px;font-weight:500">${money(totalMat)}</div>
+          </div>
+          <div>
+            <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--ok);margin-bottom:5px">Pagado</div>
+            <div class="mono" style="font-size:18px;font-weight:500;color:var(--ok)">${money(pagadoMat)}</div>
+          </div>
+          <div>
+            <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--warn);margin-bottom:5px">Pendiente</div>
+            <div class="mono" style="font-size:18px;font-weight:500;color:var(--warn)">${money(pendienteMat)}</div>
+          </div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${Math.min(pctPagado,100)}%;background:var(--mat)"></div></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:5px">${pctPagado.toFixed(0)}% del presupuesto de materiales pagado</div>
+      </div>
+
+      <!-- Lista de materiales: marcar como pagado con 1 clic -->
+      ${matItems.map(item=>{
+        const pagado = item.pagado >= item.total * 0.99;
+        const parcial = item.pagado > 0 && !pagado;
+        const c = oc('Material');
+        return `<div class="tarea-card">
+          <div class="tarea-main" style="grid-template-columns:auto 1fr auto auto">
+            <!-- Estado -->
+            <div style="display:flex;align-items:center;justify-content:center;width:48px;border-right:1px solid var(--border2)">
+              ${pagado
+                ? `<div title="Pagado" style="width:22px;height:22px;border-radius:50%;background:var(--ok);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px">✓</div>`
+                : parcial
+                  ? `<div title="Pago parcial" style="width:22px;height:22px;border-radius:50%;background:var(--warn);display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px">½</div>`
+                  : `<div title="Pendiente" style="width:22px;height:22px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:11px">○</div>`
+              }
+            </div>
+            <!-- Info -->
+            <div class="tarea-info">
+              <div class="tarea-concepto" style="color:${pagado?'var(--text3)':'var(--text)'};${pagado?'text-decoration:line-through':''}">${item.concepto}</div>
+              <div class="tarea-meta">
+                <span class="tarea-meta-item">📐 ${num(item.cantidad_presupuestada)} ${item.unidad}</span>
+                <span class="tarea-meta-item">💰 ${money(item.costo_unitario)}/${item.unidad}</span>
+                <span class="tarea-meta-item">📍 ${item.sector}</span>
+                ${item.responsable?`<span class="tarea-meta-item">🏪 ${item.responsable}</span>`:''}
+              </div>
+            </div>
+            <!-- Monto -->
+            <div class="tarea-nums">
+              <div class="tarea-pagado" style="color:${pagado?'var(--ok)':parcial?'var(--warn)':'var(--text)'}">${money(item.pagado)}</div>
+              <div class="tarea-de">de ${money(item.total)}</div>
+            </div>
+            <!-- Acción -->
+            <div style="display:flex;align-items:center;gap:6px;padding:0 14px;border-left:1px solid var(--border2)">
+              ${!pagado
+                ? `<button class="btn btn-dark btn-sm" onclick="pagarMaterialCompleto('${item.item_id}')">
+                    ${parcial?'Completar pago':'Registrar compra'}
+                   </button>`
+                : `<button class="btn btn-ghost btn-sm" style="color:var(--text3)" onclick="abrirModalTarea('${item.item_id}')">✎</button>`
+              }
+              <button class="btn btn-ghost btn-icon btn-sm" onclick="abrirModalTarea('${item.item_id}')" title="Editar">✎</button>
+            </div>
+          </div>
+          ${item.pagado > 0 && !pagado ? `<div class="tarea-bar"><div class="tarea-bar-fill" style="width:${Math.min(item.pagado/item.total*100,100)}%;background:var(--warn)"></div></div>` : ''}
+        </div>`;
+      }).join('')}
+    `;
+    return;
+  }
     document.getElementById('tareasLista').innerHTML =
       `<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">No hay tareas en esta categoría.<br>Usá el botón "+ Nueva tarea" para agregar una.</div></div>`;
     return;
@@ -1263,20 +1311,34 @@ function toggleSemana(hd){
 /* ══════════════════════════════════════════════════
    GUARDAR PAGO MO
 ══════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════
+   GUARDAR PAGO MO — sin medio_pago, siempre efectivo
+══════════════════════════════════════════════════ */
+function onOficioChange(){
+  // Auto-completar responsable desde el primer ítem MO de ese oficio
+  const oficio = document.getElementById('pOficio').value;
+  const item   = G.items.find(i => i.tipo==='Mano de obra' && i.oficio===oficio);
+  if(item && item.responsable){
+    document.getElementById('pResp').value = item.responsable;
+  }
+}
+
 async function guardarPagoMO(e){
   e.preventDefault();
+  const importe = n(document.getElementById('pImporte').value);
+  if(importe <= 0){ alert('El importe debe ser mayor a 0.'); return; }
   const mov = {
-    movimiento_id:   genId('MOV'),
-    fecha:           document.getElementById('pFecha').value,
-    item_id:         '',
-    tipo_movimiento: 'Pago',
+    movimiento_id:     genId('MOV'),
+    fecha:             document.getElementById('pFecha').value,
+    item_id:           '',
+    tipo_movimiento:   'Pago',
     cantidad_ejecutada: 0,
-    importe_pagado:  n(document.getElementById('pImporte').value),
-    responsable:     document.getElementById('pResp').value.trim(),
-    sector:          'Frente',
-    oficio:          document.getElementById('pOficio').value,
-    medio_pago:      document.getElementById('pMedio').value,
-    observacion:     document.getElementById('pObs').value.trim(),
+    importe_pagado:    importe,
+    responsable:       document.getElementById('pResp').value.trim(),
+    sector:            'Frente',
+    oficio:            document.getElementById('pOficio').value,
+    medio_pago:        'Efectivo',   // siempre efectivo
+    observacion:       document.getElementById('pObs').value.trim(),
     fecha_creacion:hoy(),fecha_actualizacion:hoy(),estado_registro:'Activo',
   };
   G.movs.push(mov);
@@ -1284,47 +1346,102 @@ async function guardarPagoMO(e){
   e.target.reset();
   document.getElementById('pFecha').value = hoy();
   renderAll();
-  alert(`✓ Pago de ${money(mov.importe_pagado)} guardado.`);
+  alert(`✓ Pago de ${money(importe)} guardado.`);
 }
 
-async function guardarPagoMat(e){
-  e.preventDefault();
-  const itemId = document.getElementById('mItem').value;
-  if(!itemId){ alert('Seleccioná un material.'); return; }
-  const item = G.items.find(i=>i.item_id===itemId);
-  const mov = {
-    movimiento_id:   genId('MOV'),
-    fecha:           document.getElementById('mFecha').value,
-    item_id:         itemId,
-    tipo_movimiento: 'Pago',
-    cantidad_ejecutada: n(document.getElementById('mCantidad').value),
-    importe_pagado:  n(document.getElementById('mImporte').value),
-    responsable:     document.getElementById('mResp').value.trim() || item?.responsable || '',
-    sector:          item?.sector || 'General',
-    oficio:          '',
-    medio_pago:      '',
-    observacion:     document.getElementById('mObs').value.trim(),
-    fecha_creacion:hoy(),fecha_actualizacion:hoy(),estado_registro:'Activo',
-  };
-  G.movs.push(mov);
-  await apiCall('createMovimiento', mov);
-  e.target.reset();
-  document.getElementById('mFecha').value = hoy();
-  document.getElementById('mPreview').style.display = 'none';
-  renderAll();
-  alert(`✓ Pago de material guardado.`);
-}
+/* ══════════════════════════════════════════════════
+   RENDER PAGOS — solo MO, gráfico limpio
+══════════════════════════════════════════════════ */
+function renderPagos(g){
+  // KPIs
+  const totalPagadoMO = g.moPagado;
+  const desvio = g.moPagado - g.moTeorico;
+  document.getElementById('pKpiTotal').textContent    = money(totalPagadoMO);
+  document.getElementById('pKpiTotalSub').textContent =
+    `de ${money(g.moPresup)} presupuestado · ${G.movs.filter(m=>(!m.item_id||m.item_id==='')&&n(m.importe_pagado)>0).length} pagos`;
+  document.getElementById('pKpiTeorico').textContent  = money(g.moTeorico);
+  document.getElementById('pKpiDesvio').textContent   = (desvio>=0?'+':'')+money(desvio);
+  document.getElementById('pKpiDesvio').style.color   = Math.abs(desvio)<50000?'var(--ok)':desvio>0?'var(--danger)':'var(--warn)';
+  document.getElementById('pKpiDesvioSub').textContent =
+    desvio > 50000  ? '⚠ Pagaste más de lo que avanzaron' :
+    desvio < -50000 ? '↓ Les debés (pagaste menos del avance)' :
+                      '✓ En línea con el avance';
 
-function onMatItemChange(){
-  const id   = document.getElementById('mItem').value;
-  const item = G.items.find(i=>i.item_id===id);
-  const prev = document.getElementById('mPreview');
-  if(!item){ prev.style.display='none'; return; }
-  prev.style.display = 'block';
-  document.getElementById('mPreviewNombre').textContent  = item.concepto;
-  document.getElementById('mPreviewDetalle').textContent =
-    `${num(item.cantidad_presupuestada)} ${item.unidad} · ${money(item.costo_unitario)}/${item.unidad} · Total: ${money(n(item.cantidad_presupuestada)*n(item.costo_unitario))}`;
-  document.getElementById('mImporte').value = n(item.cantidad_presupuestada)*n(item.costo_unitario)||'';
+  // Solo pagos MO (sin item_id o con item_id de ítem MO)
+  const pagosMO = G.movs.filter(m =>
+    n(m.importe_pagado) > 0 && m.fecha &&
+    (!m.item_id || m.item_id === '' ||
+     G.items.find(i=>i.item_id===m.item_id&&i.tipo==='Mano de obra'))
+  );
+  // Excluir pagos de materiales del gráfico
+  const pagosSoloMO = G.movs.filter(m =>
+    n(m.importe_pagado) > 0 && m.fecha &&
+    (!m.item_id || m.item_id === '')
+  );
+
+  // Agrupar por semana — solo pagos globales MO
+  const semanas = {};
+  pagosSoloMO.forEach(m => {
+    const d   = new Date(m.fecha+'T12:00:00');
+    const key = isoWeekKey(d);
+    if(!semanas[key]) semanas[key]={key,inicio:weekStart(d),total:0,pagos:[]};
+    semanas[key].total += n(m.importe_pagado);
+    semanas[key].pagos.push(m);
+  });
+  const semanasArr = Object.values(semanas).sort((a,b)=>a.key.localeCompare(b.key));
+  let acum=0;
+  semanasArr.forEach(s=>{acum+=s.total;s.acum=acum;});
+
+  // Gráfico limpio — solo MO
+  const ctx = document.getElementById('chartPagos');
+  if(G.charts.pagos) G.charts.pagos.destroy();
+  if(semanasArr.length){
+    G.charts.pagos = new Chart(ctx,{
+      type:'bar',
+      data:{
+        labels:semanasArr.map(s=>fmtSemana(s.inicio)),
+        datasets:[
+          {type:'bar',label:'Pago esa semana',data:semanasArr.map(s=>s.total),
+           backgroundColor:'rgba(91,79,204,.2)',borderColor:'var(--alb)',borderWidth:1.5,borderRadius:4,order:2},
+          {type:'line',label:'Acumulado pagado',data:semanasArr.map(s=>s.acum),
+           borderColor:'#1C1917',borderWidth:2,pointRadius:4,pointBackgroundColor:'#1C1917',fill:false,tension:.3,order:1},
+          {type:'line',label:'Teórico por avance',data:semanasArr.map(()=>g.moTeorico),
+           borderColor:'var(--ok)',borderWidth:1.5,borderDash:[5,4],pointRadius:0,fill:false,order:0},
+        ]
+      },
+      options:{responsive:true,interaction:{mode:'index',intersect:false},
+        plugins:{legend:{position:'bottom',labels:{font:{size:11},usePointStyle:true}}},
+        scales:{y:{ticks:{callback:v=>money(v)},grid:{color:'#f0ece4'}}}}
+    });
+  }
+
+  // Historial semanas (descendente)
+  const maxSem = Math.max(...semanasArr.map(s=>s.total),1);
+  document.getElementById('semanasHistorial').innerHTML = semanasArr.length
+    ? [...semanasArr].reverse().map(s => {
+        const pct = s.total/maxSem*100;
+        return `<div class="semana-bloque">
+          <div class="semana-hd" onclick="toggleSemana(this)">
+            <div class="semana-fecha">${fmtSemana(s.inicio)}</div>
+            <div class="semana-barra-wrap"><div class="semana-barra" style="width:${pct}%"></div></div>
+            <div class="semana-total">${money(s.total)}</div>
+            <div class="semana-desvio" style="color:var(--text3)">${s.pagos.length} pago${s.pagos.length!==1?'s':''} · acum. ${money(s.acum)}</div>
+          </div>
+          <div class="semana-body">
+            ${s.pagos.map(p=>{
+              const c = oc(p.oficio);
+              return `<div class="pago-linea">
+                <div style="width:8px;height:8px;border-radius:50%;background:${c.color};flex-shrink:0"></div>
+                <div style="flex:1">
+                  <div class="pago-linea-concepto"><strong>${money(n(p.importe_pagado))}</strong> · ${p.oficio||'MO'}</div>
+                  <div class="pago-linea-meta">${p.responsable||'—'} · Efectivo${p.observacion?' · '+p.observacion:''}</div>
+                </div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>`;
+      }).join('')
+    : '<div class="empty-state"><div class="empty-icon">₱</div><div class="empty-text">Sin pagos de MO registrados todavía.<br>Usá el formulario de la izquierda para agregar el primer pago.</div></div>';
 }
 
 /* ══════════════════════════════════════════════════
@@ -1391,8 +1508,55 @@ async function guardarTarea(e){
 }
 
 /* ══════════════════════════════════════════════════
-   CONFIG
+   PAGAR MATERIAL — 1 solo clic, sin formulario
+   Los materiales siempre se pagan al contado,
+   por el total presupuestado del ítem.
 ══════════════════════════════════════════════════ */
+async function pagarMaterialCompleto(itemId){
+  const item = G.items.find(i=>i.item_id===itemId);
+  if(!item) return;
+  const ei = enrich(item);
+  const pendiente = item.total - ei.pagado;
+  const totalItem = n(item.cantidad_presupuestada) * n(item.costo_unitario);
+
+  // Confirmar con contexto claro
+  const ok = confirm(
+    `Registrar compra de:\n\n"${item.concepto}"\n\n` +
+    `${num(item.cantidad_presupuestada)} ${item.unidad} × ${money(item.costo_unitario)} = ${money(totalItem)}\n\n` +
+    (ei.pagado > 0 ? `Ya pagaste: ${money(ei.pagado)} — se registra el saldo restante: ${money(pendiente)}\n\n` : '') +
+    `¿Confirmar pago en efectivo de ${money(ei.pagado > 0 ? pendiente : totalItem)}?`
+  );
+  if(!ok) return;
+
+  const importeAPagar = ei.pagado > 0 ? pendiente : totalItem;
+  const cantAPagar    = ei.pagado > 0
+    ? n(item.cantidad_presupuestada) - ei.ejec
+    : n(item.cantidad_presupuestada);
+
+  const mov = {
+    movimiento_id:     genId('MOV'),
+    fecha:             hoy(),
+    item_id:           itemId,
+    tipo_movimiento:   'Pago',
+    cantidad_ejecutada: cantAPagar,
+    importe_pagado:    importeAPagar,
+    responsable:       item.responsable || '',
+    sector:            item.sector || 'General',
+    oficio:            '',
+    medio_pago:        'Efectivo',
+    observacion:       `Compra completa · ${num(cantAPagar)} ${item.unidad}`,
+    fecha_creacion:hoy(), fecha_actualizacion:hoy(), estado_registro:'Activo',
+  };
+
+  G.movs.push(mov);
+  await apiCall('createMovimiento', mov);
+  renderAll();
+  // Mantener tab de materiales
+  document.querySelectorAll('.tab-item').forEach(b=>b.classList.remove('on'));
+  document.querySelector('.tab-item[data-tab="Material:"]')?.classList.add('on');
+  G.tabActual = 'Material:';
+  renderTareas();
+}
 function guardarConfig(){
   G.apiUrl  = document.getElementById('cfgUrl').value.trim();
   G.moneda  = document.getElementById('cfgMoneda').value.trim()||'ARS';
