@@ -3,643 +3,710 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Presupuesto Construcción v4</title>
+<title>Obra · Control de costos</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root{
-  --bg:#f0f2f5; --panel:#fff; --soft:#f8f9fb;
-  --text:#111827; --muted:#6b7280; --border:#e5e7eb;
-  --primary:#1a56db; --primary-dk:#1447c0;
-  --ok:#059669; --warn:#d97706; --danger:#dc2626;
-  --mo:#7c3aed; --mat:#0284c7;
-  --albanil:#7F77DD; --plomeria:#1D9E75;
-  --electrico:#EF9F27; --herreria:#E24B4A; --otro:#888780;
-  --r:14px; --sidebar:240px;
+  --bg:#F7F5F0;
+  --panel:#fff;
+  --text:#1a1a1a;
+  --muted:#7a7a72;
+  --border:#E8E4DC;
+  --mat:#1B6CA8;      /* azul — materiales */
+  --mat-bg:#EEF5FB;
+  --alb:#5B4FCC;      /* violeta — albañilería */
+  --alb-bg:#F0EEFB;
+  --plo:#1A8A62;      /* verde — plomería */
+  --plo-bg:#E8F6F0;
+  --ele:#B8700A;      /* ámbar — electricidad */
+  --ele-bg:#FBF4E6;
+  --her:#B52A2A;      /* rojo — herrería */
+  --her-bg:#FAEBEB;
+  --ok:#1A8A62;
+  --warn:#B8700A;
+  --danger:#B52A2A;
+  --sidebar:220px;
+  --r:12px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
 .app{display:grid;grid-template-columns:var(--sidebar) 1fr;min-height:100vh}
 
-/* SIDEBAR */
-aside{background:#0f172a;color:#e2e8f0;padding:20px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:4px;overflow-y:auto}
-.brand{display:flex;align-items:center;gap:10px;padding:0 6px 20px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:8px}
-.brand-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#1a56db,#7c3aed);display:grid;place-items:center;font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:#fff;flex-shrink:0}
-.brand-text{font-size:13px;font-weight:600;line-height:1.3}
-.brand-sub{font-size:11px;color:#64748b;margin-top:2px}
-.nav-section{font-size:10px;font-weight:600;letter-spacing:.08em;color:#475569;text-transform:uppercase;padding:14px 12px 6px}
-.nav-btn{width:100%;border:0;background:transparent;color:#94a3b8;padding:9px 12px;border-radius:10px;text-align:left;cursor:pointer;font:inherit;font-size:13px;display:flex;align-items:center;gap:9px;transition:.15s}
-.nav-btn:hover{background:rgba(255,255,255,.06);color:#e2e8f0}
-.nav-btn.active{background:rgba(255,255,255,.1);color:#fff}
-.nav-icon{font-size:15px;opacity:.8}
-.sidebar-footer{margin-top:auto;padding:12px;border-top:1px solid rgba(255,255,255,.06);font-size:11px;color:#475569}
+/* ── SIDEBAR ── */
+aside{
+  background:#1a1a1a;
+  padding:24px 16px;
+  position:sticky;top:0;height:100vh;
+  display:flex;flex-direction:column;gap:2px;
+  overflow-y:auto;
+}
+.brand{padding:0 8px 24px;border-bottom:1px solid #2e2e2e;margin-bottom:12px}
+.brand-name{font-family:'Fraunces',serif;font-size:18px;color:#fff;font-weight:600;line-height:1.2}
+.brand-sub{font-size:11px;color:#5a5a5a;margin-top:3px;letter-spacing:.04em}
+.nav-group{font-size:9px;font-weight:600;letter-spacing:.12em;color:#444;text-transform:uppercase;padding:16px 8px 4px}
+.nav-btn{
+  width:100%;border:0;background:transparent;
+  color:#8a8a8a;padding:9px 10px;border-radius:8px;
+  text-align:left;cursor:pointer;font:inherit;font-size:13px;
+  display:flex;align-items:center;gap:10px;transition:.12s;
+}
+.nav-btn:hover{background:#242424;color:#ddd}
+.nav-btn.active{background:#2a2a2a;color:#fff}
+.nav-dot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.5;flex-shrink:0}
+.nav-btn.active .nav-dot{opacity:1}
+.sync-info{margin-top:auto;padding:12px 8px;font-size:10px;color:#444;line-height:1.6}
 
-/* MAIN */
-main{padding:24px;overflow-x:hidden}
-.topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:22px}
-.page-title{font-size:22px;font-weight:600;letter-spacing:-.02em}
-.page-sub{color:var(--muted);font-size:13px;margin-top:4px;max-width:680px}
-.toolbar{display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0}
-
-/* BUTTONS */
-.btn{border:0;border-radius:10px;padding:9px 14px;font:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:6px}
-.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:var(--primary-dk)}
-.btn-soft{background:#fff;color:var(--text);border:1px solid var(--border)}.btn-soft:hover{background:var(--soft)}
-.btn-mo{background:#f5f3ff;color:var(--mo);border:1px solid #ddd6fe}.btn-mo:hover{background:#ede9fe}
-.btn-danger-soft{background:#fef2f2;color:var(--danger);border:1px solid #fecaca}
-.btn-ok{background:#ecfdf5;color:var(--ok);border:1px solid #bbf7d0}
-.btn-sm{padding:6px 10px;font-size:12px;border-radius:8px}
-
-/* SECTIONS */
+/* ── MAIN ── */
+main{padding:28px 32px;overflow-x:hidden}
 .section{display:none}.section.active{display:block}
 
-/* CARDS */
-.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:14px}
-.card-hd{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}
-.card-hd h3{font-size:15px;font-weight:600}
-.card-hd p{color:var(--muted);font-size:12px;margin-top:3px}
+/* ── PAGE HEADER ── */
+.page-hd{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:24px}
+.page-title{font-family:'Fraunces',serif;font-size:26px;font-weight:600;letter-spacing:-.02em;color:var(--text)}
+.page-sub{color:var(--muted);font-size:13px;margin-top:4px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0}
 
-/* KPI GRID */
-.kpi-grid{display:grid;gap:12px;margin-bottom:16px}
-.g6{grid-template-columns:repeat(6,1fr)}
-.g4{grid-template-columns:repeat(4,1fr)}
-.g3{grid-template-columns:repeat(3,1fr)}
-.kpi{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px}
-.kpi-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
-.kpi-value{font-size:21px;font-weight:600;margin-top:6px;letter-spacing:-.03em;font-family:'DM Mono',monospace}
-.kpi-sub{font-size:11px;color:var(--muted);margin-top:4px}
-.kpi.bl-mo{border-left:3px solid var(--mo)}
-.kpi.bl-ok{border-left:3px solid var(--ok)}
-.kpi.bl-warn{border-left:3px solid var(--warn)}
-.kpi.bl-mat{border-left:3px solid var(--mat)}
+/* ── BOTONES ── */
+.btn{border:0;border-radius:8px;padding:9px 16px;font:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:.12s;display:inline-flex;align-items:center;gap:7px}
+.btn-primary{background:#1a1a1a;color:#fff}.btn-primary:hover{background:#333}
+.btn-soft{background:#fff;color:var(--text);border:1px solid var(--border)}.btn-soft:hover{background:var(--bg)}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:6px}
+.btn-danger{background:#fef2f2;color:var(--danger);border:1px solid #fecaca}
 
-/* OFICIO CARDS */
-.oficio-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
-.oficio-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px}
-.oficio-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px;flex-shrink:0}
-.oficio-name{font-size:12px;font-weight:600;display:flex;align-items:center;margin-bottom:8px}
-.oficio-val{font-family:'DM Mono',monospace;font-size:16px;font-weight:500;margin-bottom:4px}
-.oficio-sub{font-size:11px;color:var(--muted)}
-.oficio-bar{height:5px;background:var(--border);border-radius:99px;overflow:hidden;margin-top:8px}
-.oficio-bar span{display:block;height:100%;border-radius:99px}
+/* ══════════════════════════════════════
+   SECCIÓN 1 — RESUMEN (Dashboard)
+══════════════════════════════════════ */
 
-/* SEMANAS TABLE */
-.semanas-wrap{overflow-x:auto}
-.semanas-table{width:100%;border-collapse:collapse;font-size:13px}
-.semanas-table th{font-size:11px;font-weight:600;color:var(--muted);background:var(--soft);padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap;text-transform:uppercase;letter-spacing:.05em}
-.semanas-table td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
-.semanas-table tr:last-child td{border-bottom:none}
-.semanas-table tr:hover td{background:#fafafa}
-.bar-inline{display:flex;align-items:center;gap:8px}
-.bar-track{height:6px;width:100px;background:var(--border);border-radius:99px;overflow:hidden;flex-shrink:0}
-.bar-fill{height:100%;border-radius:99px}
-.desvio-ok{color:var(--ok)}.desvio-warn{color:var(--warn)}.desvio-bad{color:var(--danger)}
+/* Bloque grande: dos columnas principales */
+.resumen-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
 
-/* PRESUPUESTO TABLE */
-.table-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:13px}
-th,td{padding:9px 10px;border-bottom:1px solid var(--border);text-align:left;vertical-align:middle}
-th{font-size:11px;font-weight:600;color:var(--muted);background:var(--soft);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
-tr:hover td{background:#fafafa}
-.mono{font-family:'DM Mono',monospace}
+/* Tarjeta grande tipo "cuadro contable" */
+.cuadro{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.cuadro-header{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.cuadro-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.cuadro-total{font-family:'DM Mono',monospace;font-size:20px;font-weight:500}
+.cuadro-body{padding:0}
 
-/* PROGRESS */
-.prog-wrap{display:flex;align-items:center;gap:8px}
-.prog{height:6px;width:80px;background:var(--border);border-radius:99px;overflow:hidden;flex-shrink:0}
-.prog span{display:block;height:100%;border-radius:99px}
+/* Filas dentro del cuadro */
+.cuadro-row{
+  display:grid;grid-template-columns:1fr auto auto;
+  align-items:center;gap:12px;
+  padding:12px 20px;
+  border-bottom:1px solid var(--border);
+  transition:.1s;
+}
+.cuadro-row:last-child{border-bottom:none}
+.cuadro-row:hover{background:var(--bg)}
+.row-label{font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px}
+.row-bar-wrap{width:100px;height:6px;background:var(--border);border-radius:99px;overflow:hidden;flex-shrink:0}
+.row-bar{height:100%;border-radius:99px;transition:width .4s}
+.row-amount{font-family:'DM Mono',monospace;font-size:13px;text-align:right;white-space:nowrap}
+.row-amount.pagado{font-weight:600}
+.row-amount.muted{color:var(--muted);font-size:12px}
 
-/* CHIPS / BADGES */
-.chip{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:600;white-space:nowrap}
-.chip-material{background:#e0f2fe;color:#0369a1}
-.chip-mo{background:#f5f3ff;color:var(--mo)}
-.chip-albanil{background:#EEEDFE;color:#3C3489}
-.chip-plomeria{background:#E1F5EE;color:#085041}
-.chip-electrico{background:#FAEEDA;color:#633806}
-.chip-herreria{background:#FCEBEB;color:#791F1F}
-.chip-otro{background:#F1EFE8;color:#444441}
-.chip-servicio{background:#fef3c7;color:#92400e}
-.status-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
-.estado-fin{background:#ecfdf5;color:var(--ok);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600}
-.estado-cur{background:#fffbeb;color:var(--warn);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600}
-.estado-pen{background:#f9fafb;color:var(--muted);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600}
+/* Indicador de color por tipo */
+.tipo-pill{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 9px;border-radius:99px;
+  font-size:11px;font-weight:600;white-space:nowrap;
+}
+.pill-mat{background:var(--mat-bg);color:var(--mat)}
+.pill-alb{background:var(--alb-bg);color:var(--alb)}
+.pill-plo{background:var(--plo-bg);color:var(--plo)}
+.pill-ele{background:var(--ele-bg);color:var(--ele)}
+.pill-her{background:var(--her-bg);color:var(--her)}
+.pill-dot{width:5px;height:5px;border-radius:50%;background:currentColor}
 
-/* FILTERS */
-.filters{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:10px;margin-bottom:14px}
+/* Panel derecho: avance + desvío */
+.resumen-right{display:flex;flex-direction:column;gap:16px}
 
-/* INPUTS */
-input,select,textarea{width:100%;border:1px solid var(--border);border-radius:10px;padding:9px 11px;font:inherit;font-size:13px;background:#fff;color:var(--text);outline:none}
-input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(26,86,219,.1)}
-label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em}
+.stat-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:20px}
+.stat-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px}
+.stat-value{font-family:'Fraunces',serif;font-size:36px;font-weight:700;letter-spacing:-.03em;line-height:1}
+.stat-sub{font-size:12px;color:var(--muted);margin-top:6px}
 
-/* FORM */
-.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.form-grid .full{grid-column:1/-1}
-.form-grid .half{grid-column:span 2}
-.form-sep{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:12px 0 6px;border-top:1px solid var(--border);margin-top:4px;grid-column:1/-1}
+.avance-bar-big{height:12px;background:var(--border);border-radius:99px;overflow:hidden;margin-top:12px}
+.avance-bar-big span{display:block;height:100%;border-radius:99px;background:#1a1a1a;transition:width .5s}
 
-/* HINT BOX */
-.hint{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:10px;padding:10px 14px;font-size:12px;margin-bottom:14px;grid-column:1/-1}
-.hint.warn{background:#fffbeb;color:#92400e;border-color:#fde68a}
+/* Tabla semanal en el resumen */
+.sem-mini{width:100%;border-collapse:collapse;font-size:13px}
+.sem-mini th{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding:8px 12px;border-bottom:1px solid var(--border);text-align:left}
+.sem-mini td{padding:10px 12px;border-bottom:1px solid var(--border)}
+.sem-mini tr:last-child td{border-bottom:none}
+.sem-mini tr:hover td{background:var(--bg)}
 
-/* AVANCE HELPER */
-.avance-helper{background:var(--soft);border:1px solid var(--border);border-radius:10px;padding:12px 14px;grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;align-items:end}
-.avance-helper-label{font-size:11px;color:var(--muted);margin-bottom:4px}
-.avance-helper-val{font-family:'DM Mono',monospace;font-size:16px;font-weight:500}
+/* ══════════════════════════════════════
+   SECCIÓN 2 — PAGOS MO SEMANAL
+══════════════════════════════════════ */
+.sem-header{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.sem-filter{
+  padding:7px 14px;border-radius:8px;border:1px solid var(--border);
+  background:var(--panel);font:inherit;font-size:13px;cursor:pointer;
+  color:var(--text);outline:none;
+}
+.sem-filter.active-alb{background:var(--alb-bg);border-color:var(--alb);color:var(--alb);font-weight:600}
+.sem-filter.active-plo{background:var(--plo-bg);border-color:var(--plo);color:var(--plo);font-weight:600}
+.sem-filter.active-ele{background:var(--ele-bg);border-color:var(--ele);color:var(--ele);font-weight:600}
+.sem-filter.active-her{background:var(--her-bg);border-color:var(--her);color:var(--her);font-weight:600}
 
-/* MODAL */
-.modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.5);display:none;align-items:center;justify-content:center;padding:20px;z-index:100;backdrop-filter:blur(2px)}
-.modal-backdrop.active{display:flex}
-.modal{width:min(900px,100%);max-height:92vh;overflow-y:auto;background:#fff;border-radius:18px;box-shadow:0 25px 60px rgba(0,0,0,.2);padding:24px}
-.modal-hd{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:20px}
-.modal-hd h3{font-size:17px;font-weight:600}
-.modal-hd p{color:var(--muted);font-size:13px;margin-top:4px}
+.sem-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.sem-kpi{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:16px}
+.sem-kpi-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px}
+.sem-kpi-value{font-family:'DM Mono',monospace;font-size:20px;font-weight:500}
+.sem-kpi-sub{font-size:11px;color:var(--muted);margin-top:4px}
+
+.chart-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:16px}
+.chart-card h3{font-size:14px;font-weight:600;margin-bottom:4px}
+.chart-card p{font-size:12px;color:var(--muted);margin-bottom:16px}
+
+.semana-card{
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:var(--r);margin-bottom:10px;overflow:hidden;
+}
+.semana-card-hd{
+  display:grid;grid-template-columns:110px 1fr auto;
+  align-items:center;gap:12px;padding:14px 18px;cursor:pointer;
+  transition:.1s;
+}
+.semana-card-hd:hover{background:var(--bg)}
+.semana-fecha{font-size:13px;font-weight:600}
+.semana-barra-wrap{height:8px;background:var(--border);border-radius:99px;overflow:hidden}
+.semana-barra{height:100%;border-radius:99px;background:var(--alb);transition:width .4s}
+.semana-importe{font-family:'DM Mono',monospace;font-size:15px;font-weight:500;text-align:right;white-space:nowrap}
+.semana-desvio{font-size:11px;text-align:right;margin-top:2px}
+.semana-body{padding:0 18px 14px;display:none;border-top:1px solid var(--border)}
+.semana-body.open{display:block}
+.pago-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed var(--border)}
+.pago-item:last-child{border-bottom:none}
+.pago-concepto{font-size:13px}
+.pago-meta{font-size:11px;color:var(--muted);margin-top:1px}
+.pago-monto{font-family:'DM Mono',monospace;font-size:13px;font-weight:500}
+
+/* ══════════════════════════════════════
+   SECCIÓN 3 — ÍTEMS / AVANCES
+══════════════════════════════════════ */
+.tabs-bar{display:flex;gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--panel);margin-bottom:16px;width:fit-content}
+.tab-btn{padding:8px 18px;border:0;background:transparent;font:inherit;font-size:13px;cursor:pointer;color:var(--muted);transition:.12s;border-right:1px solid var(--border)}
+.tab-btn:last-child{border-right:none}
+.tab-btn.active{background:#1a1a1a;color:#fff;font-weight:500}
+
+.items-list{display:grid;gap:10px}
+.item-card{
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:var(--r);overflow:hidden;
+}
+.item-card-hd{
+  display:grid;grid-template-columns:auto 1fr auto auto;
+  align-items:center;gap:14px;padding:14px 16px;
+}
+.item-card-name{font-size:14px;font-weight:500}
+.item-card-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.item-card-pct{font-family:'DM Mono',monospace;font-size:15px;font-weight:500;text-align:right;white-space:nowrap}
+.item-card-acciones{display:flex;gap:6px;flex-shrink:0}
+.item-prog{height:4px;background:var(--border);overflow:hidden}
+.item-prog span{display:block;height:100%;transition:width .4s}
+
+/* ══════════════════════════════════════
+   SECCIÓN 4 — CARGAR DATOS
+══════════════════════════════════════ */
+.form-cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+.form-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:24px}
+.form-card h3{font-size:15px;font-weight:600;margin-bottom:4px}
+.form-card p{font-size:12px;color:var(--muted);margin-bottom:20px}
+.form-row{margin-bottom:14px}
+label{display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+input,select,textarea{
+  width:100%;border:1px solid var(--border);border-radius:8px;
+  padding:9px 11px;font:inherit;font-size:13px;
+  background:#fff;color:var(--text);outline:none;
+}
+input:focus,select:focus,textarea:focus{border-color:#1a1a1a;box-shadow:0 0 0 2px rgba(26,26,26,.08)}
+.hint-box{background:#F0F4FF;border:1px solid #C7D7F7;border-radius:8px;padding:10px 14px;font-size:12px;color:#2a4a9a;margin-bottom:14px}
+.auto-calc{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:13px;margin-top:10px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.auto-calc-item label{color:var(--muted);font-size:10px;margin-bottom:3px}
+.auto-calc-item .val{font-family:'DM Mono',monospace;font-size:15px;font-weight:500}
+.form-ft{display:flex;justify-content:flex-end;gap:8px;padding-top:16px;border-top:1px solid var(--border);margin-top:16px}
+
+/* ══════════════════════════════════════
+   MODAL
+══════════════════════════════════════ */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;padding:20px;z-index:100;backdrop-filter:blur(3px)}
+.modal-bg.open{display:flex}
+.modal{width:min(560px,100%);background:var(--panel);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.15);padding:24px;max-height:90vh;overflow-y:auto}
+.modal-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px}
+.modal-hd h3{font-family:'Fraunces',serif;font-size:20px;font-weight:600}
+.modal-hd p{font-size:12px;color:var(--muted);margin-top:3px}
 .modal-ft{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
 
-/* CHARTS */
-.charts-row{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin-bottom:14px}
-.bottom-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+/* ══════════════════════════════════════
+   CONFIGURACIÓN
+══════════════════════════════════════ */
+.config-wrap{max-width:560px}
 
-/* SECTOR */
-.sector-item{margin-bottom:12px}
-.sector-row{display:flex;justify-content:space-between;margin-bottom:5px}
-.sector-name{font-size:13px;font-weight:500}
-.sector-pct{font-size:12px;color:var(--muted);font-family:'DM Mono',monospace}
-.sector-bar{height:8px;background:var(--border);border-radius:99px;overflow:hidden}
-.sector-bar span{display:block;height:100%;border-radius:99px;background:var(--primary)}
-.sector-meta{font-size:11px;color:var(--muted);margin-top:4px}
-
-/* RECIENTES */
-.rec-item{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
-.rec-item:last-child{border-bottom:0}
-.rec-concepto{font-size:13px;font-weight:500}
-.rec-meta{font-size:11px;color:var(--muted);margin-top:2px}
-.rec-importe{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;text-align:right}
-
-/* EMPTY */
-.empty{padding:32px;text-align:center;color:var(--muted);border:1px dashed var(--border);border-radius:var(--r);background:var(--soft);font-size:13px}
-
-/* MIGRATION */
-#migrationResult{margin-top:12px;padding:10px 14px;border-radius:10px;font-size:13px;display:none}
-#migrationResult.ok{background:#ecfdf5;color:#065f46;border:1px solid #bbf7d0}
-#migrationResult.warn{background:#fffbeb;color:#92400e;border:1px solid #fde68a}
+/* UTILES */
+.mono{font-family:'DM Mono',monospace}
+.text-ok{color:var(--ok)}.text-warn{color:var(--warn)}.text-bad{color:var(--danger)}
+.empty{padding:32px;text-align:center;color:var(--muted);border:1px dashed var(--border);border-radius:var(--r);font-size:13px}
 
 /* RESPONSIVE */
-@media(max-width:1100px){
+@media(max-width:960px){
   .app{grid-template-columns:1fr}
-  aside{height:auto;position:relative;flex-direction:row;flex-wrap:wrap;padding:12px}
-  .brand{border-bottom:0;padding-bottom:0;margin-bottom:0}
-  .nav-section{display:none}
-  .g6{grid-template-columns:repeat(3,1fr)}
-  .oficio-grid,.charts-row,.bottom-row{grid-template-columns:1fr 1fr}
-  .filters{grid-template-columns:1fr 1fr}
-  .form-grid{grid-template-columns:1fr 1fr}
-  .sidebar-footer{display:none}
+  aside{height:auto;position:relative;flex-direction:row;flex-wrap:wrap;padding:14px 16px}
+  .brand{border-bottom:none;padding-bottom:0;margin-bottom:0}
+  .nav-group{display:none}
+  .sync-info{display:none}
+  .resumen-grid,.form-cols{grid-template-columns:1fr}
+  .sem-kpis{grid-template-columns:repeat(2,1fr)}
 }
-@media(max-width:680px){
-  .g6{grid-template-columns:repeat(2,1fr)}
-  .oficio-grid{grid-template-columns:1fr 1fr}
-  .filters{grid-template-columns:1fr}
-  .form-grid,.avance-helper{grid-template-columns:1fr}
-  .form-grid .half{grid-column:1}
+@media(max-width:600px){
+  main{padding:16px}
+  .sem-kpis{grid-template-columns:1fr 1fr}
+  .item-card-hd{grid-template-columns:auto 1fr auto}
+  .item-card-acciones{display:none}
 }
 </style>
 </head>
 <body>
 <div class="app">
 
-<!-- SIDEBAR -->
+<!-- ─── SIDEBAR ─── -->
 <aside>
   <div class="brand">
-    <div class="brand-icon">PC</div>
-    <div>
-      <div class="brand-text">Presupuesto Obra</div>
-      <div class="brand-sub">v4 · Apps Script</div>
-    </div>
+    <div class="brand-name">Construcción</div>
+    <div class="brand-sub">Control de costos · v5</div>
   </div>
-  <div class="nav-section">Gestión</div>
-  <button class="nav-btn active" data-section="dashboard"><span class="nav-icon">▦</span> Dashboard</button>
-  <button class="nav-btn" data-section="semanal"><span class="nav-icon">📅</span> Seguimiento MO</button>
-  <button class="nav-btn" data-section="presupuesto"><span class="nav-icon">☰</span> Presupuesto</button>
-  <button class="nav-btn" data-section="movimientos"><span class="nav-icon">↔</span> Avances y pagos</button>
-  <div class="nav-section">Análisis</div>
-  <button class="nav-btn" data-section="responsables"><span class="nav-icon">◉</span> Responsables</button>
-  <button class="nav-btn" data-section="sectores"><span class="nav-icon">⬡</span> Sectores</button>
-  <div class="nav-section">Sistema</div>
-  <button class="nav-btn" data-section="configuracion"><span class="nav-icon">⚙</span> Configuración</button>
-  <div class="sidebar-footer">
-    ID: 13DQxb5C…xZPOI<br>
-    <span id="lastSync" style="color:#475569">Sin sincronizar</span>
+
+  <button class="nav-btn active" data-sec="resumen">
+    <span class="nav-dot"></span> Resumen general
+  </button>
+  <button class="nav-btn" data-sec="semanal">
+    <span class="nav-dot"></span> Pagos MO semanal
+  </button>
+  <button class="nav-btn" data-sec="items">
+    <span class="nav-dot"></span> Ítems y avances
+  </button>
+  <button class="nav-btn" data-sec="cargar">
+    <span class="nav-dot"></span> Cargar datos
+  </button>
+  <div class="nav-group">Sistema</div>
+  <button class="nav-btn" data-sec="config">
+    <span class="nav-dot"></span> Configuración
+  </button>
+
+  <div class="sync-info">
+    <div id="syncStatus">Sin sincronizar</div>
+    <div style="margin-top:4px;color:#333">Modo: <span id="modeLabel">Demo</span></div>
   </div>
 </aside>
 
-<!-- MAIN -->
+<!-- ─── MAIN ─── -->
 <main>
-  <div class="topbar">
+
+<!-- ══════════ RESUMEN ══════════ -->
+<section id="resumen" class="section active">
+  <div class="page-hd">
     <div>
-      <div class="page-title" id="pageTitle">Dashboard</div>
-      <div class="page-sub" id="pageSubtitle">Resumen ejecutivo del proyecto.</div>
+      <div class="page-title">¿En qué estamos?</div>
+      <div class="page-sub">Vista rápida de todo lo gastado y el avance de obra.</div>
     </div>
-    <div class="toolbar">
+    <div class="actions">
       <button class="btn btn-soft" onclick="loadData()">↻ Actualizar</button>
-      <button class="btn btn-mo" onclick="openMovModal()">+ Avance / Pago</button>
-      <button class="btn btn-primary" onclick="openItemModal()">+ Nuevo ítem</button>
     </div>
   </div>
 
-  <!-- ═══ DASHBOARD ═══ -->
-  <section id="dashboard" class="section active">
-    <div class="kpi-grid g6">
-      <div class="kpi"><div class="kpi-label">Presupuesto total</div><div class="kpi-value" id="kpiPresup">—</div><div class="kpi-sub">Suma ítems</div></div>
-      <div class="kpi"><div class="kpi-label">Ejecutado teórico</div><div class="kpi-value" id="kpiEjec">—</div><div class="kpi-sub">Cant. × costo unitario</div></div>
-      <div class="kpi"><div class="kpi-label">Total pagado</div><div class="kpi-value" id="kpiPagado">—</div><div class="kpi-sub">Pagos reales</div></div>
-      <div class="kpi bl-ok"><div class="kpi-label">Avance general</div><div class="kpi-value" id="kpiAvance">—</div><div class="kpi-sub">Ponderado</div></div>
-      <div class="kpi bl-warn"><div class="kpi-label">Saldo disponible</div><div class="kpi-value" id="kpiSaldo">—</div><div class="kpi-sub">Presup. − pagado</div></div>
-      <div class="kpi" id="kpiDesvioCard"><div class="kpi-label">Desvío MO</div><div class="kpi-value" id="kpiDesvio">—</div><div class="kpi-sub">Pagado − ejecutado</div></div>
-    </div>
+  <div class="resumen-grid">
+    <!-- Columna izquierda: cuadros de gastos -->
+    <div style="display:flex;flex-direction:column;gap:16px">
 
-    <!-- Cards por oficio -->
-    <div class="oficio-grid" id="oficioCards"></div>
-
-    <div class="charts-row">
-      <div class="card" style="margin-bottom:0">
-        <div class="card-hd"><div><h3>Presupuesto · ejecutado · pagado</h3><p>Comparación global</p></div></div>
-        <canvas id="chartGeneral" height="110"></canvas>
-      </div>
-      <div class="card" style="margin-bottom:0">
-        <div class="card-hd"><div><h3>Distribución por tipo</h3><p>Material vs MO y otros</p></div></div>
-        <canvas id="chartTipo" height="160"></canvas>
-      </div>
-    </div>
-
-    <div class="bottom-row" style="margin-top:14px">
-      <div class="card" style="margin-bottom:0">
-        <div class="card-hd"><div><h3>Avance por sector</h3></div></div>
-        <div id="avanceSectores"></div>
-      </div>
-      <div class="card" style="margin-bottom:0">
-        <div class="card-hd"><div><h3>Últimos movimientos</h3></div></div>
-        <div id="gastosRecientes"></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══ SEGUIMIENTO MO SEMANAL ═══ -->
-  <section id="semanal" class="section">
-    <div class="card">
-      <div class="card-hd">
-        <div>
-          <h3>Seguimiento semanal — Mano de obra</h3>
-          <p>Pagos realizados por semana vs lo que correspondería por avance físico. Filtrar por oficio para ver albañiles, plomeros, etc.</p>
+      <!-- Tarjeta MATERIALES -->
+      <div class="cuadro">
+        <div class="cuadro-header">
+          <span class="cuadro-title">📦 Materiales</span>
+          <span class="cuadro-total mono" id="matTotal">—</span>
         </div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <select id="filtroOficioSemanal" onchange="renderSemanal()" style="width:160px">
-            <option value="">Todos los oficios</option>
+        <div class="cuadro-body" id="matRows">
+          <div class="empty">Cargando…</div>
+        </div>
+      </div>
+
+      <!-- Tarjeta MANO DE OBRA -->
+      <div class="cuadro">
+        <div class="cuadro-header">
+          <span class="cuadro-title">🧱 Mano de obra</span>
+          <span class="cuadro-total mono" id="moTotal">—</span>
+        </div>
+        <div class="cuadro-body" id="moRows">
+          <div class="empty">Cargando…</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Columna derecha: stats y últimos pagos -->
+    <div class="resumen-right">
+
+      <!-- Stat: avance general -->
+      <div class="stat-card">
+        <div class="stat-label">Avance de obra</div>
+        <div class="stat-value" id="statAvance">—</div>
+        <div class="stat-sub" id="statAvanceSub">calculando…</div>
+        <div class="avance-bar-big"><span id="avanceBarBig" style="width:0%"></span></div>
+      </div>
+
+      <!-- Stat: saldo -->
+      <div class="stat-card">
+        <div class="stat-label">Saldo disponible</div>
+        <div class="stat-value" id="statSaldo" style="font-size:28px">—</div>
+        <div class="stat-sub" id="statSaldoSub">de presupuesto total</div>
+      </div>
+
+      <!-- Últimos pagos -->
+      <div class="cuadro">
+        <div class="cuadro-header">
+          <span class="cuadro-title">Últimos pagos</span>
+          <button class="btn btn-soft btn-sm" onclick="goSec('semanal')">Ver todos →</button>
+        </div>
+        <div id="ultimosPagos"><div class="empty" style="padding:16px">Cargando…</div></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ PAGOS MO SEMANAL ══════════ -->
+<section id="semanal" class="section">
+  <div class="page-hd">
+    <div>
+      <div class="page-title">Pagos semanales MO</div>
+      <div class="page-sub">¿Cuánto pagué cada semana? ¿Va en línea con lo que avanzaron?</div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary" onclick="abrirModalPago()">+ Registrar pago</button>
+    </div>
+  </div>
+
+  <!-- Filtro por oficio -->
+  <div class="sem-header" id="filtrosOficio">
+    <button class="sem-filter active" data-oficio="" onclick="filtrarOficio(this,'')">Todos</button>
+    <button class="sem-filter" data-oficio="Albañilería" onclick="filtrarOficio(this,'Albañilería')">🧱 Albañilería</button>
+    <button class="sem-filter" data-oficio="Plomería" onclick="filtrarOficio(this,'Plomería')">🔧 Plomería</button>
+    <button class="sem-filter" data-oficio="Electricidad" onclick="filtrarOficio(this,'Electricidad')">⚡ Electricidad</button>
+    <button class="sem-filter" data-oficio="Herrería" onclick="filtrarOficio(this,'Herrería')">🔩 Herrería</button>
+  </div>
+
+  <!-- KPIs MO -->
+  <div class="sem-kpis">
+    <div class="sem-kpi">
+      <div class="sem-kpi-label">Total pagado MO</div>
+      <div class="sem-kpi-value" id="moKpiPagado">—</div>
+      <div class="sem-kpi-sub" id="moKpiPagadoSub">en total</div>
+    </div>
+    <div class="sem-kpi">
+      <div class="sem-kpi-label">Ejecutado teórico</div>
+      <div class="sem-kpi-value" id="moKpiTeorico">—</div>
+      <div class="sem-kpi-sub">por avance físico × precio</div>
+    </div>
+    <div class="sem-kpi" id="moKpiDesvioCard">
+      <div class="sem-kpi-label">Diferencia</div>
+      <div class="sem-kpi-value" id="moKpiDesvio">—</div>
+      <div class="sem-kpi-sub" id="moKpiDesvioSub">pagado vs ejecutado</div>
+    </div>
+    <div class="sem-kpi">
+      <div class="sem-kpi-label">Semanas activas</div>
+      <div class="sem-kpi-value" id="moKpiSemanas">—</div>
+      <div class="sem-kpi-sub" id="moKpiPromedio">promedio por semana</div>
+    </div>
+  </div>
+
+  <!-- Gráfico -->
+  <div class="chart-card">
+    <h3>Pagos acumulados vs lo que corresponde por avance</h3>
+    <p>Barra = pago de esa semana · Línea azul = acumulado pagado · Línea verde = lo que correspondería por avance físico</p>
+    <canvas id="chartSemanal" height="80"></canvas>
+  </div>
+
+  <!-- Semanas como cards expandibles -->
+  <div id="semanasCards"><div class="empty">Sin pagos registrados.</div></div>
+</section>
+
+<!-- ══════════ ÍTEMS Y AVANCES ══════════ -->
+<section id="items" class="section">
+  <div class="page-hd">
+    <div>
+      <div class="page-title">Ítems y avances</div>
+      <div class="page-sub">Qué se presupuestó y cuánto se ejecutó de cada tarea.</div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary" onclick="abrirModalItem()">+ Nuevo ítem</button>
+    </div>
+  </div>
+
+  <!-- Tabs Material / MO por oficio -->
+  <div class="tabs-bar" id="itemsTabs">
+    <button class="tab-btn active" data-tab="Material" onclick="cambiarTab(this)">Materiales</button>
+    <button class="tab-btn" data-tab="Mano de obra:Albañilería" onclick="cambiarTab(this)">🧱 Albañilería</button>
+    <button class="tab-btn" data-tab="Mano de obra:Plomería" onclick="cambiarTab(this)">🔧 Plomería</button>
+    <button class="tab-btn" data-tab="Mano de obra:Electricidad" onclick="cambiarTab(this)">⚡ Electricidad</button>
+    <button class="tab-btn" data-tab="Mano de obra:Herrería" onclick="cambiarTab(this)">🔩 Herrería</button>
+    <button class="tab-btn" data-tab="Mano de obra:" onclick="cambiarTab(this)">Otro MO</button>
+  </div>
+
+  <div class="items-list" id="itemsListado"></div>
+</section>
+
+<!-- ══════════ CARGAR DATOS ══════════ -->
+<section id="cargar" class="section">
+  <div class="page-hd">
+    <div>
+      <div class="page-title">Cargar datos</div>
+      <div class="page-sub">Registrá pagos y avances de obra de forma simple.</div>
+    </div>
+  </div>
+
+  <div class="form-cols">
+
+    <!-- PAGO SEMANAL MO -->
+    <div class="form-card">
+      <h3>💰 Pago semanal de mano de obra</h3>
+      <p>Lo que les pagaste esta semana a los albañiles, plomeros u otro oficio. No necesitás asociarlo a ninguna tarea específica.</p>
+      <form id="formPago" onsubmit="guardarPago(event)">
+        <div class="form-row">
+          <label>Fecha del pago *</label>
+          <input type="date" id="pFecha" required/>
+        </div>
+        <div class="form-row">
+          <label>Oficio *</label>
+          <select id="pOficio" required>
+            <option value="">— seleccioná —</option>
             <option>Albañilería</option>
             <option>Plomería</option>
             <option>Electricidad</option>
             <option>Herrería</option>
             <option>Otro</option>
           </select>
-          <button class="btn btn-mo btn-sm" onclick="openMovModal()">+ Pago semanal</button>
         </div>
-      </div>
-
-      <!-- KPIs MO -->
-      <div class="kpi-grid g4" style="margin-bottom:16px" id="kpiMO"></div>
-
-      <!-- Gráfico pagos por semana -->
-      <div style="margin-bottom:20px">
-        <canvas id="chartSemanal" height="90"></canvas>
-      </div>
-
-      <!-- Tabla semana a semana -->
-      <div class="semanas-wrap">
-        <table class="semanas-table">
-          <thead>
-            <tr>
-              <th>Semana</th>
-              <th>Detalle pagos</th>
-              <th>Oficio/s</th>
-              <th style="text-align:right">Pagado</th>
-              <th style="text-align:right">Acum. pagado</th>
-              <th style="text-align:right">Teórico acum.</th>
-              <th style="text-align:right">Desvío acum.</th>
-            </tr>
-          </thead>
-          <tbody id="tbSemanal"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Avance por ítem MO -->
-    <div class="card">
-      <div class="card-hd"><div><h3>Avance físico por ítem</h3><p>Progreso de cada tarea de mano de obra</p></div></div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Oficio</th><th>Tarea</th><th>Sector</th><th>Unid.</th>
-              <th>Ppto.</th><th>Ejec.</th><th>Avance</th><th>Costo teórico</th><th>Estado</th>
-            </tr>
-          </thead>
-          <tbody id="tbItemsMO"></tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══ PRESUPUESTO ═══ -->
-  <section id="presupuesto" class="section">
-    <div class="card">
-      <div class="card-hd">
-        <div><h3>Presupuesto de obra</h3><p>Todos los ítems: materiales, mano de obra y servicios.</p></div>
-        <button class="btn btn-primary" onclick="openItemModal()">+ Nuevo ítem</button>
-      </div>
-      <div class="filters">
-        <input id="fSearch" placeholder="Buscar concepto, sector, responsable…" oninput="renderPresupuesto()"/>
-        <select id="fTipo" onchange="renderPresupuesto()">
-          <option value="">Todos los tipos</option>
-          <option>Material</option><option>Mano de obra</option><option>Servicio</option><option>Otro</option>
-        </select>
-        <select id="fOficio" onchange="renderPresupuesto()">
-          <option value="">Todos los oficios</option>
-          <option>Albañilería</option><option>Plomería</option><option>Electricidad</option><option>Herrería</option><option>Otro</option>
-        </select>
-        <select id="fSector" onchange="renderPresupuesto()"></select>
-        <select id="fEstado" onchange="renderPresupuesto()">
-          <option value="">Todos</option>
-          <option value="pendiente">Pendiente</option>
-          <option value="en_curso">En curso</option>
-          <option value="finalizado">Finalizado</option>
-        </select>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Tipo</th><th>Oficio</th><th>Concepto</th><th>Sector</th><th>Responsable</th>
-              <th>Unid.</th><th>Cant. Ppto.</th><th>Cant. Ejec.</th><th>Avance</th>
-              <th>Costo Unit.</th><th>Total Ppto.</th><th>Ejec. Teórico</th><th>Pagado</th><th>Desvío</th><th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="tbPresupuesto"></tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══ MOVIMIENTOS ═══ -->
-  <section id="movimientos" class="section">
-    <div class="card">
-      <div class="card-hd">
-        <div><h3>Avances y pagos</h3><p>Registro histórico. Los pagos semanales van sin ítem asociado.</p></div>
-        <button class="btn btn-mo" onclick="openMovModal()">+ Movimiento</button>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Fecha</th><th>Ítem</th><th>Oficio</th><th>Tipo</th>
-              <th>Cant. ejec.</th><th>Importe</th><th>Medio</th><th>Responsable</th><th>Obs.</th><th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="tbMovimientos"></tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══ RESPONSABLES ═══ -->
-  <section id="responsables" class="section">
-    <div class="card">
-      <div class="card-hd"><div><h3>Resumen por responsable</h3></div></div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Responsable</th><th>Presupuestado</th><th>Ejec. teórico</th><th>Pagado</th><th>Saldo</th><th>Desvío</th></tr></thead>
-          <tbody id="tbResponsables"></tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══ SECTORES ═══ -->
-  <section id="sectores" class="section">
-    <div class="card">
-      <div class="card-hd"><div><h3>Avance por sector</h3></div></div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Sector</th><th>Ítems</th><th>Presupuestado</th><th>Ejec. teórico</th><th>Pagado</th><th>Avance</th><th>Saldo</th></tr></thead>
-          <tbody id="tbSectores"></tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══ CONFIGURACIÓN ═══ -->
-  <section id="configuracion" class="section">
-    <div class="card" style="max-width:680px">
-      <div class="card-hd"><div><h3>Conexión con Apps Script</h3></div></div>
-      <div class="form-grid">
-        <div class="full"><label>URL del Web App</label><input id="apiUrl" placeholder="https://script.google.com/macros/s/.../exec"/></div>
-        <div><label>Modo</label><select id="dataMode"><option value="api">Conectado a API</option><option value="demo">Demo local</option></select></div>
-        <div><label>Moneda</label><input id="currency" value="ARS" style="max-width:100px"/></div>
-        <div><label>Proyecto</label><input id="projectName" value="Construcción"/></div>
-        <div class="full" style="display:flex;gap:10px">
-          <button class="btn btn-primary" onclick="saveSettings()">Guardar</button>
-          <button class="btn btn-soft" onclick="loadData()">↻ Probar conexión</button>
+        <div class="form-row">
+          <label>¿A quién se paga? *</label>
+          <input id="pResponsable" list="respList" required placeholder="Albañiles, Juan el plomero…"/>
         </div>
-      </div>
-    </div>
-    <div class="card" style="max-width:680px">
-      <div class="card-hd"><div><h3>Mantenimiento</h3></div></div>
-      <div style="display:grid;gap:12px">
-        <div>
-          <button class="btn btn-soft" onclick="runRebuild()">↻ Recalcular resumen</button>
-          <p style="font-size:12px;color:var(--muted);margin-top:6px">Recalcula Resumen_Items y Dashboard sin tocar datos.</p>
+        <div class="form-row">
+          <label>Importe pagado *</label>
+          <input type="number" id="pImporte" min="0" step="100" required placeholder="0"/>
         </div>
-        <div>
-          <button class="btn btn-danger-soft" onclick="runMigration()">⚠ Migrar pagos huérfanos (v2→v4)</button>
-          <p style="font-size:12px;color:var(--muted);margin-top:6px">Asigna pagos sin item_id a ítems globales por responsable.</p>
-          <div id="migrationResult"></div>
-        </div>
-      </div>
-    </div>
-  </section>
-</main>
-</div>
-
-<!-- MODAL ÍTEM -->
-<div id="itemModal" class="modal-backdrop">
-  <div class="modal">
-    <div class="modal-hd">
-      <div><h3 id="itemModalTitle">Agregar ítem presupuestado</h3><p>Define tipo, oficio y cantidades. El avance se registra luego como movimientos.</p></div>
-      <button class="btn btn-soft btn-sm" onclick="closeModal('itemModal')">✕ Cerrar</button>
-    </div>
-    <form id="itemForm" onsubmit="saveItem(event)">
-      <input type="hidden" id="itemId"/>
-      <div class="form-grid">
-        <div>
-          <label>Tipo *</label>
-          <select id="itemTipo" required onchange="onItemTipoChange()">
-            <option value="Material">Material</option>
-            <option value="Mano de obra">Mano de obra</option>
-            <option value="Servicio">Servicio</option>
-            <option value="Otro">Otro</option>
+        <div class="form-row">
+          <label>Medio de pago</label>
+          <select id="pMedio">
+            <option value="">— sin especificar —</option>
+            <option>Efectivo</option><option>Transferencia</option>
+            <option>Cheque</option><option>Tarjeta</option>
           </select>
         </div>
-        <div id="wrapOficio">
-          <label>Oficio</label>
-          <select id="itemOficio">
-            <option value="">— sin oficio —</option>
-            <option>Albañilería</option><option>Plomería</option>
-            <option>Electricidad</option><option>Herrería</option><option>Otro</option>
-          </select>
-        </div>
-        <div>
-          <label>Sector *</label>
-          <select id="itemSector" required></select>
-        </div>
-        <div class="half">
-          <label>Concepto / tarea *</label>
-          <input id="itemConcepto" required placeholder="Viga apeo, Cemento, Plomería…"/>
-        </div>
-        <div>
-          <label>Responsable / proveedor</label>
-          <input id="itemResponsable" list="respList" placeholder="Albañiles, Corralón…"/>
-        </div>
-        <div class="form-sep">Cantidades y costos</div>
-        <div>
-          <label>Unidad *</label>
-          <select id="itemUnidad" required>
-            <option>unidad</option><option>m2</option><option>m3</option><option>ml</option>
-            <option>kg</option><option>bolsa</option><option>jornal</option><option>global</option>
-            <option>viaje</option><option>barra</option><option>paño</option>
-          </select>
-        </div>
-        <div>
-          <label>Cantidad presupuestada *</label>
-          <input id="itemCantidad" type="number" min="0" step="0.01" required oninput="updateTotalPreview()"/>
-        </div>
-        <div>
-          <label>Costo unitario *</label>
-          <input id="itemCosto" type="number" min="0" step="0.01" required oninput="updateTotalPreview()"/>
-        </div>
-        <div>
-          <label>Total presupuestado</label>
-          <input id="itemTotal" readonly style="background:var(--soft);font-family:'DM Mono',monospace"/>
-        </div>
-        <div class="full">
+        <div class="form-row">
           <label>Observación</label>
-          <textarea id="itemObs" rows="2" placeholder="Notas…"></textarea>
+          <input id="pObs" placeholder="Cuota semana 3, saldo portones…"/>
+        </div>
+        <div class="form-ft">
+          <button type="submit" class="btn btn-primary">Guardar pago</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- AVANCE FÍSICO POR ÍTEM -->
+    <div class="form-card">
+      <h3>📐 Actualizar avance de un ítem</h3>
+      <p>Indicá cuánto avanzaron en una tarea específica. Solo ponés la cantidad ejecutada o el porcentaje — el costo se calcula solo.</p>
+      <form id="formAvance" onsubmit="guardarAvance(event)">
+        <div class="form-row">
+          <label>Fecha *</label>
+          <input type="date" id="aFecha" required/>
+        </div>
+        <div class="form-row">
+          <label>Tarea / ítem *</label>
+          <select id="aItem" required onchange="onAvanceItemChange()">
+            <option value="">— seleccioná la tarea —</option>
+          </select>
+        </div>
+        <div class="hint-box" id="aHint" style="display:none">
+          Cargá la cantidad ejecutada <em>o</em> el porcentaje — el otro se calcula automático.
+        </div>
+        <div class="form-row">
+          <label>Cantidad ejecutada</label>
+          <input type="number" id="aCantidad" min="0" step="0.01" value="0" oninput="syncAvanceDesdeCant()"/>
+        </div>
+        <div class="form-row">
+          <label>— o — Porcentaje de avance (%)</label>
+          <input type="number" id="aPorcentaje" min="0" max="100" step="1" value="0" oninput="syncAvanceDesdePct()"/>
+        </div>
+        <!-- Auto-calculado -->
+        <div class="auto-calc" id="aCalc" style="display:none">
+          <div class="auto-calc-item">
+            <label>Presup. total</label>
+            <div class="val" id="aPresup">—</div>
+          </div>
+          <div class="auto-calc-item">
+            <label>Cant. presup.</label>
+            <div class="val" id="aCantPresup">—</div>
+          </div>
+          <div class="auto-calc-item">
+            <label>Costo teórico</label>
+            <div class="val" id="aTeorico">—</div>
+          </div>
+        </div>
+        <div class="form-row" style="margin-top:12px">
+          <label>Observación</label>
+          <input id="aObs" placeholder="Losa al 80%, encadenado terminado…"/>
+        </div>
+        <div class="form-ft">
+          <button type="submit" class="btn btn-primary">Guardar avance</button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+
+  <!-- PAGO MATERIAL (simple) -->
+  <div class="form-card" style="margin-bottom:16px">
+    <h3>📦 Pago de materiales</h3>
+    <p>Los materiales siempre se pagan al contado. Asociá el pago al ítem correspondiente — el sistema marca ese ítem como pagado.</p>
+    <form id="formMaterial" onsubmit="guardarMaterial(event)">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;align-items:end">
+        <div>
+          <label>Fecha *</label>
+          <input type="date" id="mFecha" required/>
+        </div>
+        <div>
+          <label>Ítem / material *</label>
+          <select id="mItem" required>
+            <option value="">— seleccioná —</option>
+          </select>
+        </div>
+        <div>
+          <label>Importe pagado *</label>
+          <input type="number" id="mImporte" min="0" step="100" required placeholder="0"/>
+        </div>
+        <div>
+          <label>Cantidad comprada</label>
+          <input type="number" id="mCantidad" min="0" step="0.01" placeholder="0"/>
         </div>
       </div>
-      <div class="modal-ft">
-        <button type="button" class="btn btn-soft" onclick="closeModal('itemModal')">Cancelar</button>
-        <button type="submit" class="btn btn-primary">Guardar ítem</button>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+        <div>
+          <label>Proveedor</label>
+          <input id="mResponsable" list="respList" placeholder="Corralón, proveedor…"/>
+        </div>
+        <div>
+          <label>Observación</label>
+          <input id="mObs" placeholder="Factura 001, pedido hierros…"/>
+        </div>
+      </div>
+      <div class="form-ft">
+        <button type="submit" class="btn btn-primary">Guardar pago de material</button>
       </div>
     </form>
   </div>
+</section>
+
+<!-- ══════════ CONFIGURACIÓN ══════════ -->
+<section id="config" class="section">
+  <div class="page-hd">
+    <div><div class="page-title">Configuración</div></div>
+  </div>
+  <div class="config-wrap">
+    <div class="form-card" style="margin-bottom:14px">
+      <h3>Conexión con Apps Script</h3>
+      <p>Pegá la URL del Web App publicado en Google Apps Script. Sin URL, la app usa datos de demo.</p>
+      <div class="form-row"><label>URL del Web App</label><input id="cfgUrl" placeholder="https://script.google.com/macros/s/.../exec"/></div>
+      <div class="form-row"><label>Moneda</label><input id="cfgMoneda" value="ARS" style="max-width:100px"/></div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn btn-primary" onclick="guardarConfig()">Guardar</button>
+        <button class="btn btn-soft" onclick="loadData()">↻ Probar conexión</button>
+      </div>
+    </div>
+    <div class="form-card">
+      <h3>Mantenimiento</h3>
+      <p style="margin-bottom:14px">Herramientas para corregir datos históricos.</p>
+      <div style="display:grid;gap:10px">
+        <button class="btn btn-soft" onclick="runRebuild()" style="width:fit-content">↻ Recalcular resumen en Sheets</button>
+        <button class="btn btn-danger" onclick="runMigration()" style="width:fit-content">⚠ Migrar pagos huérfanos (v2→v4)</button>
+        <div id="cfgMsg" style="display:none;font-size:13px;padding:8px 12px;border-radius:8px"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
 </div>
 
-<!-- MODAL MOVIMIENTO (avance/pago) -->
-<div id="movModal" class="modal-backdrop">
+<!-- ─── MODAL EDITAR ÍTEM ─── -->
+<div id="modalItem" class="modal-bg">
   <div class="modal">
     <div class="modal-hd">
       <div>
-        <h3 id="movModalTitle">Registrar avance / pago</h3>
-        <p id="movModalSub">Para avances: seleccioná el ítem y cargá la cantidad ejecutada o el %. Para pagos semanales: dejá ítem en blanco.</p>
+        <h3 id="modalItemTitle">Nuevo ítem</h3>
+        <p>Presupuesto base — el avance se registra desde "Cargar datos"</p>
       </div>
-      <button class="btn btn-soft btn-sm" onclick="closeModal('movModal')">✕ Cerrar</button>
+      <button class="btn btn-soft btn-sm" onclick="cerrarModal('modalItem')">✕</button>
     </div>
-    <form id="movForm" onsubmit="saveMov(event)">
-      <input type="hidden" id="movId"/>
-      <div class="form-grid">
-        <div>
-          <label>Fecha *</label>
-          <input id="movFecha" type="date" required/>
-        </div>
-        <div>
-          <label>Tipo de movimiento *</label>
-          <select id="movTipo" required onchange="onMovTipoChange()">
-            <option value="Avance">Avance (sin pago)</option>
-            <option value="Pago">Pago semanal (sin avance por ítem)</option>
-            <option value="Avance y pago">Avance + pago juntos</option>
-            <option value="Ajuste">Ajuste / corrección</option>
+    <form id="fItem" onsubmit="guardarItem(event)">
+      <input type="hidden" id="iId"/>
+      <div class="form-row">
+        <label>Tipo *</label>
+        <select id="iTipo" required onchange="onTipoChange()">
+          <option value="Material">Material</option>
+          <option value="Mano de obra">Mano de obra</option>
+          <option value="Servicio">Servicio</option>
+        </select>
+      </div>
+      <div class="form-row" id="wOficio">
+        <label>Oficio</label>
+        <select id="iOficio">
+          <option value="">— sin oficio —</option>
+          <option>Albañilería</option><option>Plomería</option>
+          <option>Electricidad</option><option>Herrería</option><option>Otro</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Concepto / tarea *</label>
+        <input id="iConcepto" required placeholder="Viga apeo, Cemento, Instalación eléctrica…"/>
+      </div>
+      <div class="form-row">
+        <label>Sector</label>
+        <select id="iSector"><option>Frente</option><option>Casa</option><option>Galería</option><option>Garaje</option><option>General</option></select>
+      </div>
+      <div class="form-row">
+        <label>Responsable / proveedor</label>
+        <input id="iResponsable" list="respList" placeholder="Albañiles, Corralón…"/>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+        <div class="form-row">
+          <label>Unidad *</label>
+          <select id="iUnidad" required>
+            <option>unidad</option><option>m²</option><option>m³</option><option>ml</option>
+            <option>kg</option><option>bolsa</option><option>jornal</option>
+            <option>global</option><option>viaje</option><option>barra</option><option>paño</option>
           </select>
         </div>
-        <div>
-          <label>Oficio</label>
-          <select id="movOficio">
-            <option value="">— sin especificar —</option>
-            <option>Albañilería</option><option>Plomería</option>
-            <option>Electricidad</option><option>Herrería</option><option>Otro</option>
-          </select>
+        <div class="form-row">
+          <label>Cantidad *</label>
+          <input type="number" id="iCantidad" min="0" step="0.01" required oninput="prevTotal()"/>
         </div>
-        <div class="full" id="wrapItemMov">
-          <label>Ítem asociado <span style="font-weight:400;text-transform:none;color:var(--muted)">(dejá en blanco para pago semanal global)</span></label>
-          <select id="movItem" onchange="onMovItemChange()">
-            <option value="">— Pago global sin ítem —</option>
-          </select>
+        <div class="form-row">
+          <label>Costo unitario *</label>
+          <input type="number" id="iCosto" min="0" step="0.01" required oninput="prevTotal()"/>
         </div>
-
-        <!-- Bloque avance (visible solo cuando hay ítem) -->
-        <div class="form-sep" id="sepAvance">Avance físico</div>
-        <div id="wrapAvance" class="full">
-          <div class="hint">Cargá solo uno de los dos campos — el otro se calcula automáticamente.</div>
-          <div class="avance-helper">
-            <div>
-              <div class="avance-helper-label">Cantidad ejecutada</div>
-              <input id="movCantidad" type="number" min="0" step="0.01" value="0" oninput="syncDesdeCanidad()"/>
-              <div style="font-size:11px;color:var(--muted);margin-top:4px" id="movUnidLabel"></div>
-            </div>
-            <div style="text-align:center;padding-bottom:8px;color:var(--muted)">— o —</div>
-            <div>
-              <div class="avance-helper-label">Porcentaje de avance (%)</div>
-              <input id="movPct" type="number" min="0" max="100" step="0.1" value="0" oninput="syncDesdePct()"/>
-            </div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
-            <div>
-              <label>Presupuestado</label>
-              <input id="movPresup" readonly style="background:var(--soft);font-family:'DM Mono',monospace"/>
-            </div>
-            <div>
-              <label>Costo teórico calculado</label>
-              <input id="movTeorico" readonly style="background:var(--soft);font-family:'DM Mono',monospace;color:var(--ok)"/>
-            </div>
-          </div>
-        </div>
-
-        <!-- Bloque pago -->
-        <div class="form-sep" id="sepPago">Pago</div>
-        <div>
-          <label>Importe pagado</label>
-          <input id="movImporte" type="number" min="0" step="0.01" value="0"/>
-        </div>
-        <div>
-          <label>Medio de pago</label>
-          <select id="movMedio">
-            <option value="">— sin especificar —</option>
-            <option>Efectivo</option><option>Transferencia</option><option>Cheque</option><option>Tarjeta</option>
-          </select>
-        </div>
-        <div>
-          <label>Responsable / a quién se paga</label>
-          <input id="movResponsable" list="respList" placeholder="Albañiles, Plomero…"/>
-        </div>
-        <div>
-          <label>Sector (si es pago global)</label>
-          <select id="movSector"></select>
-        </div>
-        <div class="full">
-          <label>Observación</label>
-          <textarea id="movObs" rows="2" placeholder="Detalle del avance, pago o ajuste…"></textarea>
-        </div>
+      </div>
+      <div style="background:var(--bg);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px">
+        Total presupuestado: <strong class="mono" id="iTotal">—</strong>
+      </div>
+      <div class="form-row">
+        <label>Observación</label>
+        <input id="iObs" placeholder="Notas…"/>
       </div>
       <div class="modal-ft">
-        <button type="button" class="btn btn-soft" onclick="closeModal('movModal')">Cancelar</button>
-        <button type="submit" class="btn btn-mo">Guardar movimiento</button>
+        <button type="button" class="btn btn-soft" onclick="cerrarModal('modalItem')">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Guardar ítem</button>
       </div>
     </form>
   </div>
@@ -648,32 +715,31 @@ label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bot
 <datalist id="respList"></datalist>
 
 <script>
-/* ════════════════════════════════════════════════════════
-   STATE
-════════════════════════════════════════════════════════ */
-const S = {
-  settings: {
-    apiUrl:      localStorage.getItem('pc_apiUrl')      || '',
-    dataMode:    localStorage.getItem('pc_dataMode')    || 'demo',
-    currency:    localStorage.getItem('pc_currency')    || 'ARS',
-    projectName: localStorage.getItem('pc_project')     || 'Construcción',
-  },
-  sectores: ['Frente','Casa','Galería','Garaje','General'],
-  items: [], movimientos: [], charts: {}
+/* ════════════════════════════════════════
+   ESTADO GLOBAL
+════════════════════════════════════════ */
+const G = {
+  apiUrl:   localStorage.getItem('pc_apiUrl') || '',
+  moneda:   localStorage.getItem('pc_moneda') || 'ARS',
+  items: [], movs: [],
+  oficioFiltro: '',
+  tabActual: 'Material',
+  charts: {},
 };
 
-/* ── DEMO DATA — espejo exacto de Base_Datos_Construccion_v4.xlsx ── */
+/* ════════════════════════════════════════
+   DEMO DATA — 36 ítems + 45 movimientos
+════════════════════════════════════════ */
 const DEMO_ITEMS = [
-  // Materiales
   {item_id:'ITM0001',tipo:'Material',oficio:'',concepto:'2 Portones + Puerta',sector:'General',responsable:'Corralón / proveedor materiales',unidad:'unid',cantidad_presupuestada:1,costo_unitario:1800000},
   {item_id:'ITM0002',tipo:'Material',oficio:'',concepto:'Ripio y arena',sector:'General',responsable:'Corralón / proveedor materiales',unidad:'viaje',cantidad_presupuestada:1,costo_unitario:170000},
-  {item_id:'ITM0003',tipo:'Material',oficio:'',concepto:'Hierro Torcionado 12mm x 12mts',sector:'General',responsable:'Corralón / proveedor materiales',unidad:'barra',cantidad_presupuestada:9,costo_unitario:19180.8},
-  {item_id:'ITM0004',tipo:'Material',oficio:'',concepto:'Hierro Torcionado 10mm x 12mts',sector:'General',responsable:'Corralón / proveedor materiales',unidad:'barra',cantidad_presupuestada:5,costo_unitario:13302.24},
-  {item_id:'ITM0005',tipo:'Material',oficio:'',concepto:'Hierro Torcionado 16mm x 12mts',sector:'General',responsable:'Corralón / proveedor materiales',unidad:'barra',cantidad_presupuestada:4,costo_unitario:37403.85},
-  {item_id:'ITM0006',tipo:'Material',oficio:'',concepto:'Hierro Torcionado 8mm x 12mts',sector:'General',responsable:'Corralón / proveedor materiales',unidad:'barra',cantidad_presupuestada:35,costo_unitario:8491.65},
-  {item_id:'ITM0007',tipo:'Material',oficio:'',concepto:'Hierro Torcionado 6mm x 12mts',sector:'General',responsable:'Corralón / proveedor materiales',unidad:'barra',cantidad_presupuestada:50,costo_unitario:4884},
+  {item_id:'ITM0003',tipo:'Material',oficio:'',concepto:'Hierro Torcionado 12mm',sector:'General',responsable:'Corralón / proveedor materiales',unidad:'barra',cantidad_presupuestada:9,costo_unitario:19180.8},
+  {item_id:'ITM0004',tipo:'Material',oficio:'',concepto:'Hierro Torcionado 10mm',sector:'General',responsable:'Corralón / proveedor materiales',unidad:'barra',cantidad_presupuestada:5,costo_unitario:13302.24},
+  {item_id:'ITM0005',tipo:'Material',oficio:'',concepto:'Hierro Torcionado 16mm',sector:'General',responsable:'Corralón / proveedor materiales',unidad:'barra',cantidad_presupuestada:4,costo_unitario:37403.85},
+  {item_id:'ITM0006',tipo:'Material',oficio:'',concepto:'Hierro Torcionado 8mm',sector:'General',responsable:'Corralón / proveedor materiales',unidad:'barra',cantidad_presupuestada:35,costo_unitario:8491.65},
+  {item_id:'ITM0007',tipo:'Material',oficio:'',concepto:'Hierro Torcionado 6mm',sector:'General',responsable:'Corralón / proveedor materiales',unidad:'barra',cantidad_presupuestada:50,costo_unitario:4884},
   {item_id:'ITM0008',tipo:'Material',oficio:'',concepto:'Alambre del 16',sector:'General',responsable:'Corralón / proveedor materiales',unidad:'kg',cantidad_presupuestada:10,costo_unitario:3553.2},
-  {item_id:'ITM0009',tipo:'Material',oficio:'',concepto:'Malla 15x15 6mm 6,00x2,40mt',sector:'General',responsable:'Corralón / proveedor materiales',unidad:'paño',cantidad_presupuestada:4,costo_unitario:130633.68},
+  {item_id:'ITM0009',tipo:'Material',oficio:'',concepto:'Malla 15x15 6mm',sector:'General',responsable:'Corralón / proveedor materiales',unidad:'paño',cantidad_presupuestada:4,costo_unitario:130633.68},
   {item_id:'ITM0010',tipo:'Material',oficio:'',concepto:'Flete',sector:'General',responsable:'Corralón / proveedor materiales',unidad:'viaje',cantidad_presupuestada:4,costo_unitario:2923.08},
   {item_id:'ITM0011',tipo:'Material',oficio:'',concepto:'Cemento Loma Negra x 25kg',sector:'General',responsable:'Corralón / proveedor materiales',unidad:'bolsa',cantidad_presupuestada:30,costo_unitario:5500.01},
   {item_id:'ITM0012',tipo:'Material',oficio:'',concepto:'Plasticor x 25kg',sector:'General',responsable:'Corralón / proveedor materiales',unidad:'bolsa',cantidad_presupuestada:25,costo_unitario:5400.01},
@@ -681,16 +747,15 @@ const DEMO_ITEMS = [
   {item_id:'ITM0014',tipo:'Material',oficio:'',concepto:'Piedras',sector:'General',responsable:'Corralón / proveedor materiales',unidad:'m³',cantidad_presupuestada:1,costo_unitario:35000},
   {item_id:'ITM0015',tipo:'Material',oficio:'',concepto:'Hidrofuga',sector:'General',responsable:'Corralón / proveedor materiales',unidad:'unid',cantidad_presupuestada:1,costo_unitario:10000},
   {item_id:'ITM0016',tipo:'Material',oficio:'',concepto:'Arena',sector:'General',responsable:'Corralón / proveedor materiales',unidad:'m³',cantidad_presupuestada:1,costo_unitario:110000},
-  {item_id:'ITM0017',tipo:'Material',oficio:'',concepto:'Cemento Loma Negra x 25kg',sector:'General',responsable:'Corralón / proveedor materiales',unidad:'bolsa',cantidad_presupuestada:15,costo_unitario:5667},
-  {item_id:'ITM0018',tipo:'Material',oficio:'',concepto:'Cemento Loma Negra x 25kg',sector:'General',responsable:'Corralón / proveedor materiales',unidad:'bolsa',cantidad_presupuestada:30,costo_unitario:5667},
+  {item_id:'ITM0017',tipo:'Material',oficio:'',concepto:'Cemento Loma Negra x 25kg (2)',sector:'General',responsable:'Corralón / proveedor materiales',unidad:'bolsa',cantidad_presupuestada:15,costo_unitario:5667},
+  {item_id:'ITM0018',tipo:'Material',oficio:'',concepto:'Cemento Loma Negra x 25kg (3)',sector:'General',responsable:'Corralón / proveedor materiales',unidad:'bolsa',cantidad_presupuestada:30,costo_unitario:5667},
   {item_id:'ITM0019',tipo:'Material',oficio:'',concepto:'Tubo Caño Agua',sector:'General',responsable:'Corralón / proveedor materiales',unidad:'ml',cantidad_presupuestada:5,costo_unitario:12500},
   {item_id:'ITM0020',tipo:'Material',oficio:'',concepto:'Ripio del 1 al 3',sector:'General',responsable:'Corralón / proveedor materiales',unidad:'viaje',cantidad_presupuestada:1,costo_unitario:200000},
   {item_id:'ITM0021',tipo:'Material',oficio:'',concepto:'Accesorios para agua',sector:'General',responsable:'Corralón / proveedor materiales',unidad:'global',cantidad_presupuestada:1,costo_unitario:40000},
   {item_id:'ITM0022',tipo:'Material',oficio:'',concepto:'Ripio Base',sector:'General',responsable:'Corralón / proveedor materiales',unidad:'global',cantidad_presupuestada:1,costo_unitario:140000},
-  {item_id:'ITM0023',tipo:'Material',oficio:'',concepto:'Cemento Loma Negra x 25kg',sector:'General',responsable:'Corralón / proveedor materiales',unidad:'bolsa',cantidad_presupuestada:20,costo_unitario:6150},
+  {item_id:'ITM0023',tipo:'Material',oficio:'',concepto:'Cemento Loma Negra x 25kg (4)',sector:'General',responsable:'Corralón / proveedor materiales',unidad:'bolsa',cantidad_presupuestada:20,costo_unitario:6150},
   {item_id:'ITM0024',tipo:'Material',oficio:'',concepto:'Cemento - Hierro - etc',sector:'General',responsable:'Corralón / proveedor materiales',unidad:'global',cantidad_presupuestada:1,costo_unitario:312500},
-  {item_id:'ITM0025',tipo:'Material',oficio:'',concepto:'Cemento',sector:'General',responsable:'Corralón / proveedor materiales',unidad:'bolsa',cantidad_presupuestada:20,costo_unitario:6150},
-  // Mano de obra
+  {item_id:'ITM0025',tipo:'Material',oficio:'',concepto:'Cemento (5)',sector:'General',responsable:'Corralón / proveedor materiales',unidad:'bolsa',cantidad_presupuestada:20,costo_unitario:6150},
   {item_id:'ITM0026',tipo:'Mano de obra',oficio:'Albañilería',concepto:'2 Portones + Puerta (MO)',sector:'Frente',responsable:'Albañiles',unidad:'unid',cantidad_presupuestada:1,costo_unitario:1160000},
   {item_id:'ITM0027',tipo:'Mano de obra',oficio:'Albañilería',concepto:'Viga Apeo',sector:'Frente',responsable:'Albañiles',unidad:'ml',cantidad_presupuestada:38,costo_unitario:22000},
   {item_id:'ITM0028',tipo:'Mano de obra',oficio:'Albañilería',concepto:'Encadenado',sector:'Frente',responsable:'Albañiles',unidad:'ml',cantidad_presupuestada:40,costo_unitario:18000},
@@ -703,8 +768,8 @@ const DEMO_ITEMS = [
   {item_id:'ITM0035',tipo:'Mano de obra',oficio:'Albañilería',concepto:'Destachada + Demolición',sector:'Frente',responsable:'Albañiles',unidad:'global',cantidad_presupuestada:1,costo_unitario:100000},
   {item_id:'ITM0036',tipo:'Mano de obra',oficio:'Plomería',concepto:'Plomería',sector:'Frente',responsable:'Albañiles',unidad:'global',cantidad_presupuestada:1,costo_unitario:160000},
 ];
+
 const DEMO_MOVS = [
-  // Pagos materiales (Corralón)
   {movimiento_id:'MOV00001',fecha:'2026-03-02',item_id:'ITM0001',tipo_movimiento:'Pago',cantidad_ejecutada:1,importe_pagado:1800000,responsable:'Corralón / proveedor materiales',sector:'General',oficio:'',medio_pago:'',observacion:''},
   {movimiento_id:'MOV00002',fecha:'2026-03-02',item_id:'ITM0002',tipo_movimiento:'Pago',cantidad_ejecutada:1,importe_pagado:170000,responsable:'Corralón / proveedor materiales',sector:'General',oficio:'',medio_pago:'',observacion:''},
   {movimiento_id:'MOV00003',fecha:'2026-03-02',item_id:'ITM0003',tipo_movimiento:'Pago',cantidad_ejecutada:9,importe_pagado:172627.2,responsable:'Corralón / proveedor materiales',sector:'General',oficio:'',medio_pago:'',observacion:''},
@@ -730,7 +795,6 @@ const DEMO_MOVS = [
   {movimiento_id:'MOV00023',fecha:'2026-04-15',item_id:'ITM0023',tipo_movimiento:'Pago',cantidad_ejecutada:20,importe_pagado:123000,responsable:'Corralón / proveedor materiales',sector:'General',oficio:'',medio_pago:'',observacion:''},
   {movimiento_id:'MOV00024',fecha:'2026-04-08',item_id:'ITM0024',tipo_movimiento:'Pago',cantidad_ejecutada:1,importe_pagado:312500,responsable:'Corralón / proveedor materiales',sector:'General',oficio:'',medio_pago:'',observacion:''},
   {movimiento_id:'MOV00025',fecha:'2026-04-16',item_id:'ITM0025',tipo_movimiento:'Pago',cantidad_ejecutada:20,importe_pagado:123000,responsable:'Corralón / proveedor materiales',sector:'General',oficio:'',medio_pago:'',observacion:''},
-  // Avances MO (Albañiles)
   {movimiento_id:'MOV00026',fecha:'2026-03-02',item_id:'ITM0026',tipo_movimiento:'Avance',cantidad_ejecutada:1,importe_pagado:0,responsable:'Albañiles',sector:'Frente',oficio:'Albañilería',medio_pago:'',observacion:''},
   {movimiento_id:'MOV00027',fecha:'2026-03-02',item_id:'ITM0027',tipo_movimiento:'Avance',cantidad_ejecutada:38,importe_pagado:0,responsable:'Albañiles',sector:'Frente',oficio:'Albañilería',medio_pago:'',observacion:''},
   {movimiento_id:'MOV00028',fecha:'2026-03-02',item_id:'ITM0028',tipo_movimiento:'Avance',cantidad_ejecutada:24,importe_pagado:0,responsable:'Albañiles',sector:'Frente',oficio:'Albañilería',medio_pago:'',observacion:'60% encadenado'},
@@ -742,7 +806,6 @@ const DEMO_MOVS = [
   {movimiento_id:'MOV00034',fecha:'2026-03-02',item_id:'ITM0034',tipo_movimiento:'Avance',cantidad_ejecutada:4.8,importe_pagado:0,responsable:'Albañiles',sector:'Frente',oficio:'Albañilería',medio_pago:'',observacion:''},
   {movimiento_id:'MOV00035',fecha:'2026-03-02',item_id:'ITM0035',tipo_movimiento:'Avance',cantidad_ejecutada:1,importe_pagado:0,responsable:'Albañiles',sector:'Frente',oficio:'Albañilería',medio_pago:'',observacion:''},
   {movimiento_id:'MOV00036',fecha:'2026-03-02',item_id:'ITM0036',tipo_movimiento:'Avance',cantidad_ejecutada:1,importe_pagado:0,responsable:'Albañiles',sector:'Frente',oficio:'Plomería',medio_pago:'',observacion:''},
-  // Pagos globales MO (sin item_id)
   {movimiento_id:'MOV00037',fecha:'2026-03-07',item_id:'',tipo_movimiento:'Pago',cantidad_ejecutada:0,importe_pagado:1160000,responsable:'Albañiles',sector:'Frente',oficio:'Albañilería',medio_pago:'',observacion:''},
   {movimiento_id:'MOV00038',fecha:'2026-03-07',item_id:'',tipo_movimiento:'Pago',cantidad_ejecutada:0,importe_pagado:600000,responsable:'Albañiles',sector:'Frente',oficio:'Albañilería',medio_pago:'',observacion:''},
   {movimiento_id:'MOV00039',fecha:'2026-03-14',item_id:'',tipo_movimiento:'Pago',cantidad_ejecutada:0,importe_pagado:400000,responsable:'Albañiles',sector:'Frente',oficio:'Albañilería',medio_pago:'',observacion:''},
@@ -754,704 +817,688 @@ const DEMO_MOVS = [
   {movimiento_id:'MOV00045',fecha:'2026-04-18',item_id:'',tipo_movimiento:'Pago',cantidad_ejecutada:0,importe_pagado:700000,responsable:'Albañiles',sector:'Frente',oficio:'Albañilería',medio_pago:'',observacion:''},
 ];
 
-/* ════════════════════════════════════════════════════════
+/* ════════════════════════════════════════
    INIT
-════════════════════════════════════════════════════════ */
-document.addEventListener('DOMContentLoaded',()=>{
+════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('cfgUrl').value   = G.apiUrl;
+  document.getElementById('cfgMoneda').value = G.moneda;
   bindNav();
-  hydrateSettings();
   loadData();
+  // Fechas default
+  ['pFecha','aFecha','mFecha'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.valueAsDate = new Date();
+  });
 });
 
-const PAGES = {
-  dashboard:['Dashboard','Resumen ejecutivo del proyecto.'],
-  semanal:['Seguimiento MO semanal','Pagos por semana vs avance físico, separado por oficio.'],
-  presupuesto:['Presupuesto de obra','Todos los ítems presupuestados.'],
-  movimientos:['Avances y pagos','Historial de movimientos.'],
-  responsables:['Responsables','Resumen por proveedor o persona.'],
-  sectores:['Sectores','Avance por zona de obra.'],
-  configuracion:['Configuración','Conexión y mantenimiento.'],
-};
-
 function bindNav(){
-  document.querySelectorAll('.nav-btn').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.nav-btn[data-sec]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-      document.getElementById(btn.dataset.section).classList.add('active');
-      const [t,s]=PAGES[btn.dataset.section]||['',''];
-      document.getElementById('pageTitle').textContent=t;
-      document.getElementById('pageSubtitle').textContent=s;
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById(btn.dataset.sec).classList.add('active');
     });
   });
 }
 
-function hydrateSettings(){
-  document.getElementById('apiUrl').value      = S.settings.apiUrl;
-  document.getElementById('dataMode').value    = S.settings.dataMode;
-  document.getElementById('currency').value    = S.settings.currency;
-  document.getElementById('projectName').value = S.settings.projectName;
+function goSec(id){
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.nav-btn[data-sec="${id}"]`)?.classList.add('active');
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
 }
 
-function saveSettings(){
-  S.settings.apiUrl      = document.getElementById('apiUrl').value.trim();
-  S.settings.dataMode    = document.getElementById('dataMode').value;
-  S.settings.currency    = document.getElementById('currency').value.trim()||'ARS';
-  S.settings.projectName = document.getElementById('projectName').value.trim()||'Construcción';
-  Object.entries(S.settings).forEach(([k,v])=>localStorage.setItem(`pc_${k}`,v));
-  alert('Configuración guardada.');
-}
-
-/* ════════════════════════════════════════════════════════
+/* ════════════════════════════════════════
    CARGA DE DATOS
-════════════════════════════════════════════════════════ */
+════════════════════════════════════════ */
 async function loadData(){
-  const url  = document.getElementById('apiUrl')?.value.trim()  || S.settings.apiUrl;
-  const mode = document.getElementById('dataMode')?.value        || S.settings.dataMode;
-  S.settings.apiUrl    = url;
-  S.settings.dataMode  = mode;
-  S.settings.currency  = document.getElementById('currency')?.value.trim() || S.settings.currency;
-
-  if(mode==='api' && url){
+  if(G.apiUrl){
     try{
-      const res  = await fetch(`${url}?action=getInitialData`);
-      const json = await res.json();
-      if(!json.ok) throw new Error(json.error||'Error API');
-      const d = json.data||{};
-      S.items       = d.items       || [];
-      S.movimientos = d.movimientos || [];
-      S.sectores    = d.sectores    || S.sectores;
-      document.getElementById('lastSync').textContent = 'Sync: '+new Date().toLocaleTimeString('es-AR');
+      const r = await fetch(`${G.apiUrl}?action=getInitialData`);
+      const j = await r.json();
+      if(!j.ok) throw new Error(j.error);
+      G.items = j.data.items || [];
+      G.movs  = j.data.movimientos || [];
+      document.getElementById('syncStatus').textContent = 'Sync: '+new Date().toLocaleTimeString('es-AR');
+      document.getElementById('modeLabel').textContent = 'API';
     }catch(e){
-      console.warn('Demo fallback:',e);
-      S.items       = structuredClone(DEMO_ITEMS);
-      S.movimientos = structuredClone(DEMO_MOVS);
-      document.getElementById('lastSync').textContent = 'Demo local';
+      console.warn('Fallback demo:', e);
+      G.items = structuredClone(DEMO_ITEMS);
+      G.movs  = structuredClone(DEMO_MOVS);
+      document.getElementById('syncStatus').textContent = 'Sin conexión — demo';
+      document.getElementById('modeLabel').textContent = 'Demo';
     }
-  }else{
-    const li=localStorage.getItem('pc_items');
-    const lm=localStorage.getItem('pc_movs');
-    S.items       = li ? JSON.parse(li) : structuredClone(DEMO_ITEMS);
-    S.movimientos = lm ? JSON.parse(lm) : structuredClone(DEMO_MOVS);
+  } else {
+    G.items = structuredClone(DEMO_ITEMS);
+    G.movs  = structuredClone(DEMO_MOVS);
+    document.getElementById('modeLabel').textContent = 'Demo';
   }
   renderAll();
 }
 
-async function sendToApi(action, payload){
-  if(S.settings.dataMode!=='api'||!S.settings.apiUrl) return null;
+async function api(action, payload){
+  if(!G.apiUrl) return null;
   try{
-    await fetch(S.settings.apiUrl,{
-      method:'POST', mode:'no-cors',
+    await fetch(G.apiUrl,{method:'POST',mode:'no-cors',
       headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body:JSON.stringify({action,payload})
-    });
-  }catch(e){ console.warn('API error:',e); }
+      body:JSON.stringify({action,payload})});
+  }catch(e){console.warn(e);}
 }
 
-function persistDemo(){
-  if(S.settings.dataMode!=='demo') return;
-  localStorage.setItem('pc_items', JSON.stringify(S.items));
-  localStorage.setItem('pc_movs',  JSON.stringify(S.movimientos));
+/* ════════════════════════════════════════
+   CÁLCULOS BASE
+════════════════════════════════════════ */
+function enrich(item){
+  const movs = G.movs.filter(m => m.item_id === item.item_id);
+  const ejec = movs.reduce((a,m) => a + n(m.cantidad_ejecutada), 0);
+  const pago = movs.reduce((a,m) => a + n(m.importe_pagado), 0);
+  const cant = n(item.cantidad_presupuestada);
+  const pu   = n(item.costo_unitario);
+  const total = cant * pu;
+  const pct  = cant > 0 ? Math.min(ejec/cant*100, 100) : 0;
+  const teorico = ejec * pu;
+  return {...item, ejec, pago, total, pct, teorico, desvio: pago - teorico};
 }
 
-/* ════════════════════════════════════════════════════════
+function calcResumen(){
+  const enriquecidos = G.items.map(enrich);
+  const mat = enriquecidos.filter(i => i.tipo === 'Material');
+  const mo  = enriquecidos.filter(i => i.tipo === 'Mano de obra');
+
+  // Pagos MO globales (sin item_id)
+  const pagosMOGlobales = G.movs
+    .filter(m => (!m.item_id || m.item_id==='') && n(m.importe_pagado) > 0)
+    .reduce((a,m) => a + n(m.importe_pagado), 0);
+
+  const matPresup = mat.reduce((a,i) => a + i.total, 0);
+  const matPagado = mat.reduce((a,i) => a + i.pago, 0);
+  const moPresup  = mo.reduce((a,i) => a + i.total, 0);
+  const moTeorico = mo.reduce((a,i) => a + i.teorico, 0);
+  const moPagado  = mo.reduce((a,i) => a + i.pago, 0) + pagosMOGlobales;
+
+  // Por oficio
+  const oficios = {};
+  mo.forEach(i => {
+    const o = i.oficio || 'Sin oficio';
+    if(!oficios[o]) oficios[o] = {presup:0, teorico:0, pagado:0};
+    oficios[o].presup  += i.total;
+    oficios[o].teorico += i.teorico;
+  });
+  // Asignar pagos globales al oficio del movimiento
+  G.movs.filter(m => (!m.item_id||m.item_id==='') && n(m.importe_pagado)>0).forEach(m => {
+    const o = m.oficio || 'Sin oficio';
+    if(!oficios[o]) oficios[o] = {presup:0, teorico:0, pagado:0};
+    oficios[o].pagado += n(m.importe_pagado);
+  });
+  // pagado por ítem MO también
+  mo.forEach(i => {
+    const o = i.oficio || 'Sin oficio';
+    if(!oficios[o]) oficios[o] = {presup:0, teorico:0, pagado:0};
+    oficios[o].pagado += i.pago;
+  });
+
+  const totalPresup = matPresup + moPresup;
+  const totalPagado = matPagado + moPagado;
+  const avance = moPresup > 0 ? moTeorico/moPresup*100 : 0;
+
+  return { enriquecidos, mat, mo, matPresup, matPagado, moPresup, moTeorico, moPagado, oficios, totalPresup, totalPagado, avance, pagosMOGlobales };
+}
+
+/* ════════════════════════════════════════
    RENDER ALL
-════════════════════════════════════════════════════════ */
+════════════════════════════════════════ */
 function renderAll(){
   fillSelects();
-  renderDashboard();
-  renderSemanal();
-  renderPresupuesto();
-  renderMovimientos();
-  renderResponsables();
-  renderSectoresTab();
+  const r = calcResumen();
+  renderResumen(r);
+  renderSemanal(r);
+  renderItems();
 }
 
 function fillSelects(){
-  const secOpts = ['<option value="">Todos los sectores</option>',...S.sectores.map(s=>`<option>${s}</option>`)].join('');
-  document.getElementById('fSector').innerHTML = secOpts;
-  document.getElementById('itemSector').innerHTML = S.sectores.map(s=>`<option>${s}</option>`).join('');
-  document.getElementById('movSector').innerHTML = ['<option value="">General</option>',...S.sectores.map(s=>`<option>${s}</option>`)].join('');
-  document.getElementById('movItem').innerHTML = ['<option value="">— Pago global sin ítem —</option>',...S.items.map(i=>`<option value="${i.item_id}">[${i.oficio||i.tipo}] ${i.concepto} · ${i.sector}</option>`)].join('');
-  const resps = [...new Set([...S.items.map(i=>i.responsable),...S.movimientos.map(m=>m.responsable)].filter(Boolean))];
+  const moItems = G.items.filter(i => i.tipo === 'Mano de obra');
+  const matItems = G.items.filter(i => i.tipo === 'Material');
+
+  // Avance: solo ítems MO
+  document.getElementById('aItem').innerHTML =
+    '<option value="">— seleccioná la tarea —</option>' +
+    moItems.map(i => `<option value="${i.item_id}">${i.oficio ? i.oficio+' · ' : ''}${i.concepto}</option>`).join('');
+
+  // Material
+  document.getElementById('mItem').innerHTML =
+    '<option value="">— seleccioná —</option>' +
+    matItems.map(i => `<option value="${i.item_id}">${i.concepto}</option>`).join('');
+
+  // Responsables
+  const resps = [...new Set([...G.items.map(i=>i.responsable),...G.movs.map(m=>m.responsable)].filter(Boolean))];
   document.getElementById('respList').innerHTML = resps.map(r=>`<option value="${r}"></option>`).join('');
 }
 
-/* ════════════════════════════════════════════════════════
-   ENRICH ITEM
-════════════════════════════════════════════════════════ */
-function enrich(item){
-  const movs     = S.movimientos.filter(m=>m.item_id===item.item_id);
-  const cantEjec = movs.reduce((a,m)=>a+n(m.cantidad_ejecutada),0);
-  const pagado   = movs.reduce((a,m)=>a+n(m.importe_pagado),0);
-  const cantP    = n(item.cantidad_presupuestada);
-  const costoU   = n(item.costo_unitario);
-  const totalP   = cantP*costoU;
-  const avance   = cantP>0 ? Math.min((cantEjec/cantP)*100,100) : 0;
-  const teorico  = cantEjec*costoU;
-  const desvio   = pagado-teorico;
-  return {...item,cantEjec,pagado,totalP,avance,teorico,desvio};
-}
-
-function getResumen(){
-  const enriched = S.items.map(enrich);
-  const globalPagos = S.movimientos.filter(m=>!m.item_id||m.item_id==='').reduce((a,m)=>a+n(m.importe_pagado),0);
-  const totalPresup  = enriched.reduce((a,i)=>a+i.totalP,0);
-  const totalEjec    = enriched.reduce((a,i)=>a+i.teorico,0);
-  const totalPagado  = enriched.reduce((a,i)=>a+i.pagado,0)+globalPagos;
-  const avanceGral   = totalPresup>0 ? (totalEjec/totalPresup)*100 : 0;
-  const porOficio={}, porTipo={};
-  enriched.forEach(i=>{
-    const ko = i.tipo==='Mano de obra' ? (i.oficio||'Sin oficio') : null;
-    if(ko){ if(!porOficio[ko]) porOficio[ko]={presup:0,ejec:0,pagado:0}; porOficio[ko].presup+=i.totalP; porOficio[ko].ejec+=i.teorico; porOficio[ko].pagado+=i.pagado; }
-    const kt = i.tipo||'Otro';
-    if(!porTipo[kt]) porTipo[kt]={presup:0,ejec:0,pagado:0};
-    porTipo[kt].presup+=i.totalP; porTipo[kt].ejec+=i.teorico; porTipo[kt].pagado+=i.pagado;
-  });
-  return {enriched,totalPresup,totalEjec,totalPagado,avanceGral,porOficio,porTipo,globalPagos};
-}
-
-/* ════════════════════════════════════════════════════════
-   DASHBOARD
-════════════════════════════════════════════════════════ */
-function renderDashboard(){
-  const {enriched,totalPresup,totalEjec,totalPagado,avanceGral,porOficio,porTipo,globalPagos}=getResumen();
-  const desvio = totalPagado-totalEjec;
-  const moEjec = enriched.filter(i=>i.tipo==='Mano de obra').reduce((a,i)=>a+i.teorico,0);
-  const moPagado = enriched.filter(i=>i.tipo==='Mano de obra').reduce((a,i)=>a+i.pagado,0)+globalPagos;
-
-  set('kpiPresup',money(totalPresup));
-  set('kpiEjec',money(totalEjec));
-  set('kpiPagado',money(totalPagado));
-  set('kpiAvance',avanceGral.toFixed(1)+'%');
-  set('kpiSaldo',money(totalPresup-totalPagado));
-  set('kpiDesvio',money(moPagado-moEjec));
-
-  const dc = document.getElementById('kpiDesvioCard');
-  dc.classList.remove('bl-ok','bl-warn');
-  dc.classList.add(Math.abs(moPagado-moEjec)<50000?'bl-ok':'bl-warn');
-
-  renderOficioCards(porOficio,totalEjec);
-  renderChartGeneral(totalPresup,totalEjec,totalPagado);
-  renderChartTipo(porTipo);
-  renderAvanceSectores(enriched);
-  renderRecientes();
-}
-
-const OFICIO_COLORS={
-  'Albañilería':'#7F77DD','Plomería':'#1D9E75',
-  'Electricidad':'#EF9F27','Herrería':'#E24B4A','Otro':'#888780','Sin oficio':'#B4B2A9'
+/* ════════════════════════════════════════
+   RENDER RESUMEN
+════════════════════════════════════════ */
+const OFICIO_COLOR = {
+  'Albañilería': {color:'var(--alb)', bg:'var(--alb-bg)', cls:'pill-alb'},
+  'Plomería':    {color:'var(--plo)', bg:'var(--plo-bg)', cls:'pill-plo'},
+  'Electricidad':{color:'var(--ele)', bg:'var(--ele-bg)', cls:'pill-ele'},
+  'Herrería':    {color:'var(--her)', bg:'var(--her-bg)', cls:'pill-her'},
 };
 
-function renderOficioCards(porOficio,totalEjec){
-  const keys = Object.keys(porOficio);
-  if(!keys.length){ document.getElementById('oficioCards').innerHTML=''; return; }
-  const maxPresup = Math.max(...keys.map(k=>porOficio[k].presup),1);
-  document.getElementById('oficioCards').innerHTML = keys.map(k=>{
-    const d=porOficio[k];
-    const av = d.presup>0 ? (d.ejec/d.presup*100) : 0;
-    const dv = d.pagado-d.ejec;
-    const color = OFICIO_COLORS[k]||'#888780';
-    return `<div class="oficio-card">
-      <div class="oficio-name"><span class="oficio-dot" style="background:${color}"></span>${k}</div>
-      <div class="oficio-val">${money(d.presup)}</div>
-      <div class="oficio-sub">Ejec. ${money(d.ejec)} · Pagado ${money(d.pagado)}</div>
-      <div class="oficio-sub ${dv>10000?'desvio-bad':dv<-10000?'desvio-warn':'desvio-ok'}" style="margin-top:3px">Desvío: ${money(dv)}</div>
-      <div class="oficio-bar"><span style="width:${Math.min(av,100)}%;background:${color}"></span></div>
-      <div style="font-size:11px;color:var(--muted);margin-top:4px;font-family:'DM Mono',monospace">${av.toFixed(1)}% avance</div>
-    </div>`;
-  }).join('');
-}
-
-function renderChartGeneral(p,e,pa){
-  const ctx=document.getElementById('chartGeneral');
-  if(S.charts.gen) S.charts.gen.destroy();
-  S.charts.gen=new Chart(ctx,{type:'bar',data:{
-    labels:['Presupuestado','Ejec. teórico','Pagado'],
-    datasets:[{data:[p,e,pa],backgroundColor:['#dbeafe','#ede9fe','#dcfce7'],borderColor:['#3b82f6','#7c3aed','#16a34a'],borderWidth:1.5,borderRadius:6}]
-  },options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>money(v)},grid:{color:'#f3f4f6'}}}}});
-}
-
-function renderChartTipo(porTipo){
-  const labels=Object.keys(porTipo), data=labels.map(k=>porTipo[k].presup);
-  const colors=['#7c3aed','#0284c7','#d97706','#6b7280'];
-  const ctx=document.getElementById('chartTipo');
-  if(S.charts.tipo) S.charts.tipo.destroy();
-  S.charts.tipo=new Chart(ctx,{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors.slice(0,labels.length),borderWidth:0}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}},cutout:'65%'}});
-}
-
-function renderAvanceSectores(enriched){
-  const sec={};
-  enriched.forEach(i=>{if(!sec[i.sector]) sec[i.sector]={presup:0,ejec:0,pagado:0}; sec[i.sector].presup+=i.totalP; sec[i.sector].ejec+=i.teorico; sec[i.sector].pagado+=i.pagado;});
-  document.getElementById('avanceSectores').innerHTML = Object.entries(sec).map(([s,d])=>{
-    const av=d.presup>0?(d.ejec/d.presup*100):0;
-    return `<div class="sector-item">
-      <div class="sector-row"><span class="sector-name">${s}</span><span class="sector-pct">${av.toFixed(1)}%</span></div>
-      <div class="sector-bar"><span style="width:${Math.min(av,100)}%"></span></div>
-      <div class="sector-meta">Ejec. ${money(d.ejec)} · Pagado ${money(d.pagado)} de ${money(d.presup)}</div>
-    </div>`;
-  }).join('')||'<div class="empty">Sin datos.</div>';
-}
-
-function renderRecientes(){
-  const rows=[...S.movimientos].sort((a,b)=>new Date(b.fecha)-new Date(a.fecha)).slice(0,8);
-  document.getElementById('gastosRecientes').innerHTML = rows.map(m=>{
-    const item=S.items.find(i=>i.item_id===m.item_id);
-    return `<div class="rec-item">
-      <div>
-        <div class="rec-concepto">${item?.concepto||'Pago global'}</div>
-        <div class="rec-meta">${fmtDate(m.fecha)} · ${m.tipo_movimiento}${m.oficio?' · '+m.oficio:''} · ${m.responsable||'—'}</div>
+function renderResumen(r){
+  // Materiales
+  document.getElementById('matTotal').textContent = money(r.matPagado) + ' pagado';
+  document.getElementById('matRows').innerHTML = r.mat.map(i => {
+    const e = enrich(i);
+    const pct = e.total > 0 ? e.pago/e.total*100 : 0;
+    return `<div class="cuadro-row">
+      <div class="row-label">
+        <span class="tipo-pill pill-mat"><span class="pill-dot"></span>${cortar(i.concepto,26)}</span>
       </div>
+      <div class="row-bar-wrap"><div class="row-bar" style="width:${Math.min(pct,100)}%;background:var(--mat)"></div></div>
       <div>
-        ${n(m.importe_pagado)>0?`<div class="rec-importe">${money(m.importe_pagado)}</div>`:''}
-        ${n(m.cantidad_ejecutada)>0?`<div class="rec-meta" style="text-align:right">${num(m.cantidad_ejecutada)} ${item?.unidad||''}</div>`:''}
+        <div class="row-amount pagado">${money(e.pago)}</div>
+        <div class="row-amount muted">de ${money(e.total)}</div>
       </div>
     </div>`;
-  }).join('')||'<div class="empty">Sin movimientos.</div>';
+  }).join('') || '<div class="empty" style="padding:16px">Sin materiales</div>';
+
+  // MO por oficio
+  document.getElementById('moTotal').textContent = money(r.moPagado) + ' pagado';
+  const ofKeys = Object.keys(r.oficios);
+  document.getElementById('moRows').innerHTML = ofKeys.length ? ofKeys.map(o => {
+    const d = r.oficios[o];
+    const c = OFICIO_COLOR[o] || {color:'#888',bg:'#f3f4f6',cls:'pill-otro'};
+    const pct = d.presup > 0 ? d.teorico/d.presup*100 : 0;
+    const desvio = d.pagado - d.teorico;
+    return `<div class="cuadro-row">
+      <div class="row-label">
+        <span class="tipo-pill ${c.cls}"><span class="pill-dot"></span>${o}</span>
+      </div>
+      <div>
+        <div class="row-bar-wrap"><div class="row-bar" style="width:${Math.min(pct,100)}%;background:${c.color}"></div></div>
+        <div style="font-size:10px;color:var(--muted);margin-top:3px">${pct.toFixed(0)}% avance</div>
+      </div>
+      <div>
+        <div class="row-amount pagado">${money(d.pagado)}</div>
+        <div class="row-amount muted ${desvio>5000?'text-bad':desvio<-5000?'text-warn':''}">${desvio>=0?'+':''}${money(desvio)} desvío</div>
+      </div>
+    </div>`;
+  }).join('') : '<div class="empty" style="padding:16px">Sin ítems MO</div>';
+
+  // Stats
+  document.getElementById('statAvance').textContent = r.avance.toFixed(1)+'%';
+  document.getElementById('statAvanceSub').textContent = `Mano de obra: ${money(r.moTeorico)} ejecutado de ${money(r.moPresup)}`;
+  document.getElementById('avanceBarBig').style.width = Math.min(r.avance,100)+'%';
+  const saldo = r.totalPresup - r.totalPagado;
+  document.getElementById('statSaldo').textContent = money(saldo);
+  document.getElementById('statSaldoSub').textContent = `Presupuesto total: ${money(r.totalPresup)} · Pagado: ${money(r.totalPagado)}`;
+
+  // Últimos pagos
+  const recientes = [...G.movs]
+    .filter(m => n(m.importe_pagado)>0)
+    .sort((a,b) => new Date(b.fecha)-new Date(a.fecha))
+    .slice(0,6);
+  document.getElementById('ultimosPagos').innerHTML = recientes.length
+    ? recientes.map(m => {
+        const item = G.items.find(i=>i.item_id===m.item_id);
+        const c = OFICIO_COLOR[m.oficio] || {cls: m.tipo === 'Material' ? 'pill-mat' : 'pill-otro'};
+        return `<div class="cuadro-row">
+          <div class="row-label" style="flex-direction:column;align-items:flex-start;gap:2px">
+            <span style="font-size:13px;font-weight:500">${item?.concepto || m.oficio || 'Pago global'}</span>
+            <span style="font-size:11px;color:var(--muted)">${fmtFecha(m.fecha)} · ${m.responsable||'—'}</span>
+          </div>
+          <div></div>
+          <div class="row-amount pagado">${money(m.importe_pagado)}</div>
+        </div>`;
+      }).join('')
+    : '<div class="empty" style="padding:16px">Sin pagos</div>';
 }
 
-/* ════════════════════════════════════════════════════════
-   SEGUIMIENTO SEMANAL
-════════════════════════════════════════════════════════ */
-function renderSemanal(){
-  const oficioFiltro = document.getElementById('filtroOficioSemanal')?.value||'';
-  const moItems = S.items.filter(i=>i.tipo==='Mano de obra');
-  const totalTeoricoMO = moItems.map(enrich).reduce((a,i)=>a+i.teorico,0);
+/* ════════════════════════════════════════
+   RENDER SEMANAL
+════════════════════════════════════════ */
+function renderSemanal(r){
+  const ofFiltro = G.oficioFiltro;
 
-  // Pagos con importe > 0, filtrados por oficio
-  const pagos = S.movimientos.filter(m=>n(m.importe_pagado)>0 && m.fecha && (!oficioFiltro || m.oficio===oficioFiltro));
+  // Pagos MO filtrados
+  const pagosMO = G.movs.filter(m =>
+    n(m.importe_pagado) > 0 && m.fecha &&
+    (!ofFiltro || m.oficio === ofFiltro)
+  );
+
+  // Total teórico MO (del filtro)
+  const moItems = G.items.filter(i => i.tipo==='Mano de obra' && (!ofFiltro || i.oficio===ofFiltro));
+  const totalTeorico = moItems.map(enrich).reduce((a,i) => a+i.teorico, 0);
+  const totalPagadoMO = pagosMO.reduce((a,m) => a+n(m.importe_pagado), 0);
+  const desvio = totalPagadoMO - totalTeorico;
 
   // Agrupar por semana
-  const semanas={};
-  pagos.forEach(m=>{
-    const d=new Date(m.fecha+'T12:00:00');
-    const key=isoWeekKey(d);
-    if(!semanas[key]) semanas[key]={key,fechaInicio:weekStart(d),pagos:[],total:0,porOficio:{}};
-    semanas[key].total+=n(m.importe_pagado);
-    semanas[key].pagos.push(m);
-    const o=m.oficio||'Sin oficio';
-    semanas[key].porOficio[o]=(semanas[key].porOficio[o]||0)+n(m.importe_pagado);
+  const semanas = {};
+  pagosMO.forEach(m => {
+    const d = new Date(m.fecha+'T12:00:00');
+    const k = isoWeekKey(d);
+    if(!semanas[k]) semanas[k]={key:k, inicio:weekStart(d), pagos:[], total:0};
+    semanas[k].total += n(m.importe_pagado);
+    semanas[k].pagos.push(m);
   });
+  const semanasArr = Object.values(semanas).sort((a,b)=>a.key.localeCompare(b.key));
+  let acum = 0;
+  semanasArr.forEach(s => { acum+=s.total; s.acum=acum; s.desvio=acum-totalTeorico; });
 
-  const semanasArr=Object.values(semanas).sort((a,b)=>a.key.localeCompare(b.key));
-  let acum=0;
-  semanasArr.forEach(s=>{ acum+=s.total; s.acum=acum; s.desvio=acum-totalTeoricoMO; });
+  // KPIs
+  document.getElementById('moKpiPagado').textContent = money(totalPagadoMO);
+  document.getElementById('moKpiPagadoSub').textContent = pagosMO.filter(m=>n(m.importe_pagado)>0).length+' pagos registrados';
+  document.getElementById('moKpiTeorico').textContent = money(totalTeorico);
+  document.getElementById('moKpiDesvio').textContent = (desvio>=0?'+':'')+money(desvio);
+  document.getElementById('moKpiDesvio').className = 'sem-kpi-value '+(desvio>50000?'text-bad':desvio<-50000?'text-warn':'text-ok');
+  document.getElementById('moKpiDesvioSub').textContent = desvio>0?'Pagaste de más':'Pagaste de menos (debés)';
+  document.getElementById('moKpiSemanas').textContent = semanasArr.length;
+  document.getElementById('moKpiPromedio').textContent = 'Promedio '+money(semanasArr.length?totalPagadoMO/semanasArr.length:0)+'/sem';
 
-  // KPIs MO
-  const totalPagadoMO=S.movimientos.filter(m=>n(m.importe_pagado)>0&&(!oficioFiltro||m.oficio===oficioFiltro)).reduce((a,m)=>a+n(m.importe_pagado),0);
-  const desvioMO=totalPagadoMO-totalTeoricoMO;
-  document.getElementById('kpiMO').innerHTML=`
-    <div class="kpi bl-mat"><div class="kpi-label">Total pagado MO</div><div class="kpi-value">${money(totalPagadoMO)}</div><div class="kpi-sub">${pagos.length} pagos registrados</div></div>
-    <div class="kpi bl-ok"><div class="kpi-label">Ejecutado teórico</div><div class="kpi-value">${money(totalTeoricoMO)}</div><div class="kpi-sub">Avance × costo unitario</div></div>
-    <div class="kpi ${Math.abs(desvioMO)<50000?'bl-ok':'bl-warn'}"><div class="kpi-label">Desvío acumulado</div><div class="kpi-value ${desvioMO>50000?'desvio-bad':desvioMO<-50000?'desvio-warn':''}">${money(desvioMO)}</div><div class="kpi-sub">${desvioMO>0?'Pagaste más del avance':desvioMO<0?'Pagaste menos del avance':'En línea con el avance'}</div></div>
-    <div class="kpi"><div class="kpi-label">Semanas con pago</div><div class="kpi-value">${semanasArr.length}</div><div class="kpi-sub">Promedio ${money(semanasArr.length?totalPagadoMO/semanasArr.length:0)}</div></div>`;
+  // Gráfico
+  renderChartSemanal(semanasArr, totalTeorico);
 
-  // Gráfico barras semanales
-  renderChartSemanal(semanasArr, totalTeoricoMO);
+  // Cards por semana
+  const maxTotal = Math.max(...semanasArr.map(s=>s.total), 1);
+  const color = OFICIO_COLOR[ofFiltro]?.color || 'var(--alb)';
+  document.getElementById('semanasCards').innerHTML = semanasArr.length
+    ? semanasArr.map((s,idx) => {
+        const pct = s.total/maxTotal*100;
+        const dCls = s.desvio>50000?'text-bad':s.desvio<-50000?'text-warn':'text-ok';
+        const oficios = [...new Set(s.pagos.map(p=>p.oficio).filter(Boolean))];
+        return `<div class="semana-card">
+          <div class="semana-card-hd" onclick="toggleSemana(${idx})">
+            <div>
+              <div class="semana-fecha">${fmtSemana(s.inicio)}</div>
+              <div style="font-size:11px;color:var(--muted)">${s.pagos.length} pago${s.pagos.length!==1?'s':''} · acum. ${money(s.acum)}</div>
+            </div>
+            <div class="semana-barra-wrap"><div class="semana-barra" style="width:${pct}%;background:${color}"></div></div>
+            <div>
+              <div class="semana-importe">${money(s.total)}</div>
+              <div class="semana-desvio ${dCls}">${s.desvio>=0?'↑':'↓'} ${money(Math.abs(s.desvio))} vs teórico</div>
+            </div>
+          </div>
+          <div class="semana-body" id="sb-${idx}">
+            ${s.pagos.map(p => {
+              const c = OFICIO_COLOR[p.oficio]||{cls:'pill-otro'};
+              return `<div class="pago-item">
+                <div>
+                  <div class="pago-concepto">${p.observacion||p.responsable||'Pago semanal'}</div>
+                  <div class="pago-meta">${p.responsable} ${p.medio_pago?'· '+p.medio_pago:''} ${p.oficio?'· <span class="tipo-pill '+c.cls+'" style="font-size:10px;padding:1px 6px">'+p.oficio+'</span>':''}</div>
+                </div>
+                <div class="pago-monto">${money(n(p.importe_pagado))}</div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>`;
+      }).join('')
+    : '<div class="empty">Sin pagos registrados'+(ofFiltro?' para '+ofFiltro:'')+'.</div>';
+}
 
-  // Tabla
-  document.getElementById('tbSemanal').innerHTML = semanasArr.map(s=>{
-    const oficios=[...new Set(s.pagos.map(p=>p.oficio||'Sin oficio'))];
-    const desvClass=s.desvio>50000?'desvio-bad':s.desvio<-50000?'desvio-warn':'desvio-ok';
-    const pct=totalTeoricoMO>0?Math.min(s.acum/totalTeoricoMO*100,100):0;
-    return `<tr>
-      <td><strong>${fmtSemana(s.fechaInicio)}</strong></td>
-      <td style="font-size:12px;color:var(--muted)">${s.pagos.length} pago${s.pagos.length!==1?'s':''}: ${s.pagos.map(p=>money(n(p.importe_pagado))).join(' + ')}</td>
-      <td>${oficios.map(o=>`<span class="chip chip-${oficioClass(o)}">${o}</span>`).join(' ')}</td>
-      <td class="mono" style="text-align:right"><strong>${money(s.total)}</strong></td>
-      <td class="mono" style="text-align:right">
-        <div class="bar-inline" style="justify-content:flex-end">
-          ${money(s.acum)}
-          <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:#7F77DD"></div></div>
-        </div>
-      </td>
-      <td class="mono" style="text-align:right">${money(totalTeoricoMO)}</td>
-      <td class="mono ${desvClass}" style="text-align:right">${s.desvio>=0?'+':''}${money(s.desvio)}</td>
-    </tr>`;
-  }).join('')||`<tr><td colspan="7"><div class="empty">Sin pagos registrados${oficioFiltro?' para '+oficioFiltro:''}.</div></td></tr>`;
-
-  // Tabla ítems MO
-  const moEnriched=moItems.map(enrich).filter(i=>!oficioFiltro||i.oficio===oficioFiltro);
-  document.getElementById('tbItemsMO').innerHTML = moEnriched.map(item=>{
-    const estadoCls=item.avance>=100?'estado-fin':item.avance>0?'estado-cur':'estado-pen';
-    const estadoLbl=item.avance>=100?'Finalizado':item.avance>0?'En curso':'Pendiente';
-    return `<tr>
-      <td><span class="chip chip-${oficioClass(item.oficio)}">${item.oficio||'—'}</span></td>
-      <td><strong>${item.concepto}</strong></td>
-      <td>${item.sector}</td>
-      <td>${item.unidad}</td>
-      <td class="mono">${num(item.cantidad_presupuestada)}</td>
-      <td class="mono">${num(item.cantEjec)}</td>
-      <td>
-        <div class="prog-wrap">
-          <div class="prog"><span style="background:${OFICIO_COLORS[item.oficio]||'#7F77DD'};width:${Math.min(item.avance,100)}%"></span></div>
-          <span class="mono" style="font-size:12px">${item.avance.toFixed(0)}%</span>
-        </div>
-      </td>
-      <td class="mono">${money(item.teorico)}</td>
-      <td><span class="${estadoCls}">${estadoLbl}</span></td>
-    </tr>`;
-  }).join('')||`<tr><td colspan="9"><div class="empty">Sin ítems de mano de obra.</div></td></tr>`;
+function toggleSemana(idx){
+  const el = document.getElementById('sb-'+idx);
+  if(el) el.classList.toggle('open');
 }
 
 function renderChartSemanal(semanasArr, totalTeorico){
-  const ctx=document.getElementById('chartSemanal');
-  if(S.charts.sem) S.charts.sem.destroy();
+  const ctx = document.getElementById('chartSemanal');
+  if(G.charts.sem) G.charts.sem.destroy();
   if(!semanasArr.length) return;
-  S.charts.sem=new Chart(ctx,{
+  G.charts.sem = new Chart(ctx, {
     type:'bar',
     data:{
-      labels:semanasArr.map(s=>fmtSemana(s.fechaInicio)),
+      labels: semanasArr.map(s => fmtSemana(s.inicio)),
       datasets:[
-        {type:'bar',label:'Pagado semana',data:semanasArr.map(s=>s.total),backgroundColor:'#AFA9EC',borderColor:'#534AB7',borderWidth:1,borderRadius:5,order:2},
-        {type:'line',label:'Acumulado pagado',data:semanasArr.map(s=>s.acum),borderColor:'#3C3489',borderWidth:2,pointRadius:4,pointBackgroundColor:'#3C3489',fill:false,tension:.3,order:1},
-        {type:'line',label:'Teórico total',data:semanasArr.map(()=>totalTeorico),borderColor:'#639922',borderWidth:1.5,borderDash:[5,4],pointRadius:0,fill:false,order:0},
+        {type:'bar', label:'Pagado semana', data:semanasArr.map(s=>s.total),
+         backgroundColor:'rgba(91,79,204,.25)', borderColor:'var(--alb)', borderWidth:1.5, borderRadius:4, order:2},
+        {type:'line', label:'Acumulado pagado', data:semanasArr.map(s=>s.acum),
+         borderColor:'#1a1a1a', borderWidth:2, pointRadius:4, pointBackgroundColor:'#1a1a1a',
+         fill:false, tension:.3, order:1},
+        {type:'line', label:'Teórico total', data:semanasArr.map(()=>totalTeorico),
+         borderColor:'var(--ok)', borderWidth:1.5, borderDash:[5,4], pointRadius:0, fill:false, order:0},
       ]
     },
-    options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'bottom',labels:{font:{size:11}}}},scales:{y:{ticks:{callback:v=>money(v)},grid:{color:'#f3f4f6'}}}}
+    options:{
+      responsive:true,
+      interaction:{mode:'index',intersect:false},
+      plugins:{legend:{position:'bottom',labels:{font:{size:11},usePointStyle:true}}},
+      scales:{y:{ticks:{callback:v=>money(v)},grid:{color:'#f0ece4'}}}
+    }
   });
 }
 
-/* ════════════════════════════════════════════════════════
-   PRESUPUESTO TABLE
-════════════════════════════════════════════════════════ */
-function renderPresupuesto(){
-  const search=q('fSearch'),tipo=q('fTipo'),oficio=q('fOficio'),sector=q('fSector'),estado=q('fEstado');
-  const rows=S.items.map(enrich).filter(item=>{
-    const est=item.avance===0?'pendiente':item.avance>=100?'finalizado':'en_curso';
-    const txt=`${item.concepto} ${item.sector} ${item.responsable}`.toLowerCase();
-    return (!search||txt.includes(search))&&(!tipo||item.tipo===tipo)&&(!oficio||item.oficio===oficio)&&(!sector||item.sector===sector)&&(!estado||est===estado);
+function filtrarOficio(btn, oficio){
+  G.oficioFiltro = oficio;
+  document.querySelectorAll('.sem-filter').forEach(b => {
+    b.className = 'sem-filter';
+    const map = {'Albañilería':'active-alb','Plomería':'active-plo','Electricidad':'active-ele','Herrería':'active-her'};
+    if(b.dataset.oficio === oficio) b.classList.add(oficio ? (map[oficio]||'active') : 'active');
   });
-  document.getElementById('tbPresupuesto').innerHTML=rows.map(item=>{
-    const est=item.avance===0?'pendiente':item.avance>=100?'finalizado':'en_curso';
-    const estLbl={pendiente:'Pendiente',en_curso:'En curso',finalizado:'Finalizado'}[est];
-    const estCls={pendiente:'estado-pen',en_curso:'estado-cur',finalizado:'estado-fin'}[est];
-    const color=item.tipo==='Mano de obra'?(OFICIO_COLORS[item.oficio]||'#7F77DD'):'#0284c7';
-    return `<tr>
-      <td>${tipoBadge(item.tipo)}</td>
-      <td>${item.oficio?`<span class="chip chip-${oficioClass(item.oficio)}">${item.oficio}</span>`:'—'}</td>
-      <td><strong>${item.concepto}</strong></td>
-      <td>${item.sector}</td>
-      <td>${item.responsable||'—'}</td>
-      <td>${item.unidad}</td>
-      <td class="mono">${num(item.cantidad_presupuestada)}</td>
-      <td class="mono">${num(item.cantEjec)}</td>
-      <td><div class="prog-wrap"><div class="prog"><span style="background:${color};width:${Math.min(item.avance,100)}%"></span></div><span class="mono" style="font-size:12px">${item.avance.toFixed(1)}%</span></div></td>
-      <td class="mono">${money(item.costo_unitario)}</td>
-      <td class="mono"><strong>${money(item.totalP)}</strong></td>
-      <td class="mono">${money(item.teorico)}</td>
-      <td class="mono">${money(item.pagado)}</td>
-      <td class="mono ${item.desvio>5000?'desvio-bad':item.desvio<-5000?'desvio-warn':'desvio-ok'}">${money(item.desvio)}</td>
-      <td>
-        <div style="display:flex;gap:4px;flex-wrap:wrap">
-          <button class="btn btn-soft btn-sm" onclick="openItemModal('${item.item_id}')">Editar</button>
-          <button class="btn btn-mo btn-sm" onclick="openMovModal('${item.item_id}')">+ Mov.</button>
-          <button class="btn btn-danger-soft btn-sm" onclick="delItem('${item.item_id}')">✕</button>
-        </div>
-      </td>
-    </tr>`;
-  }).join('')||`<tr><td colspan="15"><div class="empty">Sin ítems.</div></td></tr>`;
+  const r = calcResumen();
+  renderSemanal(r);
 }
 
-/* ════════════════════════════════════════════════════════
-   MOVIMIENTOS TABLE
-════════════════════════════════════════════════════════ */
-function renderMovimientos(){
-  const rows=[...S.movimientos].sort((a,b)=>new Date(b.fecha)-new Date(a.fecha));
-  document.getElementById('tbMovimientos').innerHTML=rows.map(m=>{
-    const item=S.items.find(i=>i.item_id===m.item_id);
-    return `<tr>
-      <td>${fmtDate(m.fecha)}</td>
-      <td>${item?`<strong>${item.concepto}</strong><br><span style="font-size:11px;color:var(--muted)">${item.sector}</span>`:'<span style="color:var(--muted);font-size:12px">Pago global</span>'}</td>
-      <td>${m.oficio?`<span class="chip chip-${oficioClass(m.oficio)}">${m.oficio}</span>`:'—'}</td>
-      <td><span class="${m.tipo_movimiento==='Avance'?'estado-cur':m.tipo_movimiento==='Pago'?'estado-fin':'estado-cur'}">${m.tipo_movimiento}</span></td>
-      <td class="mono">${n(m.cantidad_ejecutada)>0?num(m.cantidad_ejecutada):'—'}</td>
-      <td class="mono"><strong>${money(m.importe_pagado)}</strong></td>
-      <td>${m.medio_pago||'—'}</td>
-      <td>${m.responsable||'—'}</td>
-      <td style="max-width:160px;font-size:12px;color:var(--muted)">${m.observacion||'—'}</td>
-      <td><div style="display:flex;gap:4px">
-        <button class="btn btn-soft btn-sm" onclick="openMovModal(null,'${m.movimiento_id}')">Editar</button>
-        <button class="btn btn-danger-soft btn-sm" onclick="delMov('${m.movimiento_id}')">✕</button>
-      </div></td>
-    </tr>`;
-  }).join('')||`<tr><td colspan="10"><div class="empty">Sin movimientos.</div></td></tr>`;
+/* ════════════════════════════════════════
+   RENDER ÍTEMS
+════════════════════════════════════════ */
+function cambiarTab(btn){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  G.tabActual = btn.dataset.tab;
+  renderItems();
 }
 
-/* ════════════════════════════════════════════════════════
-   RESPONSABLES / SECTORES
-════════════════════════════════════════════════════════ */
-function renderResponsables(){
-  const map={};
-  S.items.map(enrich).forEach(i=>{
-    const k=i.responsable||'Sin responsable';
-    if(!map[k]) map[k]={presup:0,ejec:0,pagado:0,saldo:0};
-    map[k].presup+=i.totalP; map[k].ejec+=i.teorico; map[k].pagado+=i.pagado; map[k].saldo+=i.totalP-i.pagado;
-  });
-  document.getElementById('tbResponsables').innerHTML=Object.entries(map).map(([r,d])=>{
-    const dv=d.pagado-d.ejec;
-    return `<tr><td><strong>${r}</strong></td><td class="mono">${money(d.presup)}</td><td class="mono">${money(d.ejec)}</td><td class="mono">${money(d.pagado)}</td><td class="mono">${money(d.saldo)}</td><td class="mono ${dv>5000?'desvio-bad':dv<-5000?'desvio-warn':'desvio-ok'}">${money(dv)}</td></tr>`;
-  }).join('')||`<tr><td colspan="6"><div class="empty">Sin datos.</div></td></tr>`;
+function renderItems(){
+  const [tipo, oficio] = G.tabActual.split(':');
+  const filtrados = G.items.filter(i =>
+    i.tipo === tipo && (oficio===undefined || i.oficio===(oficio||''))
+  ).map(enrich);
+
+  const color = tipo==='Material' ? 'var(--mat)' : (OFICIO_COLOR[oficio]?.color || 'var(--alb)');
+
+  document.getElementById('itemsListado').innerHTML = filtrados.length
+    ? filtrados.map(item => {
+        const estadoCls = item.pct>=100 ? 'text-ok' : item.pct>0 ? 'text-warn' : 'text-muted';
+        const estadoLbl = item.pct>=100 ? '✓ Finalizado' : item.pct>0 ? `${item.pct.toFixed(0)}% avance` : 'Pendiente';
+        return `<div class="item-card">
+          <div class="item-card-hd">
+            <div style="width:42px;text-align:center">
+              <div style="font-family:'DM Mono',monospace;font-size:14px;font-weight:500;color:${color}">${item.pct.toFixed(0)}%</div>
+              <div style="font-size:10px;color:var(--muted)">${item.unidad}</div>
+            </div>
+            <div>
+              <div class="item-card-name">${item.concepto}</div>
+              <div class="item-card-meta">${item.sector} · ${item.responsable||'—'} · ${money(item.costo_unitario)}/${item.unidad}</div>
+            </div>
+            <div style="text-align:right">
+              <div class="item-card-pct">${money(item.pago)}</div>
+              <div style="font-size:11px;color:var(--muted)">de ${money(item.total)}</div>
+            </div>
+            <div class="item-card-acciones">
+              <button class="btn btn-soft btn-sm" onclick="abrirModalItem('${item.item_id}')">Editar</button>
+              <button class="btn btn-danger btn-sm" onclick="eliminarItem('${item.item_id}')">✕</button>
+            </div>
+          </div>
+          <div class="item-prog">
+            <span style="width:${Math.min(item.pct,100)}%;background:${color}"></span>
+          </div>
+        </div>`;
+      }).join('')
+    : `<div class="empty">No hay ítems en esta categoría.<br><button class="btn btn-primary" style="margin-top:12px" onclick="abrirModalItem()">+ Agregar ítem</button></div>`;
 }
 
-function renderSectoresTab(){
-  const map={};
-  S.items.map(enrich).forEach(i=>{
-    if(!map[i.sector]) map[i.sector]={items:0,presup:0,ejec:0,pagado:0};
-    map[i.sector].items++; map[i.sector].presup+=i.totalP; map[i.sector].ejec+=i.teorico; map[i.sector].pagado+=i.pagado;
-  });
-  document.getElementById('tbSectores').innerHTML=Object.entries(map).map(([s,d])=>{
-    const av=d.presup>0?(d.ejec/d.presup*100):0;
-    return `<tr><td><strong>${s}</strong></td><td class="mono">${d.items}</td><td class="mono">${money(d.presup)}</td><td class="mono">${money(d.ejec)}</td><td class="mono">${money(d.pagado)}</td>
-    <td><div class="prog-wrap"><div class="prog" style="width:100px"><span style="width:${Math.min(av,100)}%"></span></div><span class="mono" style="font-size:12px">${av.toFixed(1)}%</span></div></td>
-    <td class="mono">${money(d.presup-d.pagado)}</td></tr>`;
-  }).join('')||`<tr><td colspan="7"><div class="empty">Sin datos.</div></td></tr>`;
+/* ════════════════════════════════════════
+   GUARDAR PAGOS / AVANCES
+════════════════════════════════════════ */
+async function guardarPago(e){
+  e.preventDefault();
+  const mov = {
+    movimiento_id: genId('MOV'),
+    fecha:         document.getElementById('pFecha').value,
+    item_id:       '',
+    tipo_movimiento: 'Pago',
+    cantidad_ejecutada: 0,
+    importe_pagado: n(document.getElementById('pImporte').value),
+    responsable:   document.getElementById('pResponsable').value.trim(),
+    sector:        'Frente',
+    oficio:        document.getElementById('pOficio').value,
+    medio_pago:    document.getElementById('pMedio').value,
+    observacion:   document.getElementById('pObs').value.trim(),
+    fecha_creacion: hoy(), fecha_actualizacion: hoy(), estado_registro: 'Activo',
+  };
+  G.movs.push(mov);
+  await api('createMovimiento', mov);
+  e.target.reset();
+  document.getElementById('pFecha').valueAsDate = new Date();
+  renderAll();
+  alert('✓ Pago registrado correctamente.');
 }
 
-/* ════════════════════════════════════════════════════════
+async function guardarAvance(e){
+  e.preventDefault();
+  const itemId = document.getElementById('aItem').value;
+  if(!itemId){ alert('Seleccioná un ítem.'); return; }
+  const item = G.items.find(i=>i.item_id===itemId);
+  const mov = {
+    movimiento_id: genId('MOV'),
+    fecha:         document.getElementById('aFecha').value,
+    item_id:       itemId,
+    tipo_movimiento: 'Avance',
+    cantidad_ejecutada: n(document.getElementById('aCantidad').value),
+    importe_pagado: 0,
+    responsable:   item?.responsable || '',
+    sector:        item?.sector || '',
+    oficio:        item?.oficio || '',
+    medio_pago:    '',
+    observacion:   document.getElementById('aObs').value.trim(),
+    fecha_creacion: hoy(), fecha_actualizacion: hoy(), estado_registro: 'Activo',
+  };
+  G.movs.push(mov);
+  await api('createMovimiento', mov);
+  e.target.reset();
+  document.getElementById('aFecha').valueAsDate = new Date();
+  document.getElementById('aHint').style.display='none';
+  document.getElementById('aCalc').style.display='none';
+  renderAll();
+  alert('✓ Avance registrado correctamente.');
+}
+
+async function guardarMaterial(e){
+  e.preventDefault();
+  const itemId = document.getElementById('mItem').value;
+  if(!itemId){ alert('Seleccioná un material.'); return; }
+  const item = G.items.find(i=>i.item_id===itemId);
+  const mov = {
+    movimiento_id: genId('MOV'),
+    fecha:         document.getElementById('mFecha').value,
+    item_id:       itemId,
+    tipo_movimiento: 'Pago',
+    cantidad_ejecutada: n(document.getElementById('mCantidad').value),
+    importe_pagado: n(document.getElementById('mImporte').value),
+    responsable:   document.getElementById('mResponsable').value.trim() || item?.responsable || '',
+    sector:        item?.sector || 'General',
+    oficio:        '',
+    medio_pago:    '',
+    observacion:   document.getElementById('mObs').value.trim(),
+    fecha_creacion: hoy(), fecha_actualizacion: hoy(), estado_registro: 'Activo',
+  };
+  G.movs.push(mov);
+  await api('createMovimiento', mov);
+  e.target.reset();
+  document.getElementById('mFecha').valueAsDate = new Date();
+  renderAll();
+  alert('✓ Pago de material registrado.');
+}
+
+/* ════════════════════════════════════════
    MODAL ÍTEM
-════════════════════════════════════════════════════════ */
-function onItemTipoChange(){
-  const isMO = document.getElementById('itemTipo').value==='Mano de obra';
-  document.getElementById('wrapOficio').style.opacity = isMO?'1':'0.4';
-  document.getElementById('itemOficio').disabled = !isMO;
-}
-
-function openItemModal(itemId=null){
-  document.getElementById('itemForm').reset();
-  document.getElementById('itemId').value='';
-  document.getElementById('itemModalTitle').textContent='Agregar ítem presupuestado';
+════════════════════════════════════════ */
+function abrirModalItem(itemId=null){
+  document.getElementById('fItem').reset();
+  document.getElementById('iId').value='';
+  document.getElementById('modalItemTitle').textContent = 'Nuevo ítem';
   if(itemId){
-    const item=S.items.find(i=>i.item_id===itemId); if(!item) return;
-    document.getElementById('itemModalTitle').textContent='Editar ítem';
-    document.getElementById('itemId').value     = item.item_id;
-    document.getElementById('itemTipo').value   = item.tipo;
-    document.getElementById('itemOficio').value = item.oficio||'';
-    document.getElementById('itemSector').value = item.sector;
-    document.getElementById('itemResponsable').value = item.responsable;
-    document.getElementById('itemConcepto').value    = item.concepto;
-    document.getElementById('itemUnidad').value      = item.unidad;
-    document.getElementById('itemCantidad').value    = item.cantidad_presupuestada;
-    document.getElementById('itemCosto').value       = item.costo_unitario;
-    document.getElementById('itemObs').value         = item.observacion||'';
+    const i = G.items.find(x=>x.item_id===itemId); if(!i) return;
+    document.getElementById('modalItemTitle').textContent = 'Editar ítem';
+    document.getElementById('iId').value = i.item_id;
+    document.getElementById('iTipo').value = i.tipo;
+    document.getElementById('iOficio').value = i.oficio||'';
+    document.getElementById('iConcepto').value = i.concepto;
+    document.getElementById('iSector').value = i.sector;
+    document.getElementById('iResponsable').value = i.responsable;
+    document.getElementById('iUnidad').value = i.unidad;
+    document.getElementById('iCantidad').value = i.cantidad_presupuestada;
+    document.getElementById('iCosto').value = i.costo_unitario;
+    document.getElementById('iObs').value = i.observacion||'';
+    prevTotal();
   }
-  onItemTipoChange();
-  updateTotalPreview();
-  document.getElementById('itemModal').classList.add('active');
+  onTipoChange();
+  document.getElementById('modalItem').classList.add('open');
 }
 
-function updateTotalPreview(){
-  const c=n(document.getElementById('itemCantidad').value);
-  const p=n(document.getElementById('itemCosto').value);
-  document.getElementById('itemTotal').value=money(c*p);
+function abrirModalPago(){
+  goSec('cargar');
 }
 
-async function saveItem(e){
+function cerrarModal(id){ document.getElementById(id).classList.remove('open'); }
+
+function onTipoChange(){
+  const isMO = document.getElementById('iTipo').value==='Mano de obra';
+  document.getElementById('wOficio').style.opacity = isMO?'1':'0.4';
+  document.getElementById('iOficio').disabled = !isMO;
+}
+
+function prevTotal(){
+  const c = n(document.getElementById('iCantidad').value);
+  const p = n(document.getElementById('iCosto').value);
+  document.getElementById('iTotal').textContent = money(c*p);
+}
+
+async function guardarItem(e){
   e.preventDefault();
-  const id=document.getElementById('itemId').value||genId('ITM');
-  const item={
-    item_id:id,
-    tipo:      document.getElementById('itemTipo').value,
-    oficio:    document.getElementById('itemOficio').value,
-    sector:    document.getElementById('itemSector').value,
-    responsable: document.getElementById('itemResponsable').value.trim(),
-    concepto:  document.getElementById('itemConcepto').value.trim(),
-    unidad:    document.getElementById('itemUnidad').value,
-    cantidad_presupuestada: n(document.getElementById('itemCantidad').value),
-    costo_unitario:        n(document.getElementById('itemCosto').value),
-    observacion: document.getElementById('itemObs').value.trim(),
+  const id = document.getElementById('iId').value || genId('ITM');
+  const item = {
+    item_id: id,
+    tipo:    document.getElementById('iTipo').value,
+    oficio:  document.getElementById('iOficio').value,
+    concepto:document.getElementById('iConcepto').value.trim(),
+    sector:  document.getElementById('iSector').value,
+    responsable: document.getElementById('iResponsable').value.trim(),
+    unidad:  document.getElementById('iUnidad').value,
+    cantidad_presupuestada: n(document.getElementById('iCantidad').value),
+    costo_unitario: n(document.getElementById('iCosto').value),
+    observacion: document.getElementById('iObs').value.trim(),
+    fecha_creacion: hoy(), fecha_actualizacion: hoy(), estado_registro: 'Activo',
   };
-  const idx=S.items.findIndex(i=>i.item_id===id);
-  if(idx>=0) S.items[idx]=item; else S.items.push(item);
-  await sendToApi(idx>=0?'updateItem':'createItem',item);
-  persistDemo(); closeModal('itemModal'); renderAll();
+  const idx = G.items.findIndex(i=>i.item_id===id);
+  if(idx>=0) G.items[idx]=item; else G.items.push(item);
+  await api(idx>=0?'updateItem':'createItem', item);
+  cerrarModal('modalItem');
+  renderAll();
 }
 
-async function delItem(id){
+async function eliminarItem(id){
   if(!confirm('¿Eliminar este ítem?')) return;
-  S.items=S.items.filter(i=>i.item_id!==id);
-  await sendToApi('deleteItem',{item_id:id});
-  persistDemo(); renderAll();
+  G.items = G.items.filter(i=>i.item_id!==id);
+  await api('deleteItem',{item_id:id});
+  renderAll();
 }
 
-/* ════════════════════════════════════════════════════════
-   MODAL MOVIMIENTO
-════════════════════════════════════════════════════════ */
-function onMovTipoChange(){
-  const tipo=document.getElementById('movTipo').value;
-  const showAvance = tipo==='Avance'||tipo==='Avance y pago';
-  const showPago   = tipo==='Pago'||tipo==='Avance y pago'||tipo==='Ajuste';
-  document.getElementById('wrapAvance').style.display  = showAvance?'':'none';
-  document.getElementById('sepAvance').style.display   = showAvance?'':'none';
-  document.getElementById('sepPago').style.display     = showPago?'':'none';
-  document.getElementById('movImporte').parentElement.style.display = showPago?'':'none';
-  document.getElementById('movMedio').parentElement.style.display   = showPago?'':'none';
-  document.getElementById('wrapItemMov').style.display = showAvance?'':'none';
+/* ════════════════════════════════════════
+   AVANCE HELPER (sincronía cant ↔ pct)
+════════════════════════════════════════ */
+function onAvanceItemChange(){
+  const id = document.getElementById('aItem').value;
+  const item = G.items.find(i=>i.item_id===id);
+  if(!item){ document.getElementById('aHint').style.display='none'; document.getElementById('aCalc').style.display='none'; return; }
+  document.getElementById('aHint').style.display='block';
+  document.getElementById('aCalc').style.display='grid';
+  document.getElementById('aPresup').textContent = money(n(item.cantidad_presupuestada)*n(item.costo_unitario));
+  document.getElementById('aCantPresup').textContent = item.cantidad_presupuestada+' '+item.unidad;
+  syncAvanceDesdeCant();
 }
 
-function onMovItemChange(){
-  const itemId=document.getElementById('movItem').value;
-  const item=S.items.find(i=>i.item_id===itemId);
-  document.getElementById('movUnidLabel').textContent = item?`Unidad: ${item.unidad} · Presup: ${num(item.cantidad_presupuestada)}`:'';
-  document.getElementById('movPresup').value = item?money(n(item.cantidad_presupuestada)*n(item.costo_unitario)):'';
-  if(item && item.oficio) document.getElementById('movOficio').value=item.oficio;
-  syncDesdeCanidad();
+function syncAvanceDesdeCant(){
+  const id = document.getElementById('aItem').value;
+  const item = G.items.find(i=>i.item_id===id); if(!item) return;
+  const cant = n(document.getElementById('aCantidad').value);
+  const base = n(item.cantidad_presupuestada);
+  document.getElementById('aPorcentaje').value = base>0?(cant/base*100).toFixed(0):0;
+  document.getElementById('aTeorico').textContent = money(cant*n(item.costo_unitario));
 }
 
-function syncDesdeCanidad(){
-  const cant=n(document.getElementById('movCantidad').value);
-  const item=S.items.find(i=>i.item_id===document.getElementById('movItem').value);
-  if(!item) return;
-  const base=n(item.cantidad_presupuestada);
-  const pct=base>0?(cant/base*100):0;
-  document.getElementById('movPct').value=pct.toFixed(1);
-  document.getElementById('movTeorico').value=money(cant*n(item.costo_unitario));
+function syncAvanceDesdePct(){
+  const id = document.getElementById('aItem').value;
+  const item = G.items.find(i=>i.item_id===id); if(!item) return;
+  const pct = n(document.getElementById('aPorcentaje').value);
+  const base = n(item.cantidad_presupuestada);
+  const cant = base*pct/100;
+  document.getElementById('aCantidad').value = cant.toFixed(2);
+  document.getElementById('aTeorico').textContent = money(cant*n(item.costo_unitario));
 }
 
-function syncDesdePct(){
-  const pct=n(document.getElementById('movPct').value);
-  const item=S.items.find(i=>i.item_id===document.getElementById('movItem').value);
-  if(!item) return;
-  const base=n(item.cantidad_presupuestada);
-  const cant=base*pct/100;
-  document.getElementById('movCantidad').value=cant.toFixed(2);
-  document.getElementById('movTeorico').value=money(cant*n(item.costo_unitario));
+/* ════════════════════════════════════════
+   CONFIG / MANTENIMIENTO
+════════════════════════════════════════ */
+function guardarConfig(){
+  G.apiUrl = document.getElementById('cfgUrl').value.trim();
+  G.moneda = document.getElementById('cfgMoneda').value.trim()||'ARS';
+  localStorage.setItem('pc_apiUrl', G.apiUrl);
+  localStorage.setItem('pc_moneda', G.moneda);
+  alert('Guardado. Probá la conexión.');
 }
 
-function openMovModal(itemId=null, movId=null){
-  document.getElementById('movForm').reset();
-  document.getElementById('movId').value='';
-  document.getElementById('movFecha').valueAsDate=new Date();
-  document.getElementById('movCantidad').value=0;
-  document.getElementById('movImporte').value=0;
-  document.getElementById('movPct').value=0;
-  document.getElementById('movModalTitle').textContent='Registrar avance / pago';
-  if(itemId){ document.getElementById('movItem').value=itemId; onMovItemChange(); }
-  if(movId){
-    const m=S.movimientos.find(x=>x.movimiento_id===movId); if(!m) return;
-    document.getElementById('movModalTitle').textContent='Editar movimiento';
-    document.getElementById('movId').value=m.movimiento_id;
-    document.getElementById('movFecha').value=m.fecha;
-    document.getElementById('movTipo').value=m.tipo_movimiento;
-    document.getElementById('movItem').value=m.item_id||'';
-    document.getElementById('movOficio').value=m.oficio||'';
-    document.getElementById('movCantidad').value=m.cantidad_ejecutada;
-    document.getElementById('movImporte').value=m.importe_pagado;
-    document.getElementById('movMedio').value=m.medio_pago||'';
-    document.getElementById('movResponsable').value=m.responsable||'';
-    document.getElementById('movSector').value=m.sector||'';
-    document.getElementById('movObs').value=m.observacion||'';
-    onMovItemChange();
-  }
-  onMovTipoChange();
-  document.getElementById('movModal').classList.add('active');
-}
-
-async function saveMov(e){
-  e.preventDefault();
-  const id=document.getElementById('movId').value||genId('MOV');
-  const mov={
-    movimiento_id:    id,
-    fecha:            document.getElementById('movFecha').value,
-    item_id:          document.getElementById('movItem').value,
-    tipo_movimiento:  document.getElementById('movTipo').value,
-    cantidad_ejecutada: n(document.getElementById('movCantidad').value),
-    importe_pagado:   n(document.getElementById('movImporte').value),
-    oficio:           document.getElementById('movOficio').value,
-    medio_pago:       document.getElementById('movMedio').value,
-    responsable:      document.getElementById('movResponsable').value.trim(),
-    sector:           document.getElementById('movSector').value,
-    observacion:      document.getElementById('movObs').value.trim(),
-  };
-  const idx=S.movimientos.findIndex(m=>m.movimiento_id===id);
-  if(idx>=0) S.movimientos[idx]=mov; else S.movimientos.push(mov);
-  await sendToApi(idx>=0?'updateMovimiento':'createMovimiento',mov);
-  persistDemo(); closeModal('movModal'); renderAll();
-}
-
-async function delMov(id){
-  if(!confirm('¿Eliminar este movimiento?')) return;
-  S.movimientos=S.movimientos.filter(m=>m.movimiento_id!==id);
-  await sendToApi('deleteMovimiento',{movimiento_id:id});
-  persistDemo(); renderAll();
-}
-
-/* ════════════════════════════════════════════════════════
-   MAINTENANCE
-════════════════════════════════════════════════════════ */
 async function runRebuild(){
-  if(S.settings.dataMode!=='api'||!S.settings.apiUrl){alert('Solo en modo API.');return;}
-  await sendToApi('rebuildResumen',{});
-  alert('Recalculado. Actualizando…'); loadData();
+  if(!G.apiUrl){alert('Configurá la URL del API primero.');return;}
+  await api('rebuildResumen',{});
+  showCfgMsg('Recalculado en Sheets.','ok');
+  loadData();
 }
 
 async function runMigration(){
-  if(!confirm('Migrar pagos sin item_id a ítems globales. ¿Continuar?')) return;
-  const el=document.getElementById('migrationResult');
-  el.style.display='block'; el.className='warn'; el.textContent='Ejecutando…';
-  if(S.settings.dataMode!=='api'||!S.settings.apiUrl){el.textContent='Solo en modo API.';return;}
+  if(!confirm('¿Migrar pagos huérfanos?')) return;
+  if(!G.apiUrl){showCfgMsg('Configurá el API primero.','warn');return;}
+  showCfgMsg('Ejecutando…','warn');
   try{
-    const res=await fetch(S.settings.apiUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'migrateOrphanPayments',payload:{}})});
-    const json=await res.json();
-    if(json.ok){el.className='ok';el.textContent='✓ '+json.data?.message;loadData();}
-    else el.textContent='Error: '+json.error;
-  }catch(e){el.textContent='Error: '+e.message;}
+    const r = await fetch(G.apiUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'migrateOrphanPayments',payload:{}})});
+    const j = await r.json();
+    showCfgMsg(j.ok?'✓ '+j.data?.message:'Error: '+j.error, j.ok?'ok':'warn');
+    if(j.ok) loadData();
+  }catch(e){showCfgMsg('Error: '+e.message,'warn');}
 }
 
-/* ════════════════════════════════════════════════════════
-   UTILS
-════════════════════════════════════════════════════════ */
-function closeModal(id){ document.getElementById(id).classList.remove('active'); }
-function set(id,v){ document.getElementById(id).textContent=v; }
-function q(id){ return document.getElementById(id)?.value?.toLowerCase()||''; }
-function genId(p){ return `${p}${Date.now().toString().slice(-10)}`; }
+function showCfgMsg(msg,tipo){
+  const el = document.getElementById('cfgMsg');
+  el.style.display='block';
+  el.textContent=msg;
+  el.style.background = tipo==='ok'?'#ecfdf5':'#fffbeb';
+  el.style.color = tipo==='ok'?'var(--ok)':'var(--warn)';
+  el.style.border = tipo==='ok'?'1px solid #bbf7d0':'1px solid #fde68a';
+}
 
+/* ════════════════════════════════════════
+   UTILS
+════════════════════════════════════════ */
 function n(v){
   if(v===null||v===undefined||v==='') return 0;
   if(typeof v==='number') return v;
   const s=String(v).replace(/\./g,'').replace(',','.').replace(/[^0-9.-]/g,'');
-  const p=Number(s); return isFinite(p)?p:0;
+  return isFinite(Number(s))?Number(s):0;
 }
 
 function money(v){
-  return new Intl.NumberFormat('es-AR',{style:'currency',currency:/^[A-Z]{3}$/.test(S.settings.currency||'')?S.settings.currency:'ARS',maximumFractionDigits:0}).format(Number(v||0));
+  return new Intl.NumberFormat('es-AR',{
+    style:'currency',
+    currency:/^[A-Z]{3}$/.test(G.moneda)?G.moneda:'ARS',
+    maximumFractionDigits:0
+  }).format(Number(v||0));
 }
 
-function num(v){ return new Intl.NumberFormat('es-AR',{maximumFractionDigits:2}).format(Number(v||0)); }
+function cortar(s,n){ return s?.length>n ? s.slice(0,n)+'…' : s; }
+function genId(p){ return `${p}${Date.now().toString().slice(-10)}`; }
+function hoy(){ return new Date().toISOString().slice(0,10); }
 
-function fmtDate(d){
+function fmtFecha(d){
   if(!d) return '—';
   return new Date(d+'T12:00:00').toLocaleDateString('es-AR');
 }
-
 function fmtSemana(d){
   if(!d) return '—';
   return new Date(d+'T12:00:00').toLocaleDateString('es-AR',{day:'2-digit',month:'short'});
 }
-
 function isoWeekKey(date){
   const d=new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate()));
   const day=d.getUTCDay()||7; d.setUTCDate(d.getUTCDate()+4-day);
-  const yearStart=new Date(Date.UTC(d.getUTCFullYear(),0,1));
-  const w=Math.ceil((((d-yearStart)/86400000)+1)/7);
+  const ys=new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  const w=Math.ceil((((d-ys)/86400000)+1)/7);
   return `${d.getUTCFullYear()}-W${String(w).padStart(2,'0')}`;
 }
-
 function weekStart(date){
   const d=new Date(date); const day=d.getDay()||7;
   d.setDate(d.getDate()-day+1);
   return d.toISOString().slice(0,10);
-}
-
-function tipoBadge(tipo){
-  const cls=tipo==='Material'?'chip-material':tipo==='Mano de obra'?'chip-mo':tipo==='Servicio'?'chip-servicio':'chip-otro';
-  return `<span class="chip ${cls}"><span class="status-dot"></span>${tipo}</span>`;
-}
-
-function oficioClass(o){
-  const m={'Albañilería':'albanil','Plomería':'plomeria','Electricidad':'electrico','Herrería':'herreria'};
-  return m[o]||'otro';
 }
 </script>
 </body>
