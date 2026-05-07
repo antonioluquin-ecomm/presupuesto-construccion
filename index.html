@@ -1,776 +1,537 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Presupuesto Construcción v3</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    :root {
-      --bg:           #f0f2f5;
-      --panel:        #ffffff;
-      --panel-soft:   #f8f9fb;
-      --text:         #111827;
-      --muted:        #6b7280;
-      --border:       #e5e7eb;
-      --primary:      #1a56db;
-      --primary-dk:   #1447c0;
-      --success:      #059669;
-      --warning:      #d97706;
-      --danger:       #dc2626;
-      --info:         #0891b2;
-      --mo-color:     #7c3aed;
-      --mat-color:    #0284c7;
-      --radius:       14px;
-      --sidebar:      240px;
-    }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Presupuesto Construcción v4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root{
+  --bg:#f0f2f5; --panel:#fff; --soft:#f8f9fb;
+  --text:#111827; --muted:#6b7280; --border:#e5e7eb;
+  --primary:#1a56db; --primary-dk:#1447c0;
+  --ok:#059669; --warn:#d97706; --danger:#dc2626;
+  --mo:#7c3aed; --mat:#0284c7;
+  --albanil:#7F77DD; --plomeria:#1D9E75;
+  --electrico:#EF9F27; --herreria:#E24B4A; --otro:#888780;
+  --r:14px; --sidebar:240px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+.app{display:grid;grid-template-columns:var(--sidebar) 1fr;min-height:100vh}
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+/* SIDEBAR */
+aside{background:#0f172a;color:#e2e8f0;padding:20px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:4px;overflow-y:auto}
+.brand{display:flex;align-items:center;gap:10px;padding:0 6px 20px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:8px}
+.brand-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#1a56db,#7c3aed);display:grid;place-items:center;font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:#fff;flex-shrink:0}
+.brand-text{font-size:13px;font-weight:600;line-height:1.3}
+.brand-sub{font-size:11px;color:#64748b;margin-top:2px}
+.nav-section{font-size:10px;font-weight:600;letter-spacing:.08em;color:#475569;text-transform:uppercase;padding:14px 12px 6px}
+.nav-btn{width:100%;border:0;background:transparent;color:#94a3b8;padding:9px 12px;border-radius:10px;text-align:left;cursor:pointer;font:inherit;font-size:13px;display:flex;align-items:center;gap:9px;transition:.15s}
+.nav-btn:hover{background:rgba(255,255,255,.06);color:#e2e8f0}
+.nav-btn.active{background:rgba(255,255,255,.1);color:#fff}
+.nav-icon{font-size:15px;opacity:.8}
+.sidebar-footer{margin-top:auto;padding:12px;border-top:1px solid rgba(255,255,255,.06);font-size:11px;color:#475569}
 
-    body {
-      font-family: 'DM Sans', system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      font-size: 14px;
-    }
+/* MAIN */
+main{padding:24px;overflow-x:hidden}
+.topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:22px}
+.page-title{font-size:22px;font-weight:600;letter-spacing:-.02em}
+.page-sub{color:var(--muted);font-size:13px;margin-top:4px;max-width:680px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0}
 
-    /* ── LAYOUT ── */
-    .app { display: grid; grid-template-columns: var(--sidebar) 1fr; min-height: 100vh; }
+/* BUTTONS */
+.btn{border:0;border-radius:10px;padding:9px 14px;font:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:var(--primary-dk)}
+.btn-soft{background:#fff;color:var(--text);border:1px solid var(--border)}.btn-soft:hover{background:var(--soft)}
+.btn-mo{background:#f5f3ff;color:var(--mo);border:1px solid #ddd6fe}.btn-mo:hover{background:#ede9fe}
+.btn-danger-soft{background:#fef2f2;color:var(--danger);border:1px solid #fecaca}
+.btn-ok{background:#ecfdf5;color:var(--ok);border:1px solid #bbf7d0}
+.btn-sm{padding:6px 10px;font-size:12px;border-radius:8px}
 
-    /* ── SIDEBAR ── */
-    aside {
-      background: #0f172a;
-      color: #e2e8f0;
-      padding: 20px 14px;
-      position: sticky;
-      top: 0;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
+/* SECTIONS */
+.section{display:none}.section.active{display:block}
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 0 6px 20px;
-      border-bottom: 1px solid rgba(255,255,255,.08);
-      margin-bottom: 8px;
-    }
+/* CARDS */
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:14px}
+.card-hd{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}
+.card-hd h3{font-size:15px;font-weight:600}
+.card-hd p{color:var(--muted);font-size:12px;margin-top:3px}
 
-    .brand-icon {
-      width: 36px; height: 36px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, #1a56db, #7c3aed);
-      display: grid; place-items: center;
-      font-family: 'DM Mono', monospace;
-      font-size: 13px; font-weight: 500;
-      color: #fff; flex-shrink: 0;
-    }
+/* KPI GRID */
+.kpi-grid{display:grid;gap:12px;margin-bottom:16px}
+.g6{grid-template-columns:repeat(6,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.kpi{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px}
+.kpi-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.kpi-value{font-size:21px;font-weight:600;margin-top:6px;letter-spacing:-.03em;font-family:'DM Mono',monospace}
+.kpi-sub{font-size:11px;color:var(--muted);margin-top:4px}
+.kpi.bl-mo{border-left:3px solid var(--mo)}
+.kpi.bl-ok{border-left:3px solid var(--ok)}
+.kpi.bl-warn{border-left:3px solid var(--warn)}
+.kpi.bl-mat{border-left:3px solid var(--mat)}
 
-    .brand-text { font-size: 13px; font-weight: 600; line-height: 1.3; }
-    .brand-sub  { font-size: 11px; color: #64748b; margin-top: 2px; }
+/* OFICIO CARDS */
+.oficio-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.oficio-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px}
+.oficio-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px;flex-shrink:0}
+.oficio-name{font-size:12px;font-weight:600;display:flex;align-items:center;margin-bottom:8px}
+.oficio-val{font-family:'DM Mono',monospace;font-size:16px;font-weight:500;margin-bottom:4px}
+.oficio-sub{font-size:11px;color:var(--muted)}
+.oficio-bar{height:5px;background:var(--border);border-radius:99px;overflow:hidden;margin-top:8px}
+.oficio-bar span{display:block;height:100%;border-radius:99px}
 
-    .nav-btn {
-      width: 100%; border: 0; background: transparent;
-      color: #94a3b8; padding: 9px 12px; border-radius: 10px;
-      text-align: left; cursor: pointer; font: inherit; font-size: 13px;
-      display: flex; align-items: center; gap: 9px; transition: .15s;
-    }
-    .nav-btn:hover  { background: rgba(255,255,255,.06); color: #e2e8f0; }
-    .nav-btn.active { background: rgba(255,255,255,.1); color: #fff; }
-    .nav-icon { font-size: 15px; opacity: .8; }
+/* SEMANAS TABLE */
+.semanas-wrap{overflow-x:auto}
+.semanas-table{width:100%;border-collapse:collapse;font-size:13px}
+.semanas-table th{font-size:11px;font-weight:600;color:var(--muted);background:var(--soft);padding:9px 12px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap;text-transform:uppercase;letter-spacing:.05em}
+.semanas-table td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.semanas-table tr:last-child td{border-bottom:none}
+.semanas-table tr:hover td{background:#fafafa}
+.bar-inline{display:flex;align-items:center;gap:8px}
+.bar-track{height:6px;width:100px;background:var(--border);border-radius:99px;overflow:hidden;flex-shrink:0}
+.bar-fill{height:100%;border-radius:99px}
+.desvio-ok{color:var(--ok)}.desvio-warn{color:var(--warn)}.desvio-bad{color:var(--danger)}
 
-    .nav-section {
-      font-size: 10px; font-weight: 600; letter-spacing: .08em;
-      color: #475569; text-transform: uppercase;
-      padding: 14px 12px 6px;
-    }
+/* PRESUPUESTO TABLE */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:9px 10px;border-bottom:1px solid var(--border);text-align:left;vertical-align:middle}
+th{font-size:11px;font-weight:600;color:var(--muted);background:var(--soft);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+tr:hover td{background:#fafafa}
+.mono{font-family:'DM Mono',monospace}
 
-    .sidebar-footer {
-      margin-top: auto;
-      padding: 12px;
-      border-top: 1px solid rgba(255,255,255,.06);
-      font-size: 11px; color: #475569;
-    }
+/* PROGRESS */
+.prog-wrap{display:flex;align-items:center;gap:8px}
+.prog{height:6px;width:80px;background:var(--border);border-radius:99px;overflow:hidden;flex-shrink:0}
+.prog span{display:block;height:100%;border-radius:99px}
 
-    /* ── MAIN ── */
-    main { padding: 24px; overflow-x: hidden; }
+/* CHIPS / BADGES */
+.chip{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:600;white-space:nowrap}
+.chip-material{background:#e0f2fe;color:#0369a1}
+.chip-mo{background:#f5f3ff;color:var(--mo)}
+.chip-albanil{background:#EEEDFE;color:#3C3489}
+.chip-plomeria{background:#E1F5EE;color:#085041}
+.chip-electrico{background:#FAEEDA;color:#633806}
+.chip-herreria{background:#FCEBEB;color:#791F1F}
+.chip-otro{background:#F1EFE8;color:#444441}
+.chip-servicio{background:#fef3c7;color:#92400e}
+.status-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+.estado-fin{background:#ecfdf5;color:var(--ok);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600}
+.estado-cur{background:#fffbeb;color:var(--warn);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600}
+.estado-pen{background:#f9fafb;color:var(--muted);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600}
 
-    .topbar {
-      display: flex; align-items: flex-start;
-      justify-content: space-between; gap: 16px;
-      margin-bottom: 22px;
-    }
+/* FILTERS */
+.filters{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:10px;margin-bottom:14px}
 
-    .page-title { font-size: 22px; font-weight: 600; letter-spacing: -.02em; }
-    .page-sub   { color: var(--muted); font-size: 13px; margin-top: 4px; max-width: 680px; }
+/* INPUTS */
+input,select,textarea{width:100%;border:1px solid var(--border);border-radius:10px;padding:9px 11px;font:inherit;font-size:13px;background:#fff;color:var(--text);outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(26,86,219,.1)}
+label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em}
 
-    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; flex-shrink: 0; }
+/* FORM */
+.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.form-grid .full{grid-column:1/-1}
+.form-grid .half{grid-column:span 2}
+.form-sep{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:12px 0 6px;border-top:1px solid var(--border);margin-top:4px;grid-column:1/-1}
 
-    /* ── BUTTONS ── */
-    .btn {
-      border: 0; border-radius: 10px; padding: 9px 14px;
-      font: inherit; font-size: 13px; font-weight: 500;
-      cursor: pointer; transition: .15s; display: inline-flex;
-      align-items: center; gap: 6px;
-    }
-    .btn-primary { background: var(--primary); color: #fff; }
-    .btn-primary:hover { background: var(--primary-dk); }
-    .btn-soft { background: #fff; color: var(--text); border: 1px solid var(--border); }
-    .btn-soft:hover { background: var(--panel-soft); }
-    .btn-success { background: #ecfdf5; color: var(--success); border: 1px solid #bbf7d0; }
-    .btn-success:hover { background: #d1fae5; }
-    .btn-danger-soft { background: #fef2f2; color: var(--danger); border: 1px solid #fecaca; }
-    .btn-mo { background: #f5f3ff; color: var(--mo-color); border: 1px solid #ddd6fe; }
-    .btn-mo:hover { background: #ede9fe; }
-    .btn-sm { padding: 6px 10px; font-size: 12px; border-radius: 8px; }
+/* HINT BOX */
+.hint{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:10px;padding:10px 14px;font-size:12px;margin-bottom:14px;grid-column:1/-1}
+.hint.warn{background:#fffbeb;color:#92400e;border-color:#fde68a}
 
-    /* ── SECTION ── */
-    .section { display: none; }
-    .section.active { display: block; }
+/* AVANCE HELPER */
+.avance-helper{background:var(--soft);border:1px solid var(--border);border-radius:10px;padding:12px 14px;grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;align-items:end}
+.avance-helper-label{font-size:11px;color:var(--muted);margin-bottom:4px}
+.avance-helper-val{font-family:'DM Mono',monospace;font-size:16px;font-weight:500}
 
-    /* ── CARDS ── */
-    .card {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px;
-    }
+/* MODAL */
+.modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.5);display:none;align-items:center;justify-content:center;padding:20px;z-index:100;backdrop-filter:blur(2px)}
+.modal-backdrop.active{display:flex}
+.modal{width:min(900px,100%);max-height:92vh;overflow-y:auto;background:#fff;border-radius:18px;box-shadow:0 25px 60px rgba(0,0,0,.2);padding:24px}
+.modal-hd{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:20px}
+.modal-hd h3{font-size:17px;font-weight:600}
+.modal-hd p{color:var(--muted);font-size:13px;margin-top:4px}
+.modal-ft{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
 
-    .card-hd {
-      display: flex; align-items: flex-start;
-      justify-content: space-between; gap: 12px;
-      margin-bottom: 16px;
-    }
-    .card-hd h3 { font-size: 15px; font-weight: 600; }
-    .card-hd p  { color: var(--muted); font-size: 12px; margin-top: 3px; }
+/* CHARTS */
+.charts-row{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin-bottom:14px}
+.bottom-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 
-    /* ── KPI GRID ── */
-    .kpi-grid { display: grid; gap: 12px; margin-bottom: 16px; }
-    .kpi-6 { grid-template-columns: repeat(6, 1fr); }
-    .kpi-3 { grid-template-columns: repeat(3, 1fr); }
+/* SECTOR */
+.sector-item{margin-bottom:12px}
+.sector-row{display:flex;justify-content:space-between;margin-bottom:5px}
+.sector-name{font-size:13px;font-weight:500}
+.sector-pct{font-size:12px;color:var(--muted);font-family:'DM Mono',monospace}
+.sector-bar{height:8px;background:var(--border);border-radius:99px;overflow:hidden}
+.sector-bar span{display:block;height:100%;border-radius:99px;background:var(--primary)}
+.sector-meta{font-size:11px;color:var(--muted);margin-top:4px}
 
-    .kpi {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px 18px;
-    }
+/* RECIENTES */
+.rec-item{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.rec-item:last-child{border-bottom:0}
+.rec-concepto{font-size:13px;font-weight:500}
+.rec-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.rec-importe{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;text-align:right}
 
-    .kpi-label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
-    .kpi-value { font-size: 22px; font-weight: 600; margin-top: 6px; letter-spacing: -.03em; font-family: 'DM Mono', monospace; }
-    .kpi-sub   { font-size: 11px; color: var(--muted); margin-top: 4px; }
+/* EMPTY */
+.empty{padding:32px;text-align:center;color:var(--muted);border:1px dashed var(--border);border-radius:var(--r);background:var(--soft);font-size:13px}
 
-    .kpi.accent-mo   { border-left: 3px solid var(--mo-color); }
-    .kpi.accent-mat  { border-left: 3px solid var(--mat-color); }
-    .kpi.accent-warn { border-left: 3px solid var(--warning); }
-    .kpi.accent-ok   { border-left: 3px solid var(--success); }
+/* MIGRATION */
+#migrationResult{margin-top:12px;padding:10px 14px;border-radius:10px;font-size:13px;display:none}
+#migrationResult.ok{background:#ecfdf5;color:#065f46;border:1px solid #bbf7d0}
+#migrationResult.warn{background:#fffbeb;color:#92400e;border:1px solid #fde68a}
 
-    /* ── CHARTS ROW ── */
-    .charts-row { display: grid; grid-template-columns: 1.4fr 1fr; gap: 14px; margin-bottom: 14px; }
-    .bottom-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-
-    /* ── TIPO CARDS (MO vs Material) ── */
-    .tipo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
-
-    .tipo-card {
-      border-radius: var(--radius);
-      padding: 16px;
-      border: 1px solid var(--border);
-    }
-    .tipo-card.mo  { background: #faf5ff; border-color: #ddd6fe; }
-    .tipo-card.mat { background: #f0f9ff; border-color: #bae6fd; }
-
-    .tipo-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-    .tipo-title  { font-size: 13px; font-weight: 600; }
-    .tipo-badge  { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 99px; }
-    .tipo-badge.mo  { background: #ede9fe; color: var(--mo-color); }
-    .tipo-badge.mat { background: #e0f2fe; color: #0369a1; }
-
-    .tipo-rows { display: grid; gap: 6px; }
-    .tipo-row  { display: flex; justify-content: space-between; font-size: 12px; }
-    .tipo-row .label { color: var(--muted); }
-    .tipo-row .val   { font-family: 'DM Mono', monospace; font-weight: 500; }
-    .tipo-row .val.danger  { color: var(--danger); }
-    .tipo-row .val.ok      { color: var(--success); }
-
-    .tipo-progress { height: 6px; background: #e5e7eb; border-radius: 99px; overflow: hidden; margin-top: 10px; }
-    .tipo-progress span { display: block; height: 100%; border-radius: 99px; }
-    .tipo-progress span.mo  { background: var(--mo-color); }
-    .tipo-progress span.mat { background: var(--mat-color); }
-
-    /* ── TABLE ── */
-    .table-wrap { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    th, td { padding: 10px 10px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: middle; }
-    th { font-size: 11px; font-weight: 600; color: var(--muted); background: var(--panel-soft); text-transform: uppercase; letter-spacing: .05em; white-space: nowrap; }
-    tr:hover td { background: #fafafa; }
-    .mono { font-family: 'DM Mono', monospace; }
-
-    /* ── PROGRESS BAR ── */
-    .progress-wrap { display: flex; align-items: center; gap: 8px; }
-    .progress { height: 6px; width: 80px; background: #e5e7eb; border-radius: 99px; overflow: hidden; flex-shrink: 0; }
-    .progress span { display: block; height: 100%; border-radius: 99px; background: var(--success); }
-    .progress span.mo  { background: var(--mo-color); }
-
-    /* ── BADGES ── */
-    .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px; border-radius: 99px; font-size: 11px; font-weight: 600; white-space: nowrap; }
-    .badge.material  { background: #e0f2fe; color: #0369a1; }
-    .badge.mo        { background: #f5f3ff; color: var(--mo-color); }
-    .badge.servicio  { background: #fef3c7; color: #92400e; }
-    .badge.otro      { background: #f3f4f6; color: #374151; }
-    .badge.global    { background: #fdf2f8; color: #9d174d; }
-
-    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; display: inline-block; }
-
-    .estado-badge { display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
-    .estado-badge.finalizado { background: #ecfdf5; color: var(--success); }
-    .estado-badge.en_curso   { background: #fffbeb; color: var(--warning); }
-    .estado-badge.pendiente  { background: #f9fafb; color: var(--muted); }
-
-    /* ── FILTERS ── */
-    .filters { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-
-    input, select, textarea {
-      width: 100%; border: 1px solid var(--border);
-      border-radius: 10px; padding: 9px 11px;
-      font: inherit; font-size: 13px;
-      background: #fff; color: var(--text); outline: none;
-    }
-    input:focus, select:focus, textarea:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(26,86,219,.1);
-    }
-    label { display: block; font-size: 11px; font-weight: 600; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .05em; }
-
-    /* ── FORM GRID ── */
-    .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-    .form-grid .full { grid-column: 1 / -1; }
-    .form-grid .half { grid-column: span 2; }
-
-    .form-section-title {
-      font-size: 11px; font-weight: 600; color: var(--muted);
-      text-transform: uppercase; letter-spacing: .08em;
-      padding: 12px 0 6px; border-top: 1px solid var(--border);
-      margin-top: 4px; grid-column: 1 / -1;
-    }
-
-    /* ── MODAL ── */
-    .modal-backdrop {
-      position: fixed; inset: 0;
-      background: rgba(15,23,42,.5);
-      display: none; align-items: center;
-      justify-content: center; padding: 20px; z-index: 100;
-      backdrop-filter: blur(2px);
-    }
-    .modal-backdrop.active { display: flex; }
-
-    .modal {
-      width: min(960px, 100%);
-      max-height: 92vh; overflow-y: auto;
-      background: #fff; border-radius: 18px;
-      box-shadow: 0 25px 60px rgba(0,0,0,.2);
-      padding: 24px;
-    }
-
-    .modal-hd { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 20px; }
-    .modal-hd h3 { font-size: 17px; font-weight: 600; }
-    .modal-hd p  { color: var(--muted); font-size: 13px; margin-top: 4px; }
-
-    .modal-ft {
-      display: flex; justify-content: flex-end; gap: 8px;
-      margin-top: 20px; padding-top: 16px;
-      border-top: 1px solid var(--border);
-    }
-
-    /* ── EMPTY ── */
-    .empty {
-      padding: 32px; text-align: center; color: var(--muted);
-      border: 1px dashed var(--border); border-radius: var(--radius);
-      background: var(--panel-soft); font-size: 13px;
-    }
-
-    /* ── NOTICE ── */
-    .notice {
-      background: #eff6ff; color: #1d4ed8;
-      border: 1px solid #bfdbfe;
-      border-radius: var(--radius);
-      padding: 12px 16px; font-size: 13px;
-      margin-bottom: 16px; display: flex; gap: 10px; align-items: flex-start;
-    }
-    .notice.warn  { background: #fffbeb; color: #92400e; border-color: #fde68a; }
-    .notice.ok    { background: #ecfdf5; color: #065f46; border-color: #bbf7d0; }
-
-    /* ── SECTOR AVANCE ── */
-    .sector-list { display: grid; gap: 12px; }
-    .sector-item {}
-    .sector-row  { display: flex; justify-content: space-between; margin-bottom: 6px; }
-    .sector-name { font-size: 13px; font-weight: 500; }
-    .sector-pct  { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospace; }
-    .sector-bar  { height: 8px; background: #e5e7eb; border-radius: 99px; overflow: hidden; }
-    .sector-bar span { display: block; height: 100%; border-radius: 99px; background: var(--primary); }
-    .sector-meta { font-size: 11px; color: var(--muted); margin-top: 4px; }
-
-    /* ── RECIENTES ── */
-    .reciente-item {
-      display: flex; justify-content: space-between; gap: 12px;
-      padding: 10px 0; border-bottom: 1px solid var(--border);
-    }
-    .reciente-item:last-child { border-bottom: 0; }
-    .reciente-concepto { font-size: 13px; font-weight: 500; }
-    .reciente-meta     { font-size: 11px; color: var(--muted); margin-top: 2px; }
-    .reciente-importe  { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; text-align: right; }
-
-    /* ── RESPONSABLES ── */
-    .resp-table-wrap table { font-size: 13px; }
-
-    /* ── CONFIG ── */
-    .config-section { max-width: 680px; }
-
-    /* ── DESVÍO INDICATOR ── */
-    .desvio-ok   { color: var(--success); }
-    .desvio-warn { color: var(--warning); }
-    .desvio-bad  { color: var(--danger); }
-
-    /* ── MIGRATION RESULT ── */
-    #migrationResult {
-      margin-top: 12px; padding: 10px 14px;
-      border-radius: 10px; font-size: 13px;
-      display: none;
-    }
-    #migrationResult.ok   { background: #ecfdf5; color: #065f46; border: 1px solid #bbf7d0; }
-    #migrationResult.warn { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
-
-    /* ── RESPONSIVE ── */
-    @media (max-width: 1100px) {
-      .app { grid-template-columns: 1fr; }
-      aside { height: auto; position: relative; flex-direction: row; flex-wrap: wrap; padding: 12px; }
-      .brand { border-bottom: 0; padding-bottom: 0; margin-bottom: 0; }
-      .nav-section { display: none; }
-      .kpi-6 { grid-template-columns: repeat(3, 1fr); }
-      .charts-row, .bottom-row, .tipo-grid { grid-template-columns: 1fr; }
-      .filters { grid-template-columns: 1fr 1fr; }
-      .form-grid { grid-template-columns: 1fr 1fr; }
-      .sidebar-footer { display: none; }
-    }
-
-    @media (max-width: 680px) {
-      .kpi-6 { grid-template-columns: repeat(2, 1fr); }
-      .filters { grid-template-columns: 1fr; }
-      .form-grid { grid-template-columns: 1fr; }
-      .form-grid .half { grid-column: 1; }
-    }
-  </style>
+/* RESPONSIVE */
+@media(max-width:1100px){
+  .app{grid-template-columns:1fr}
+  aside{height:auto;position:relative;flex-direction:row;flex-wrap:wrap;padding:12px}
+  .brand{border-bottom:0;padding-bottom:0;margin-bottom:0}
+  .nav-section{display:none}
+  .g6{grid-template-columns:repeat(3,1fr)}
+  .oficio-grid,.charts-row,.bottom-row{grid-template-columns:1fr 1fr}
+  .filters{grid-template-columns:1fr 1fr}
+  .form-grid{grid-template-columns:1fr 1fr}
+  .sidebar-footer{display:none}
+}
+@media(max-width:680px){
+  .g6{grid-template-columns:repeat(2,1fr)}
+  .oficio-grid{grid-template-columns:1fr 1fr}
+  .filters{grid-template-columns:1fr}
+  .form-grid,.avance-helper{grid-template-columns:1fr}
+  .form-grid .half{grid-column:1}
+}
+</style>
 </head>
 <body>
 <div class="app">
 
-  <!-- ─── SIDEBAR ─── -->
-  <aside>
-    <div class="brand">
-      <div class="brand-icon">PC</div>
-      <div>
-        <div class="brand-text">Presupuesto Obra</div>
-        <div class="brand-sub">v3 · Apps Script</div>
+<!-- SIDEBAR -->
+<aside>
+  <div class="brand">
+    <div class="brand-icon">PC</div>
+    <div>
+      <div class="brand-text">Presupuesto Obra</div>
+      <div class="brand-sub">v4 · Apps Script</div>
+    </div>
+  </div>
+  <div class="nav-section">Gestión</div>
+  <button class="nav-btn active" data-section="dashboard"><span class="nav-icon">▦</span> Dashboard</button>
+  <button class="nav-btn" data-section="semanal"><span class="nav-icon">📅</span> Seguimiento MO</button>
+  <button class="nav-btn" data-section="presupuesto"><span class="nav-icon">☰</span> Presupuesto</button>
+  <button class="nav-btn" data-section="movimientos"><span class="nav-icon">↔</span> Avances y pagos</button>
+  <div class="nav-section">Análisis</div>
+  <button class="nav-btn" data-section="responsables"><span class="nav-icon">◉</span> Responsables</button>
+  <button class="nav-btn" data-section="sectores"><span class="nav-icon">⬡</span> Sectores</button>
+  <div class="nav-section">Sistema</div>
+  <button class="nav-btn" data-section="configuracion"><span class="nav-icon">⚙</span> Configuración</button>
+  <div class="sidebar-footer">
+    ID: 13DQxb5C…xZPOI<br>
+    <span id="lastSync" style="color:#475569">Sin sincronizar</span>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main>
+  <div class="topbar">
+    <div>
+      <div class="page-title" id="pageTitle">Dashboard</div>
+      <div class="page-sub" id="pageSubtitle">Resumen ejecutivo del proyecto.</div>
+    </div>
+    <div class="toolbar">
+      <button class="btn btn-soft" onclick="loadData()">↻ Actualizar</button>
+      <button class="btn btn-mo" onclick="openMovModal()">+ Avance / Pago</button>
+      <button class="btn btn-primary" onclick="openItemModal()">+ Nuevo ítem</button>
+    </div>
+  </div>
+
+  <!-- ═══ DASHBOARD ═══ -->
+  <section id="dashboard" class="section active">
+    <div class="kpi-grid g6">
+      <div class="kpi"><div class="kpi-label">Presupuesto total</div><div class="kpi-value" id="kpiPresup">—</div><div class="kpi-sub">Suma ítems</div></div>
+      <div class="kpi"><div class="kpi-label">Ejecutado teórico</div><div class="kpi-value" id="kpiEjec">—</div><div class="kpi-sub">Cant. × costo unitario</div></div>
+      <div class="kpi"><div class="kpi-label">Total pagado</div><div class="kpi-value" id="kpiPagado">—</div><div class="kpi-sub">Pagos reales</div></div>
+      <div class="kpi bl-ok"><div class="kpi-label">Avance general</div><div class="kpi-value" id="kpiAvance">—</div><div class="kpi-sub">Ponderado</div></div>
+      <div class="kpi bl-warn"><div class="kpi-label">Saldo disponible</div><div class="kpi-value" id="kpiSaldo">—</div><div class="kpi-sub">Presup. − pagado</div></div>
+      <div class="kpi" id="kpiDesvioCard"><div class="kpi-label">Desvío MO</div><div class="kpi-value" id="kpiDesvio">—</div><div class="kpi-sub">Pagado − ejecutado</div></div>
+    </div>
+
+    <!-- Cards por oficio -->
+    <div class="oficio-grid" id="oficioCards"></div>
+
+    <div class="charts-row">
+      <div class="card" style="margin-bottom:0">
+        <div class="card-hd"><div><h3>Presupuesto · ejecutado · pagado</h3><p>Comparación global</p></div></div>
+        <canvas id="chartGeneral" height="110"></canvas>
+      </div>
+      <div class="card" style="margin-bottom:0">
+        <div class="card-hd"><div><h3>Distribución por tipo</h3><p>Material vs MO y otros</p></div></div>
+        <canvas id="chartTipo" height="160"></canvas>
       </div>
     </div>
 
-    <div class="nav-section">Gestión</div>
-    <button class="nav-btn active" data-section="dashboard">
-      <span class="nav-icon">▦</span> Dashboard
-    </button>
-    <button class="nav-btn" data-section="presupuesto">
-      <span class="nav-icon">☰</span> Presupuesto
-    </button>
-    <button class="nav-btn" data-section="movimientos">
-      <span class="nav-icon">↔</span> Avances y pagos
-    </button>
-
-    <div class="nav-section">Análisis</div>
-    <button class="nav-btn" data-section="responsables">
-      <span class="nav-icon">◉</span> Responsables
-    </button>
-    <button class="nav-btn" data-section="sectores">
-      <span class="nav-icon">⬡</span> Sectores
-    </button>
-
-    <div class="nav-section">Sistema</div>
-    <button class="nav-btn" data-section="configuracion">
-      <span class="nav-icon">⚙</span> Configuración
-    </button>
-
-    <div class="sidebar-footer">
-      ID: 13DQxb5C…xZPOI<br>
-      <span id="lastSync" style="color:#475569;">Sin sincronizar</span>
-    </div>
-  </aside>
-
-  <!-- ─── MAIN ─── -->
-  <main>
-    <div class="topbar">
-      <div>
-        <div class="page-title" id="pageTitle">Dashboard</div>
-        <div class="page-sub" id="pageSubtitle">Resumen ejecutivo del proyecto.</div>
+    <div class="bottom-row" style="margin-top:14px">
+      <div class="card" style="margin-bottom:0">
+        <div class="card-hd"><div><h3>Avance por sector</h3></div></div>
+        <div id="avanceSectores"></div>
       </div>
-      <div class="toolbar">
-        <button class="btn btn-soft" onclick="loadData()">↻ Actualizar</button>
-        <button class="btn btn-mo" onclick="openMovimientoModal()">+ Avance / Pago</button>
-        <button class="btn btn-primary" onclick="openItemModal()">+ Nuevo ítem</button>
+      <div class="card" style="margin-bottom:0">
+        <div class="card-hd"><div><h3>Últimos movimientos</h3></div></div>
+        <div id="gastosRecientes"></div>
       </div>
     </div>
+  </section>
 
-    <!-- ══════════════════════════════════════════ DASHBOARD ══ -->
-    <section id="dashboard" class="section active">
-
-      <!-- KPIs globales -->
-      <div class="kpi-grid kpi-6">
-        <div class="kpi">
-          <div class="kpi-label">Presupuesto total</div>
-          <div class="kpi-value" id="kpiPresupuesto">—</div>
-          <div class="kpi-sub">Suma ítems presupuestados</div>
+  <!-- ═══ SEGUIMIENTO MO SEMANAL ═══ -->
+  <section id="semanal" class="section">
+    <div class="card">
+      <div class="card-hd">
+        <div>
+          <h3>Seguimiento semanal — Mano de obra</h3>
+          <p>Pagos realizados por semana vs lo que correspondería por avance físico. Filtrar por oficio para ver albañiles, plomeros, etc.</p>
         </div>
-        <div class="kpi">
-          <div class="kpi-label">Costo ejecutado</div>
-          <div class="kpi-value" id="kpiEjecutado">—</div>
-          <div class="kpi-sub">Cant. ejec. × costo unitario</div>
-        </div>
-        <div class="kpi">
-          <div class="kpi-label">Total pagado</div>
-          <div class="kpi-value" id="kpiPagado">—</div>
-          <div class="kpi-sub">Pagos reales registrados</div>
-        </div>
-        <div class="kpi accent-ok">
-          <div class="kpi-label">Avance general</div>
-          <div class="kpi-value" id="kpiAvance">—</div>
-          <div class="kpi-sub">Ponderado por presupuesto</div>
-        </div>
-        <div class="kpi accent-warn">
-          <div class="kpi-label">Saldo disponible</div>
-          <div class="kpi-value" id="kpiSaldo">—</div>
-          <div class="kpi-sub">Presupuesto − pagado</div>
-        </div>
-        <div class="kpi" id="kpiDesvioCard">
-          <div class="kpi-label">Desvío pago/avance</div>
-          <div class="kpi-value" id="kpiDesvio">—</div>
-          <div class="kpi-sub">Pagado − ejecutado teórico</div>
-        </div>
-      </div>
-
-      <!-- Tipo cards: MO vs Material -->
-      <div class="tipo-grid" id="tipoCards"></div>
-
-      <!-- Charts + avance sectores -->
-      <div class="charts-row">
-        <div class="card">
-          <div class="card-hd">
-            <div>
-              <h3>Presupuesto · ejecutado · pagado</h3>
-              <p>Comparación global del proyecto</p>
-            </div>
-          </div>
-          <canvas id="chartGeneral" height="110"></canvas>
-        </div>
-        <div class="card">
-          <div class="card-hd">
-            <div>
-              <h3>Distribución por tipo</h3>
-              <p>Materiales, MO, servicios y otros</p>
-            </div>
-          </div>
-          <canvas id="chartTipo" height="160"></canvas>
-        </div>
-      </div>
-
-      <!-- Sectores + recientes -->
-      <div class="bottom-row">
-        <div class="card">
-          <div class="card-hd">
-            <div>
-              <h3>Avance por sector</h3>
-              <p>Control por zona de obra</p>
-            </div>
-          </div>
-          <div class="sector-list" id="avanceSectores"></div>
-        </div>
-        <div class="card">
-          <div class="card-hd">
-            <div>
-              <h3>Últimos movimientos</h3>
-              <p>Avances y pagos recientes</p>
-            </div>
-          </div>
-          <div id="gastosRecientes"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════════════════════════════════════════ PRESUPUESTO ══ -->
-    <section id="presupuesto" class="section">
-      <div class="card">
-        <div class="card-hd">
-          <div>
-            <h3>Listado de presupuesto</h3>
-            <p>Alta, edición y control de ítems. El avance se calcula de los movimientos registrados.</p>
-          </div>
-          <button class="btn btn-primary" onclick="openItemModal()">+ Nuevo ítem</button>
-        </div>
-
-        <div class="filters">
-          <input id="filterSearch" placeholder="Buscar concepto, sector, responsable..." oninput="renderPresupuesto()" />
-          <select id="filterTipo" onchange="renderPresupuesto()">
-            <option value="">Todos los tipos</option>
-            <option>Material</option>
-            <option>Mano de obra</option>
-            <option>Servicio</option>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="filtroOficioSemanal" onchange="renderSemanal()" style="width:160px">
+            <option value="">Todos los oficios</option>
+            <option>Albañilería</option>
+            <option>Plomería</option>
+            <option>Electricidad</option>
+            <option>Herrería</option>
             <option>Otro</option>
           </select>
-          <select id="filterSector" onchange="renderPresupuesto()"></select>
-          <select id="filterEstado" onchange="renderPresupuesto()">
-            <option value="">Todos</option>
-            <option value="pendiente">Pendiente</option>
-            <option value="en_curso">En curso</option>
-            <option value="finalizado">Finalizado</option>
-          </select>
-        </div>
-
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Tipo</th>
-                <th>Concepto</th>
-                <th>Sector</th>
-                <th>Responsable</th>
-                <th>Unidad</th>
-                <th>Cant. Ppto.</th>
-                <th>Cant. Ejec.</th>
-                <th>Avance</th>
-                <th>Costo Unit.</th>
-                <th>Total Ppto.</th>
-                <th>Ejec. Teórico</th>
-                <th>Pagado</th>
-                <th>Desvío</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody id="presupuestoTable"></tbody>
-          </table>
+          <button class="btn btn-mo btn-sm" onclick="openMovModal()">+ Pago semanal</button>
         </div>
       </div>
-    </section>
 
-    <!-- ══════════════════════════════════════════ MOVIMIENTOS ══ -->
-    <section id="movimientos" class="section">
-      <div class="card">
-        <div class="card-hd">
-          <div>
-            <h3>Registro de avances y pagos</h3>
-            <p>Cada movimiento actualiza automáticamente el resumen y los KPIs. Los pagos globales (sin ítem) también se registran aquí.</p>
-          </div>
-          <button class="btn btn-mo" onclick="openMovimientoModal()">+ Movimiento</button>
-        </div>
+      <!-- KPIs MO -->
+      <div class="kpi-grid g4" style="margin-bottom:16px" id="kpiMO"></div>
 
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Fecha</th>
-                <th>Ítem</th>
-                <th>Tipo</th>
-                <th>Cant. ejec.</th>
-                <th>Importe</th>
-                <th>Medio pago</th>
-                <th>Responsable</th>
-                <th>Observación</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody id="movimientosTable"></tbody>
-          </table>
+      <!-- Gráfico pagos por semana -->
+      <div style="margin-bottom:20px">
+        <canvas id="chartSemanal" height="90"></canvas>
+      </div>
+
+      <!-- Tabla semana a semana -->
+      <div class="semanas-wrap">
+        <table class="semanas-table">
+          <thead>
+            <tr>
+              <th>Semana</th>
+              <th>Detalle pagos</th>
+              <th>Oficio/s</th>
+              <th style="text-align:right">Pagado</th>
+              <th style="text-align:right">Acum. pagado</th>
+              <th style="text-align:right">Teórico acum.</th>
+              <th style="text-align:right">Desvío acum.</th>
+            </tr>
+          </thead>
+          <tbody id="tbSemanal"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Avance por ítem MO -->
+    <div class="card">
+      <div class="card-hd"><div><h3>Avance físico por ítem</h3><p>Progreso de cada tarea de mano de obra</p></div></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Oficio</th><th>Tarea</th><th>Sector</th><th>Unid.</th>
+              <th>Ppto.</th><th>Ejec.</th><th>Avance</th><th>Costo teórico</th><th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="tbItemsMO"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ PRESUPUESTO ═══ -->
+  <section id="presupuesto" class="section">
+    <div class="card">
+      <div class="card-hd">
+        <div><h3>Presupuesto de obra</h3><p>Todos los ítems: materiales, mano de obra y servicios.</p></div>
+        <button class="btn btn-primary" onclick="openItemModal()">+ Nuevo ítem</button>
+      </div>
+      <div class="filters">
+        <input id="fSearch" placeholder="Buscar concepto, sector, responsable…" oninput="renderPresupuesto()"/>
+        <select id="fTipo" onchange="renderPresupuesto()">
+          <option value="">Todos los tipos</option>
+          <option>Material</option><option>Mano de obra</option><option>Servicio</option><option>Otro</option>
+        </select>
+        <select id="fOficio" onchange="renderPresupuesto()">
+          <option value="">Todos los oficios</option>
+          <option>Albañilería</option><option>Plomería</option><option>Electricidad</option><option>Herrería</option><option>Otro</option>
+        </select>
+        <select id="fSector" onchange="renderPresupuesto()"></select>
+        <select id="fEstado" onchange="renderPresupuesto()">
+          <option value="">Todos</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="en_curso">En curso</option>
+          <option value="finalizado">Finalizado</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Tipo</th><th>Oficio</th><th>Concepto</th><th>Sector</th><th>Responsable</th>
+              <th>Unid.</th><th>Cant. Ppto.</th><th>Cant. Ejec.</th><th>Avance</th>
+              <th>Costo Unit.</th><th>Total Ppto.</th><th>Ejec. Teórico</th><th>Pagado</th><th>Desvío</th><th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbPresupuesto"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ MOVIMIENTOS ═══ -->
+  <section id="movimientos" class="section">
+    <div class="card">
+      <div class="card-hd">
+        <div><h3>Avances y pagos</h3><p>Registro histórico. Los pagos semanales van sin ítem asociado.</p></div>
+        <button class="btn btn-mo" onclick="openMovModal()">+ Movimiento</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th><th>Ítem</th><th>Oficio</th><th>Tipo</th>
+              <th>Cant. ejec.</th><th>Importe</th><th>Medio</th><th>Responsable</th><th>Obs.</th><th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbMovimientos"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ RESPONSABLES ═══ -->
+  <section id="responsables" class="section">
+    <div class="card">
+      <div class="card-hd"><div><h3>Resumen por responsable</h3></div></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Responsable</th><th>Presupuestado</th><th>Ejec. teórico</th><th>Pagado</th><th>Saldo</th><th>Desvío</th></tr></thead>
+          <tbody id="tbResponsables"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ SECTORES ═══ -->
+  <section id="sectores" class="section">
+    <div class="card">
+      <div class="card-hd"><div><h3>Avance por sector</h3></div></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Sector</th><th>Ítems</th><th>Presupuestado</th><th>Ejec. teórico</th><th>Pagado</th><th>Avance</th><th>Saldo</th></tr></thead>
+          <tbody id="tbSectores"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CONFIGURACIÓN ═══ -->
+  <section id="configuracion" class="section">
+    <div class="card" style="max-width:680px">
+      <div class="card-hd"><div><h3>Conexión con Apps Script</h3></div></div>
+      <div class="form-grid">
+        <div class="full"><label>URL del Web App</label><input id="apiUrl" placeholder="https://script.google.com/macros/s/.../exec"/></div>
+        <div><label>Modo</label><select id="dataMode"><option value="api">Conectado a API</option><option value="demo">Demo local</option></select></div>
+        <div><label>Moneda</label><input id="currency" value="ARS" style="max-width:100px"/></div>
+        <div><label>Proyecto</label><input id="projectName" value="Construcción"/></div>
+        <div class="full" style="display:flex;gap:10px">
+          <button class="btn btn-primary" onclick="saveSettings()">Guardar</button>
+          <button class="btn btn-soft" onclick="loadData()">↻ Probar conexión</button>
         </div>
       </div>
-    </section>
-
-    <!-- ══════════════════════════════════════════ RESPONSABLES ══ -->
-    <section id="responsables" class="section">
-      <div class="card">
-        <div class="card-hd">
-          <div>
-            <h3>Resumen por responsable / proveedor</h3>
-            <p>Total presupuestado, ejecutado y pagado por persona o empresa.</p>
-          </div>
+    </div>
+    <div class="card" style="max-width:680px">
+      <div class="card-hd"><div><h3>Mantenimiento</h3></div></div>
+      <div style="display:grid;gap:12px">
+        <div>
+          <button class="btn btn-soft" onclick="runRebuild()">↻ Recalcular resumen</button>
+          <p style="font-size:12px;color:var(--muted);margin-top:6px">Recalcula Resumen_Items y Dashboard sin tocar datos.</p>
         </div>
-        <div class="table-wrap resp-table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Responsable</th>
-                <th>Presupuestado</th>
-                <th>Ejec. teórico</th>
-                <th>Pagado</th>
-                <th>Saldo</th>
-                <th>Desvío</th>
-              </tr>
-            </thead>
-            <tbody id="responsablesTable"></tbody>
-          </table>
+        <div>
+          <button class="btn btn-danger-soft" onclick="runMigration()">⚠ Migrar pagos huérfanos (v2→v4)</button>
+          <p style="font-size:12px;color:var(--muted);margin-top:6px">Asigna pagos sin item_id a ítems globales por responsable.</p>
+          <div id="migrationResult"></div>
         </div>
       </div>
-    </section>
-
-    <!-- ══════════════════════════════════════════ SECTORES ══ -->
-    <section id="sectores" class="section">
-      <div class="card">
-        <div class="card-hd">
-          <div>
-            <h3>Avance detallado por sector</h3>
-            <p>Desglose de presupuesto, ejecución y pagos por zona de obra.</p>
-          </div>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Sector</th>
-                <th>Ítems</th>
-                <th>Presupuestado</th>
-                <th>Ejec. teórico</th>
-                <th>Pagado</th>
-                <th>Avance</th>
-                <th>Saldo</th>
-              </tr>
-            </thead>
-            <tbody id="sectoresTable"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════════════════════════════════════════ CONFIGURACIÓN ══ -->
-    <section id="configuracion" class="section">
-      <div class="config-section">
-        <div class="card" style="margin-bottom:14px;">
-          <div class="card-hd">
-            <div>
-              <h3>Conexión con Apps Script</h3>
-              <p>Configurá la URL del Web App publicado en Google Apps Script.</p>
-            </div>
-          </div>
-          <div class="form-grid">
-            <div class="full">
-              <label>URL del Apps Script Web App</label>
-              <input id="apiUrl" placeholder="https://script.google.com/macros/s/.../exec" />
-            </div>
-            <div>
-              <label>Modo de datos</label>
-              <select id="dataMode">
-                <option value="api">Conectado a Apps Script</option>
-                <option value="demo">Demo local</option>
-              </select>
-            </div>
-            <div>
-              <label>Moneda</label>
-              <input id="currency" value="ARS" style="max-width:120px;" />
-            </div>
-            <div>
-              <label>Nombre del proyecto</label>
-              <input id="projectName" value="Proyecto de construcción" />
-            </div>
-            <div class="full" style="display:flex;gap:10px;flex-wrap:wrap;">
-              <button class="btn btn-primary" onclick="saveSettings()">Guardar configuración</button>
-              <button class="btn btn-soft" onclick="loadData()">↻ Probar conexión</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-hd">
-            <div>
-              <h3>Mantenimiento de datos</h3>
-              <p>Herramientas para corregir datos y forzar recálculos.</p>
-            </div>
-          </div>
-          <div style="display:grid;gap:10px;">
-            <div>
-              <button class="btn btn-soft" onclick="runRebuild()">↻ Recalcular resumen (rebuildResumen)</button>
-              <p style="font-size:12px;color:var(--muted);margin-top:6px;">Recalcula Resumen_Items y Dashboard en Sheets sin modificar datos.</p>
-            </div>
-            <div>
-              <button class="btn btn-danger-soft" onclick="runMigration()">⚠ Migrar pagos huérfanos</button>
-              <p style="font-size:12px;color:var(--muted);margin-top:6px;">Asigna los pagos sin item_id a ítems globales por responsable. Ejecutar una sola vez si venís de la v2.</p>
-              <div id="migrationResult"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
+    </div>
+  </section>
+</main>
 </div>
 
-<!-- ══════════════════════════════════════════ MODAL ÍTEM ══ -->
+<!-- MODAL ÍTEM -->
 <div id="itemModal" class="modal-backdrop">
   <div class="modal">
     <div class="modal-hd">
-      <div>
-        <h3 id="itemModalTitle">Agregar ítem presupuestado</h3>
-        <p>Define la base presupuestada. El avance se registra luego como movimientos.</p>
-      </div>
+      <div><h3 id="itemModalTitle">Agregar ítem presupuestado</h3><p>Define tipo, oficio y cantidades. El avance se registra luego como movimientos.</p></div>
       <button class="btn btn-soft btn-sm" onclick="closeModal('itemModal')">✕ Cerrar</button>
     </div>
-
     <form id="itemForm" onsubmit="saveItem(event)">
-      <input type="hidden" id="itemId" />
+      <input type="hidden" id="itemId"/>
       <div class="form-grid">
         <div>
           <label>Tipo *</label>
-          <select id="itemTipo" required>
+          <select id="itemTipo" required onchange="onItemTipoChange()">
             <option value="Material">Material</option>
             <option value="Mano de obra">Mano de obra</option>
             <option value="Servicio">Servicio</option>
             <option value="Otro">Otro</option>
           </select>
         </div>
+        <div id="wrapOficio">
+          <label>Oficio</label>
+          <select id="itemOficio">
+            <option value="">— sin oficio —</option>
+            <option>Albañilería</option><option>Plomería</option>
+            <option>Electricidad</option><option>Herrería</option><option>Otro</option>
+          </select>
+        </div>
         <div>
-          <label>Sector de obra *</label>
+          <label>Sector *</label>
           <select id="itemSector" required></select>
         </div>
-        <div>
-          <label>Responsable / proveedor *</label>
-          <input id="itemResponsable" list="responsablesList" required placeholder="Albañiles, Corralón..." />
+        <div class="half">
+          <label>Concepto / tarea *</label>
+          <input id="itemConcepto" required placeholder="Viga apeo, Cemento, Plomería…"/>
         </div>
-        <div class="full">
-          <label>Concepto o tarea *</label>
-          <input id="itemConcepto" required placeholder="Cemento, Viga apeo, Instalación eléctrica..." />
-        </div>
-        <div class="form-section-title">Cantidades y costos</div>
         <div>
-          <label>Unidad de medida *</label>
+          <label>Responsable / proveedor</label>
+          <input id="itemResponsable" list="respList" placeholder="Albañiles, Corralón…"/>
+        </div>
+        <div class="form-sep">Cantidades y costos</div>
+        <div>
+          <label>Unidad *</label>
           <select id="itemUnidad" required>
-            <option>unidad</option><option>m2</option><option>m3</option>
-            <option>ml</option><option>kg</option><option>bolsa</option>
-            <option>jornal</option><option>global</option><option>viaje</option>
-            <option>barra</option><option>paño</option>
+            <option>unidad</option><option>m2</option><option>m3</option><option>ml</option>
+            <option>kg</option><option>bolsa</option><option>jornal</option><option>global</option>
+            <option>viaje</option><option>barra</option><option>paño</option>
           </select>
         </div>
         <div>
           <label>Cantidad presupuestada *</label>
-          <input id="itemCantidad" type="number" min="0" step="0.01" required oninput="updateItemTotalPreview()" />
+          <input id="itemCantidad" type="number" min="0" step="0.01" required oninput="updateTotalPreview()"/>
         </div>
         <div>
           <label>Costo unitario *</label>
-          <input id="itemCosto" type="number" min="0" step="0.01" required oninput="updateItemTotalPreview()" />
+          <input id="itemCosto" type="number" min="0" step="0.01" required oninput="updateTotalPreview()"/>
         </div>
         <div>
           <label>Total presupuestado</label>
-          <input id="itemTotalPreview" readonly style="background:var(--panel-soft);font-family:'DM Mono',monospace;" />
+          <input id="itemTotal" readonly style="background:var(--soft);font-family:'DM Mono',monospace"/>
         </div>
         <div class="full">
           <label>Observación</label>
-          <textarea id="itemObservacion" rows="2" placeholder="Notas útiles..."></textarea>
+          <textarea id="itemObs" rows="2" placeholder="Notas…"></textarea>
         </div>
       </div>
       <div class="modal-ft">
@@ -781,821 +542,858 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════ MODAL MOVIMIENTO ══ -->
-<div id="movimientoModal" class="modal-backdrop">
+<!-- MODAL MOVIMIENTO (avance/pago) -->
+<div id="movModal" class="modal-backdrop">
   <div class="modal">
     <div class="modal-hd">
       <div>
-        <h3 id="movimientoModalTitle">Registrar avance / pago</h3>
-        <p>Asociá el movimiento a un ítem. Para pagos globales (cuotas de MO sin ítem específico), dejá el ítem en blanco.</p>
+        <h3 id="movModalTitle">Registrar avance / pago</h3>
+        <p id="movModalSub">Para avances: seleccioná el ítem y cargá la cantidad ejecutada o el %. Para pagos semanales: dejá ítem en blanco.</p>
       </div>
-      <button class="btn btn-soft btn-sm" onclick="closeModal('movimientoModal')">✕ Cerrar</button>
+      <button class="btn btn-soft btn-sm" onclick="closeModal('movModal')">✕ Cerrar</button>
     </div>
-
-    <form id="movimientoForm" onsubmit="saveMovimiento(event)">
-      <input type="hidden" id="movimientoId" />
+    <form id="movForm" onsubmit="saveMov(event)">
+      <input type="hidden" id="movId"/>
       <div class="form-grid">
         <div>
           <label>Fecha *</label>
-          <input id="movimientoFecha" type="date" required />
+          <input id="movFecha" type="date" required/>
         </div>
         <div>
           <label>Tipo de movimiento *</label>
-          <select id="movimientoTipo" required>
+          <select id="movTipo" required onchange="onMovTipoChange()">
             <option value="Avance">Avance (sin pago)</option>
-            <option value="Pago">Pago (sin avance físico)</option>
-            <option value="Avance y pago">Avance y pago</option>
+            <option value="Pago">Pago semanal (sin avance por ítem)</option>
+            <option value="Avance y pago">Avance + pago juntos</option>
             <option value="Ajuste">Ajuste / corrección</option>
           </select>
         </div>
         <div>
-          <label>Ítem asociado</label>
-          <select id="movimientoItem">
-            <option value="">— Pago global (sin ítem) —</option>
+          <label>Oficio</label>
+          <select id="movOficio">
+            <option value="">— sin especificar —</option>
+            <option>Albañilería</option><option>Plomería</option>
+            <option>Electricidad</option><option>Herrería</option><option>Otro</option>
+          </select>
+        </div>
+        <div class="full" id="wrapItemMov">
+          <label>Ítem asociado <span style="font-weight:400;text-transform:none;color:var(--muted)">(dejá en blanco para pago semanal global)</span></label>
+          <select id="movItem" onchange="onMovItemChange()">
+            <option value="">— Pago global sin ítem —</option>
           </select>
         </div>
 
-        <div class="form-section-title">Cantidad ejecutada y pago</div>
+        <!-- Bloque avance (visible solo cuando hay ítem) -->
+        <div class="form-sep" id="sepAvance">Avance físico</div>
+        <div id="wrapAvance" class="full">
+          <div class="hint">Cargá solo uno de los dos campos — el otro se calcula automáticamente.</div>
+          <div class="avance-helper">
+            <div>
+              <div class="avance-helper-label">Cantidad ejecutada</div>
+              <input id="movCantidad" type="number" min="0" step="0.01" value="0" oninput="syncDesdeCanidad()"/>
+              <div style="font-size:11px;color:var(--muted);margin-top:4px" id="movUnidLabel"></div>
+            </div>
+            <div style="text-align:center;padding-bottom:8px;color:var(--muted)">— o —</div>
+            <div>
+              <div class="avance-helper-label">Porcentaje de avance (%)</div>
+              <input id="movPct" type="number" min="0" max="100" step="0.1" value="0" oninput="syncDesdePct()"/>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+            <div>
+              <label>Presupuestado</label>
+              <input id="movPresup" readonly style="background:var(--soft);font-family:'DM Mono',monospace"/>
+            </div>
+            <div>
+              <label>Costo teórico calculado</label>
+              <input id="movTeorico" readonly style="background:var(--soft);font-family:'DM Mono',monospace;color:var(--ok)"/>
+            </div>
+          </div>
+        </div>
 
-        <div>
-          <label>Cantidad ejecutada</label>
-          <input id="movimientoCantidad" type="number" min="0" step="0.01" value="0" oninput="syncAvanceFromCantidad()" />
-        </div>
-        <div>
-          <label>Avance a registrar (%)</label>
-          <input id="movimientoPorcentaje" type="number" min="0" max="100" step="0.01" value="0" oninput="syncCantidadFromAvance()" />
-        </div>
+        <!-- Bloque pago -->
+        <div class="form-sep" id="sepPago">Pago</div>
         <div>
           <label>Importe pagado</label>
-          <input id="movimientoImporte" type="number" min="0" step="0.01" value="0" />
+          <input id="movImporte" type="number" min="0" step="0.01" value="0"/>
         </div>
         <div>
           <label>Medio de pago</label>
-          <select id="movimientoMedioPago">
+          <select id="movMedio">
             <option value="">— sin especificar —</option>
-            <option>Efectivo</option>
-            <option>Transferencia</option>
-            <option>Cheque</option>
-            <option>Tarjeta</option>
+            <option>Efectivo</option><option>Transferencia</option><option>Cheque</option><option>Tarjeta</option>
           </select>
         </div>
         <div>
           <label>Responsable / a quién se paga</label>
-          <input id="movimientoResponsable" list="responsablesList" placeholder="Albañiles, Corralón..." />
+          <input id="movResponsable" list="respList" placeholder="Albañiles, Plomero…"/>
         </div>
         <div>
           <label>Sector (si es pago global)</label>
-          <select id="movimientoSector"></select>
+          <select id="movSector"></select>
         </div>
         <div class="full">
           <label>Observación</label>
-          <textarea id="movimientoObservacion" rows="2" placeholder="Detalle del avance, pago o ajuste..."></textarea>
+          <textarea id="movObs" rows="2" placeholder="Detalle del avance, pago o ajuste…"></textarea>
         </div>
       </div>
       <div class="modal-ft">
-        <button type="button" class="btn btn-soft" onclick="closeModal('movimientoModal')">Cancelar</button>
+        <button type="button" class="btn btn-soft" onclick="closeModal('movModal')">Cancelar</button>
         <button type="submit" class="btn btn-mo">Guardar movimiento</button>
       </div>
     </form>
   </div>
 </div>
 
-<datalist id="responsablesList"></datalist>
+<datalist id="respList"></datalist>
 
 <script>
-/* ══════════════════════════════════════════════════════════
-   STATE & SETTINGS
-══════════════════════════════════════════════════════════ */
-const state = {
+/* ════════════════════════════════════════════════════════
+   STATE
+════════════════════════════════════════════════════════ */
+const S = {
   settings: {
-    apiUrl:      localStorage.getItem('pc_apiUrl')      || 'https://script.google.com/macros/s/AKfycbw8HGma9yzO1aSS10IZKcKGkQQJB6i2P3BrKZINvJugDGa0PzdW0ZfXqOQTnGnUk4goOQ/exec',
-    dataMode:    localStorage.getItem('pc_dataMode')    || 'api',
-    currency:    localStorage.getItem('pc_currency')    || 'ARS',
-    projectName: localStorage.getItem('pc_projectName') || 'Proyecto de construcción',
+    apiUrl:      localStorage.getItem('pc_apiUrl')   || '',
+    dataMode:    localStorage.getItem('pc_dataMode') || 'demo',
+    currency:    localStorage.getItem('pc_currency') || 'ARS',
+    projectName: localStorage.getItem('pc_project')  || 'Construcción',
   },
-  sectores: ['Frente', 'Casa', 'Galería', 'Garaje', 'General'],
+  sectores: ['Frente','Casa','Galería','Garaje','General'],
   items: [], movimientos: [], charts: {}
 };
 
-/* ── DEMO DATA ── */
 const DEMO_ITEMS = [
-  { item_id:'ITM0026', tipo:'Mano de obra', concepto:'2 Portones + Puerta (MO)', sector:'Frente', responsable:'Albañiles', unidad:'unid', cantidad_presupuestada:1,  costo_unitario:1160000 },
-  { item_id:'ITM0027', tipo:'Mano de obra', concepto:'Viga Apeo',                sector:'Frente', responsable:'Albañiles', unidad:'ml',   cantidad_presupuestada:38, costo_unitario:22000  },
-  { item_id:'ITM0028', tipo:'Mano de obra', concepto:'Encadenado',               sector:'Frente', responsable:'Albañiles', unidad:'ml',   cantidad_presupuestada:40, costo_unitario:18000  },
-  { item_id:'ITM0001', tipo:'Material',     concepto:'2 Portones + Puerta',      sector:'General',responsable:'Corralón',  unidad:'unid', cantidad_presupuestada:1,  costo_unitario:1800000},
-  { item_id:'ITM0002', tipo:'Material',     concepto:'Ripio y arena',            sector:'General',responsable:'Corralón',  unidad:'viaje',cantidad_presupuestada:1,  costo_unitario:170000 },
+  {item_id:'ITM0026',tipo:'Mano de obra',oficio:'Albañilería',concepto:'2 Portones + Puerta (MO)',sector:'Frente',responsable:'Albañiles',unidad:'unid',cantidad_presupuestada:1,costo_unitario:1160000},
+  {item_id:'ITM0027',tipo:'Mano de obra',oficio:'Albañilería',concepto:'Viga Apeo',sector:'Frente',responsable:'Albañiles',unidad:'ml',cantidad_presupuestada:38,costo_unitario:22000},
+  {item_id:'ITM0028',tipo:'Mano de obra',oficio:'Albañilería',concepto:'Encadenado',sector:'Frente',responsable:'Albañiles',unidad:'ml',cantidad_presupuestada:40,costo_unitario:18000},
+  {item_id:'ITM0029',tipo:'Mano de obra',oficio:'Albañilería',concepto:'Columna',sector:'Frente',responsable:'Albañiles',unidad:'unid',cantidad_presupuestada:8,costo_unitario:18000},
+  {item_id:'ITM0030',tipo:'Mano de obra',oficio:'Albañilería',concepto:'Pilares',sector:'Frente',responsable:'Albañiles',unidad:'m²',cantidad_presupuestada:13.2,costo_unitario:58000},
+  {item_id:'ITM0031',tipo:'Mano de obra',oficio:'Albañilería',concepto:'Contrapiso Losa',sector:'Frente',responsable:'Albañiles',unidad:'m²',cantidad_presupuestada:52,costo_unitario:18000},
+  {item_id:'ITM0032',tipo:'Mano de obra',oficio:'Albañilería',concepto:'Pared Ladrillo',sector:'Frente',responsable:'Albañiles',unidad:'m²',cantidad_presupuestada:27,costo_unitario:15000},
+  {item_id:'ITM0033',tipo:'Mano de obra',oficio:'Albañilería',concepto:'Cerecita',sector:'Frente',responsable:'Albañiles',unidad:'m²',cantidad_presupuestada:20,costo_unitario:12000},
+  {item_id:'ITM0034',tipo:'Mano de obra',oficio:'Albañilería',concepto:'Rampa',sector:'Frente',responsable:'Albañiles',unidad:'m²',cantidad_presupuestada:4.8,costo_unitario:18000},
+  {item_id:'ITM0035',tipo:'Mano de obra',oficio:'Albañilería',concepto:'Destachada + Demolición',sector:'Frente',responsable:'Albañiles',unidad:'gl',cantidad_presupuestada:1,costo_unitario:100000},
+  {item_id:'ITM0036',tipo:'Mano de obra',oficio:'Plomería',concepto:'Plomería',sector:'Frente',responsable:'Albañiles',unidad:'gl',cantidad_presupuestada:1,costo_unitario:160000},
+  {item_id:'ITM0001',tipo:'Material',oficio:'',concepto:'2 Portones + Puerta',sector:'General',responsable:'Corralón',unidad:'unid',cantidad_presupuestada:1,costo_unitario:1800000},
+  {item_id:'ITM0002',tipo:'Material',oficio:'',concepto:'Ripio y arena',sector:'General',responsable:'Corralón',unidad:'viaje',cantidad_presupuestada:1,costo_unitario:170000},
 ];
 const DEMO_MOVS = [
-  { movimiento_id:'MOV001', fecha:'2026-05-01', item_id:'ITM0026', tipo_movimiento:'Avance y pago', cantidad_ejecutada:1,  importe_pagado:1160000, responsable:'Albañiles', sector:'Frente', medio_pago:'Efectivo', observacion:'' },
-  { movimiento_id:'MOV002', fecha:'2026-05-08', item_id:'ITM0027', tipo_movimiento:'Avance',        cantidad_ejecutada:38, importe_pagado:0,       responsable:'Albañiles', sector:'Frente', medio_pago:'', observacion:'Viga completada' },
-  { movimiento_id:'MOV003', fecha:'2026-05-08', item_id:'ITM0027', tipo_movimiento:'Pago',          cantidad_ejecutada:0,  importe_pagado:836000,  responsable:'Albañiles', sector:'Frente', medio_pago:'Transferencia', observacion:'Pago viga' },
-  { movimiento_id:'MOV004', fecha:'2026-05-12', item_id:'ITM0028', tipo_movimiento:'Avance',        cantidad_ejecutada:24, importe_pagado:0,       responsable:'Albañiles', sector:'Frente', medio_pago:'', observacion:'60% encadenado' },
-  { movimiento_id:'MOV005', fecha:'2026-05-01', item_id:'ITM0001', tipo_movimiento:'Avance y pago', cantidad_ejecutada:1,  importe_pagado:1800000, responsable:'Corralón',  sector:'General',medio_pago:'Transferencia', observacion:'' },
+  {movimiento_id:'MOV026',fecha:'2026-03-02',item_id:'ITM0026',tipo_movimiento:'Avance',cantidad_ejecutada:1,importe_pagado:0,responsable:'Albañiles',sector:'Frente',oficio:'Albañilería',medio_pago:'',observacion:''},
+  {movimiento_id:'MOV027',fecha:'2026-03-02',item_id:'ITM0027',tipo_movimiento:'Avance',cantidad_ejecutada:38,importe_pagado:0,responsable:'Albañiles',sector:'Frente',oficio:'Albañilería',medio_pago:'',observacion:''},
+  {movimiento_id:'MOV028',fecha:'2026-03-02',item_id:'ITM0028',tipo_movimiento:'Avance',cantidad_ejecutada:24,importe_pagado:0,responsable:'Albañiles',sector:'Frente',oficio:'Albañilería',medio_pago:'',observacion:'60% encadenado'},
+  {movimiento_id:'MOV031',fecha:'2026-03-02',item_id:'ITM0031',tipo_movimiento:'Avance',cantidad_ejecutada:45,importe_pagado:0,responsable:'Albañiles',sector:'Frente',oficio:'Albañilería',medio_pago:'',observacion:''},
+  {movimiento_id:'MOV036',fecha:'2026-03-02',item_id:'ITM0036',tipo_movimiento:'Avance',cantidad_ejecutada:1,importe_pagado:0,responsable:'Albañiles',sector:'Frente',oficio:'Plomería',medio_pago:'',observacion:''},
+  {movimiento_id:'MOV037',fecha:'2026-03-07',item_id:'',tipo_movimiento:'Pago',cantidad_ejecutada:0,importe_pagado:1160000,responsable:'Albañiles',sector:'Frente',oficio:'Albañilería',medio_pago:'Efectivo',observacion:'Portones MO'},
+  {movimiento_id:'MOV038',fecha:'2026-03-07',item_id:'',tipo_movimiento:'Pago',cantidad_ejecutada:0,importe_pagado:600000,responsable:'Albañiles',sector:'Frente',oficio:'Albañilería',medio_pago:'Transferencia',observacion:'Cuota sem 1'},
+  {movimiento_id:'MOV039',fecha:'2026-03-14',item_id:'',tipo_movimiento:'Pago',cantidad_ejecutada:0,importe_pagado:400000,responsable:'Albañiles',sector:'Frente',oficio:'Albañilería',medio_pago:'Efectivo',observacion:'Cuota sem 2'},
+  {movimiento_id:'MOV040',fecha:'2026-03-20',item_id:'',tipo_movimiento:'Pago',cantidad_ejecutada:0,importe_pagado:250000,responsable:'Albañiles',sector:'Frente',oficio:'Albañilería',medio_pago:'Efectivo',observacion:'Cuota sem 3a'},
+  {movimiento_id:'MOV041',fecha:'2026-03-21',item_id:'',tipo_movimiento:'Pago',cantidad_ejecutada:0,importe_pagado:250000,responsable:'Albañiles',sector:'Frente',oficio:'Albañilería',medio_pago:'Efectivo',observacion:'Cuota sem 3b'},
+  {movimiento_id:'MOV042',fecha:'2026-03-28',item_id:'',tipo_movimiento:'Pago',cantidad_ejecutada:0,importe_pagado:800000,responsable:'Albañiles',sector:'Frente',oficio:'Albañilería',medio_pago:'Efectivo',observacion:'Cuota sem 5'},
+  {movimiento_id:'MOV043',fecha:'2026-04-01',item_id:'',tipo_movimiento:'Pago',cantidad_ejecutada:0,importe_pagado:420000,responsable:'Albañiles',sector:'Frente',oficio:'Albañilería',medio_pago:'Efectivo',observacion:'Cuota sem 6'},
+  {movimiento_id:'MOV044',fecha:'2026-04-11',item_id:'',tipo_movimiento:'Pago',cantidad_ejecutada:0,importe_pagado:500000,responsable:'Albañiles',sector:'Frente',oficio:'Albañilería',medio_pago:'Transferencia',observacion:'Cuota sem 7'},
+  {movimiento_id:'MOV045',fecha:'2026-04-18',item_id:'',tipo_movimiento:'Pago',cantidad_ejecutada:0,importe_pagado:700000,responsable:'Albañiles',sector:'Frente',oficio:'Albañilería',medio_pago:'Efectivo',observacion:'Cuota sem 8'},
+  {movimiento_id:'MOV001',fecha:'2026-03-02',item_id:'ITM0001',tipo_movimiento:'Pago',cantidad_ejecutada:1,importe_pagado:1800000,responsable:'Corralón',sector:'General',oficio:'',medio_pago:'Transferencia',observacion:''},
+  {movimiento_id:'MOV002',fecha:'2026-03-02',item_id:'ITM0002',tipo_movimiento:'Pago',cantidad_ejecutada:1,importe_pagado:170000,responsable:'Corralón',sector:'General',oficio:'',medio_pago:'Efectivo',observacion:''},
 ];
 
-/* ══════════════════════════════════════════════════════════
+/* ════════════════════════════════════════════════════════
    INIT
-══════════════════════════════════════════════════════════ */
-document.addEventListener('DOMContentLoaded', () => {
+════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded',()=>{
   bindNav();
   hydrateSettings();
   loadData();
 });
 
-function bindNav() {
-  const titles = {
-    dashboard:     ['Dashboard', 'Resumen ejecutivo del presupuesto, avances físicos, pagos y desvíos del proyecto.'],
-    presupuesto:   ['Presupuesto de obra', 'Listado de materiales, mano de obra, servicios y otros gastos presupuestados.'],
-    movimientos:   ['Avances y pagos', 'Registro histórico de cantidades ejecutadas, pagos realizados y ajustes.'],
-    responsables:  ['Responsables y proveedores', 'Análisis por persona, empresa o proveedor.'],
-    sectores:      ['Avance por sector', 'Desglose financiero y de avance por zona de obra.'],
-    configuracion: ['Configuración', 'Parámetros de conexión y mantenimiento.'],
-  };
+const PAGES = {
+  dashboard:['Dashboard','Resumen ejecutivo del proyecto.'],
+  semanal:['Seguimiento MO semanal','Pagos por semana vs avance físico, separado por oficio.'],
+  presupuesto:['Presupuesto de obra','Todos los ítems presupuestados.'],
+  movimientos:['Avances y pagos','Historial de movimientos.'],
+  responsables:['Responsables','Resumen por proveedor o persona.'],
+  sectores:['Sectores','Avance por zona de obra.'],
+  configuracion:['Configuración','Conexión y mantenimiento.'],
+};
 
-  document.querySelectorAll('.nav-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+function bindNav(){
+  document.querySelectorAll('.nav-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
       btn.classList.add('active');
-      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
       document.getElementById(btn.dataset.section).classList.add('active');
-      const [t, s] = titles[btn.dataset.section] || ['', ''];
-      document.getElementById('pageTitle').textContent = t;
-      document.getElementById('pageSubtitle').textContent = s;
+      const [t,s]=PAGES[btn.dataset.section]||['',''];
+      document.getElementById('pageTitle').textContent=t;
+      document.getElementById('pageSubtitle').textContent=s;
     });
   });
 }
 
-function hydrateSettings() {
-  document.getElementById('apiUrl').value      = state.settings.apiUrl;
-  document.getElementById('dataMode').value    = state.settings.dataMode;
-  document.getElementById('currency').value    = state.settings.currency;
-  document.getElementById('projectName').value = state.settings.projectName;
+function hydrateSettings(){
+  document.getElementById('apiUrl').value      = S.settings.apiUrl;
+  document.getElementById('dataMode').value    = S.settings.dataMode;
+  document.getElementById('currency').value    = S.settings.currency;
+  document.getElementById('projectName').value = S.settings.projectName;
 }
 
-function saveSettings() {
-  state.settings.apiUrl      = document.getElementById('apiUrl').value.trim();
-  state.settings.dataMode    = document.getElementById('dataMode').value;
-  state.settings.currency    = document.getElementById('currency').value.trim() || 'ARS';
-  state.settings.projectName = document.getElementById('projectName').value.trim() || 'Proyecto de construcción';
-  Object.entries(state.settings).forEach(([k, v]) => localStorage.setItem(`pc_${k}`, v));
+function saveSettings(){
+  S.settings.apiUrl      = document.getElementById('apiUrl').value.trim();
+  S.settings.dataMode    = document.getElementById('dataMode').value;
+  S.settings.currency    = document.getElementById('currency').value.trim()||'ARS';
+  S.settings.projectName = document.getElementById('projectName').value.trim()||'Construcción';
+  Object.entries(S.settings).forEach(([k,v])=>localStorage.setItem(`pc_${k}`,v));
   alert('Configuración guardada.');
 }
 
-/* ══════════════════════════════════════════════════════════
-   DATA LOAD
-══════════════════════════════════════════════════════════ */
-async function loadData() {
-  state.settings.apiUrl   = document.getElementById('apiUrl')?.value.trim()   || state.settings.apiUrl;
-  state.settings.dataMode = document.getElementById('dataMode')?.value         || state.settings.dataMode;
-  state.settings.currency = document.getElementById('currency')?.value.trim() || state.settings.currency;
+/* ════════════════════════════════════════════════════════
+   CARGA DE DATOS
+════════════════════════════════════════════════════════ */
+async function loadData(){
+  const url  = document.getElementById('apiUrl')?.value.trim()  || S.settings.apiUrl;
+  const mode = document.getElementById('dataMode')?.value        || S.settings.dataMode;
+  S.settings.apiUrl    = url;
+  S.settings.dataMode  = mode;
+  S.settings.currency  = document.getElementById('currency')?.value.trim() || S.settings.currency;
 
-  if (state.settings.dataMode === 'api' && state.settings.apiUrl) {
-    try {
-      const res  = await fetch(`${state.settings.apiUrl}?action=getInitialData`);
+  if(mode==='api' && url){
+    try{
+      const res  = await fetch(`${url}?action=getInitialData`);
       const json = await res.json();
-      if (!json.ok) throw new Error(json.error || 'Error en Apps Script');
-      const d = json.data || {};
-      state.items       = d.items       || [];
-      state.movimientos = d.movimientos || [];
-      state.sectores    = d.sectores    || state.sectores;
-      document.getElementById('lastSync').textContent = 'Sync: ' + new Date().toLocaleTimeString('es-AR');
-    } catch(e) {
-      console.warn('Fallback a demo:', e);
-      state.items       = structuredClone(DEMO_ITEMS);
-      state.movimientos = structuredClone(DEMO_MOVS);
+      if(!json.ok) throw new Error(json.error||'Error API');
+      const d = json.data||{};
+      S.items       = d.items       || [];
+      S.movimientos = d.movimientos || [];
+      S.sectores    = d.sectores    || S.sectores;
+      document.getElementById('lastSync').textContent = 'Sync: '+new Date().toLocaleTimeString('es-AR');
+    }catch(e){
+      console.warn('Demo fallback:',e);
+      S.items       = structuredClone(DEMO_ITEMS);
+      S.movimientos = structuredClone(DEMO_MOVS);
       document.getElementById('lastSync').textContent = 'Demo local';
     }
-  } else {
-    const li = localStorage.getItem('pc_demo_items');
-    const lm = localStorage.getItem('pc_demo_movs');
-    state.items       = li ? JSON.parse(li) : structuredClone(DEMO_ITEMS);
-    state.movimientos = lm ? JSON.parse(lm) : structuredClone(DEMO_MOVS);
+  }else{
+    const li=localStorage.getItem('pc_items');
+    const lm=localStorage.getItem('pc_movs');
+    S.items       = li ? JSON.parse(li) : structuredClone(DEMO_ITEMS);
+    S.movimientos = lm ? JSON.parse(lm) : structuredClone(DEMO_MOVS);
   }
-
   renderAll();
 }
 
-async function sendToApi(action, payload) {
-  if (state.settings.dataMode !== 'api' || !state.settings.apiUrl) return null;
-  try {
-    await fetch(state.settings.apiUrl, {
-      method: 'POST', mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action, payload })
+async function sendToApi(action, payload){
+  if(S.settings.dataMode!=='api'||!S.settings.apiUrl) return null;
+  try{
+    await fetch(S.settings.apiUrl,{
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({action,payload})
     });
-  } catch(e) { console.warn('API send error:', e); }
+  }catch(e){ console.warn('API error:',e); }
 }
 
-function persistDemo() {
-  if (state.settings.dataMode !== 'demo') return;
-  localStorage.setItem('pc_demo_items', JSON.stringify(state.items));
-  localStorage.setItem('pc_demo_movs',  JSON.stringify(state.movimientos));
+function persistDemo(){
+  if(S.settings.dataMode!=='demo') return;
+  localStorage.setItem('pc_items', JSON.stringify(S.items));
+  localStorage.setItem('pc_movs',  JSON.stringify(S.movimientos));
 }
 
-/* ══════════════════════════════════════════════════════════
+/* ════════════════════════════════════════════════════════
    RENDER ALL
-══════════════════════════════════════════════════════════ */
-function renderAll() {
-  renderSelects();
+════════════════════════════════════════════════════════ */
+function renderAll(){
+  fillSelects();
   renderDashboard();
+  renderSemanal();
   renderPresupuesto();
   renderMovimientos();
   renderResponsables();
   renderSectoresTab();
 }
 
-function renderSelects() {
-  const secOpts = ['<option value="">Todos los sectores</option>', ...state.sectores.map(s => `<option>${s}</option>`)].join('');
-  document.getElementById('filterSector').innerHTML = secOpts;
-  document.getElementById('itemSector').innerHTML   = state.sectores.map(s => `<option>${s}</option>`).join('');
-  document.getElementById('movimientoSector').innerHTML = ['<option value="">General</option>', ...state.sectores.map(s => `<option>${s}</option>`)].join('');
-
-  const movItems = ['<option value="">— Pago global (sin ítem) —</option>',
-    ...state.items.map(i => `<option value="${i.item_id}">${i.concepto} · ${i.sector}</option>`)
-  ].join('');
-  document.getElementById('movimientoItem').innerHTML = movItems;
-
-  const responsables = [...new Set([
-    ...state.items.map(i => i.responsable),
-    ...state.movimientos.map(m => m.responsable)
-  ].filter(Boolean))];
-  document.getElementById('responsablesList').innerHTML = responsables.map(r => `<option value="${r}"></option>`).join('');
+function fillSelects(){
+  const secOpts = ['<option value="">Todos los sectores</option>',...S.sectores.map(s=>`<option>${s}</option>`)].join('');
+  document.getElementById('fSector').innerHTML = secOpts;
+  document.getElementById('itemSector').innerHTML = S.sectores.map(s=>`<option>${s}</option>`).join('');
+  document.getElementById('movSector').innerHTML = ['<option value="">General</option>',...S.sectores.map(s=>`<option>${s}</option>`)].join('');
+  document.getElementById('movItem').innerHTML = ['<option value="">— Pago global sin ítem —</option>',...S.items.map(i=>`<option value="${i.item_id}">[${i.oficio||i.tipo}] ${i.concepto} · ${i.sector}</option>`)].join('');
+  const resps = [...new Set([...S.items.map(i=>i.responsable),...S.movimientos.map(m=>m.responsable)].filter(Boolean))];
+  document.getElementById('respList').innerHTML = resps.map(r=>`<option value="${r}"></option>`).join('');
 }
 
-/* ══════════════════════════════════════════════════════════
-   ENRICH
-══════════════════════════════════════════════════════════ */
-function enrichItem(item) {
-  const movs          = state.movimientos.filter(m => m.item_id === item.item_id);
-  const cantEjec      = movs.reduce((a, m) => a + n(m.cantidad_ejecutada), 0);
-  const totalPagado   = movs.reduce((a, m) => a + n(m.importe_pagado), 0);
-  const cantPresup    = n(item.cantidad_presupuestada);
-  const costoUnit     = n(item.costo_unitario);
-  const totalPresup   = cantPresup * costoUnit;
-  const avance        = cantPresup > 0 ? Math.min((cantEjec / cantPresup) * 100, 100) : 0;
-  const costoEjec     = cantEjec * costoUnit;
-  const desvio        = totalPagado - costoEjec;
-
-  return { ...item, cantEjec, totalPagado, totalPresup, avance, costoEjec, desvio };
+/* ════════════════════════════════════════════════════════
+   ENRICH ITEM
+════════════════════════════════════════════════════════ */
+function enrich(item){
+  const movs     = S.movimientos.filter(m=>m.item_id===item.item_id);
+  const cantEjec = movs.reduce((a,m)=>a+n(m.cantidad_ejecutada),0);
+  const pagado   = movs.reduce((a,m)=>a+n(m.importe_pagado),0);
+  const cantP    = n(item.cantidad_presupuestada);
+  const costoU   = n(item.costo_unitario);
+  const totalP   = cantP*costoU;
+  const avance   = cantP>0 ? Math.min((cantEjec/cantP)*100,100) : 0;
+  const teorico  = cantEjec*costoU;
+  const desvio   = pagado-teorico;
+  return {...item,cantEjec,pagado,totalP,avance,teorico,desvio};
 }
 
-function getResumen() {
-  const enriched = state.items.map(enrichItem);
-  // Pagos globales (movimientos sin item_id)
-  const globalPagos = state.movimientos
-    .filter(m => !m.item_id || m.item_id === '')
-    .reduce((a, m) => a + n(m.importe_pagado), 0);
-
-  const totalPresup   = enriched.reduce((a, i) => a + i.totalPresup, 0);
-  const totalEjecutado = enriched.reduce((a, i) => a + i.costoEjec, 0);
-  const totalPagadoItems = enriched.reduce((a, i) => a + i.totalPagado, 0);
-  const totalPagado   = totalPagadoItems + globalPagos;
-  const avanceGeneral = totalPresup > 0 ? (totalEjecutado / totalPresup) * 100 : 0;
-
-  // Por tipo
-  const porTipo = {};
-  enriched.forEach(i => {
-    const k = i.tipo || 'Otro';
-    if (!porTipo[k]) porTipo[k] = { presup: 0, ejec: 0, pagado: 0 };
-    porTipo[k].presup  += i.totalPresup;
-    porTipo[k].ejec    += i.costoEjec;
-    porTipo[k].pagado  += i.totalPagado;
+function getResumen(){
+  const enriched = S.items.map(enrich);
+  const globalPagos = S.movimientos.filter(m=>!m.item_id||m.item_id==='').reduce((a,m)=>a+n(m.importe_pagado),0);
+  const totalPresup  = enriched.reduce((a,i)=>a+i.totalP,0);
+  const totalEjec    = enriched.reduce((a,i)=>a+i.teorico,0);
+  const totalPagado  = enriched.reduce((a,i)=>a+i.pagado,0)+globalPagos;
+  const avanceGral   = totalPresup>0 ? (totalEjec/totalPresup)*100 : 0;
+  const porOficio={}, porTipo={};
+  enriched.forEach(i=>{
+    const ko = i.tipo==='Mano de obra' ? (i.oficio||'Sin oficio') : null;
+    if(ko){ if(!porOficio[ko]) porOficio[ko]={presup:0,ejec:0,pagado:0}; porOficio[ko].presup+=i.totalP; porOficio[ko].ejec+=i.teorico; porOficio[ko].pagado+=i.pagado; }
+    const kt = i.tipo||'Otro';
+    if(!porTipo[kt]) porTipo[kt]={presup:0,ejec:0,pagado:0};
+    porTipo[kt].presup+=i.totalP; porTipo[kt].ejec+=i.teorico; porTipo[kt].pagado+=i.pagado;
   });
-
-  return { enriched, totalPresup, totalEjecutado, totalPagado, avanceGeneral, porTipo, globalPagos };
+  return {enriched,totalPresup,totalEjec,totalPagado,avanceGral,porOficio,porTipo,globalPagos};
 }
 
-/* ══════════════════════════════════════════════════════════
+/* ════════════════════════════════════════════════════════
    DASHBOARD
-══════════════════════════════════════════════════════════ */
-function renderDashboard() {
-  const { enriched, totalPresup, totalEjecutado, totalPagado, avanceGeneral, porTipo, globalPagos } = getResumen();
-  const desvio = totalPagado - totalEjecutado;
+════════════════════════════════════════════════════════ */
+function renderDashboard(){
+  const {enriched,totalPresup,totalEjec,totalPagado,avanceGral,porOficio,porTipo,globalPagos}=getResumen();
+  const desvio = totalPagado-totalEjec;
+  const moEjec = enriched.filter(i=>i.tipo==='Mano de obra').reduce((a,i)=>a+i.teorico,0);
+  const moPagado = enriched.filter(i=>i.tipo==='Mano de obra').reduce((a,i)=>a+i.pagado,0)+globalPagos;
 
-  document.getElementById('kpiPresupuesto').textContent = money(totalPresup);
-  document.getElementById('kpiEjecutado').textContent   = money(totalEjecutado);
-  document.getElementById('kpiPagado').textContent      = money(totalPagado);
-  document.getElementById('kpiAvance').textContent      = `${avanceGeneral.toFixed(1)}%`;
-  document.getElementById('kpiSaldo').textContent       = money(totalPresup - totalPagado);
-  document.getElementById('kpiDesvio').textContent      = money(desvio);
+  set('kpiPresup',money(totalPresup));
+  set('kpiEjec',money(totalEjec));
+  set('kpiPagado',money(totalPagado));
+  set('kpiAvance',avanceGral.toFixed(1)+'%');
+  set('kpiSaldo',money(totalPresup-totalPagado));
+  set('kpiDesvio',money(moPagado-moEjec));
 
-  const desvioCard = document.getElementById('kpiDesvioCard');
-  desvioCard.classList.remove('accent-ok','accent-warn');
-  if (desvio < -50000) desvioCard.classList.add('accent-warn'); // pagaste menos del avance
-  else if (desvio > 50000) desvioCard.classList.add('accent-warn'); // pagaste más del avance
-  else desvioCard.classList.add('accent-ok');
+  const dc = document.getElementById('kpiDesvioCard');
+  dc.classList.remove('bl-ok','bl-warn');
+  dc.classList.add(Math.abs(moPagado-moEjec)<50000?'bl-ok':'bl-warn');
 
-  renderTipoCards(porTipo, globalPagos);
-  renderChartGeneral(totalPresup, totalEjecutado, totalPagado);
+  renderOficioCards(porOficio,totalEjec);
+  renderChartGeneral(totalPresup,totalEjec,totalPagado);
   renderChartTipo(porTipo);
   renderAvanceSectores(enriched);
-  renderGastosRecientes();
+  renderRecientes();
 }
 
-function renderTipoCards(porTipo, globalPagos) {
-  const mo  = porTipo['Mano de obra'] || { presup:0, ejec:0, pagado:0 };
-  const mat = porTipo['Material']     || { presup:0, ejec:0, pagado:0 };
-  const moAvance  = mo.presup  > 0 ? (mo.ejec  / mo.presup)  * 100 : 0;
-  const matAvance = mat.presup > 0 ? (mat.ejec / mat.presup) * 100 : 0;
-  const moDesvio  = mo.pagado  - mo.ejec;
-  const matDesvio = mat.pagado - mat.ejec;
+const OFICIO_COLORS={
+  'Albañilería':'#7F77DD','Plomería':'#1D9E75',
+  'Electricidad':'#EF9F27','Herrería':'#E24B4A','Otro':'#888780','Sin oficio':'#B4B2A9'
+};
 
-  document.getElementById('tipoCards').innerHTML = `
-    <div class="tipo-card mo">
-      <div class="tipo-header">
-        <div class="tipo-title">🧱 Mano de obra</div>
-        <div class="tipo-badge mo">${moAvance.toFixed(1)}% avance</div>
-      </div>
-      <div class="tipo-rows">
-        <div class="tipo-row"><span class="label">Presupuestado</span><span class="val">${money(mo.presup)}</span></div>
-        <div class="tipo-row"><span class="label">Ejec. teórico</span><span class="val">${money(mo.ejec)}</span></div>
-        <div class="tipo-row"><span class="label">Pagado</span><span class="val">${money(mo.pagado)}</span></div>
-        ${globalPagos > 0 ? `<div class="tipo-row"><span class="label">Pagos globales</span><span class="val">${money(globalPagos)}</span></div>` : ''}
-        <div class="tipo-row"><span class="label">Desvío pago/avance</span><span class="val ${moDesvio > 5000 ? 'danger' : moDesvio < -5000 ? 'danger' : 'ok'}">${money(moDesvio)}</span></div>
-      </div>
-      <div class="tipo-progress"><span class="mo" style="width:${Math.min(moAvance,100)}%"></span></div>
-    </div>
-
-    <div class="tipo-card mat">
-      <div class="tipo-header">
-        <div class="tipo-title">📦 Materiales</div>
-        <div class="tipo-badge mat">${matAvance.toFixed(1)}% avance</div>
-      </div>
-      <div class="tipo-rows">
-        <div class="tipo-row"><span class="label">Presupuestado</span><span class="val">${money(mat.presup)}</span></div>
-        <div class="tipo-row"><span class="label">Ejec. teórico</span><span class="val">${money(mat.ejec)}</span></div>
-        <div class="tipo-row"><span class="label">Pagado</span><span class="val">${money(mat.pagado)}</span></div>
-        <div class="tipo-row"><span class="label">Desvío pago/avance</span><span class="val ${matDesvio > 5000 ? 'danger' : matDesvio < -5000 ? 'danger' : 'ok'}">${money(matDesvio)}</span></div>
-      </div>
-      <div class="tipo-progress"><span class="mat" style="width:${Math.min(matAvance,100)}%"></span></div>
-    </div>
-  `;
+function renderOficioCards(porOficio,totalEjec){
+  const keys = Object.keys(porOficio);
+  if(!keys.length){ document.getElementById('oficioCards').innerHTML=''; return; }
+  const maxPresup = Math.max(...keys.map(k=>porOficio[k].presup),1);
+  document.getElementById('oficioCards').innerHTML = keys.map(k=>{
+    const d=porOficio[k];
+    const av = d.presup>0 ? (d.ejec/d.presup*100) : 0;
+    const dv = d.pagado-d.ejec;
+    const color = OFICIO_COLORS[k]||'#888780';
+    return `<div class="oficio-card">
+      <div class="oficio-name"><span class="oficio-dot" style="background:${color}"></span>${k}</div>
+      <div class="oficio-val">${money(d.presup)}</div>
+      <div class="oficio-sub">Ejec. ${money(d.ejec)} · Pagado ${money(d.pagado)}</div>
+      <div class="oficio-sub ${dv>10000?'desvio-bad':dv<-10000?'desvio-warn':'desvio-ok'}" style="margin-top:3px">Desvío: ${money(dv)}</div>
+      <div class="oficio-bar"><span style="width:${Math.min(av,100)}%;background:${color}"></span></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px;font-family:'DM Mono',monospace">${av.toFixed(1)}% avance</div>
+    </div>`;
+  }).join('');
 }
 
-function renderChartGeneral(presup, ejec, pagado) {
-  const ctx = document.getElementById('chartGeneral');
-  if (state.charts.general) state.charts.general.destroy();
-  state.charts.general = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: ['Presupuestado', 'Ejec. teórico', 'Pagado'],
-      datasets: [{
-        data: [presup, ejec, pagado],
-        backgroundColor: ['#dbeafe','#ede9fe','#dcfce7'],
-        borderColor:     ['#3b82f6','#7c3aed','#16a34a'],
-        borderWidth: 1.5, borderRadius: 6,
-      }]
+function renderChartGeneral(p,e,pa){
+  const ctx=document.getElementById('chartGeneral');
+  if(S.charts.gen) S.charts.gen.destroy();
+  S.charts.gen=new Chart(ctx,{type:'bar',data:{
+    labels:['Presupuestado','Ejec. teórico','Pagado'],
+    datasets:[{data:[p,e,pa],backgroundColor:['#dbeafe','#ede9fe','#dcfce7'],borderColor:['#3b82f6','#7c3aed','#16a34a'],borderWidth:1.5,borderRadius:6}]
+  },options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>money(v)},grid:{color:'#f3f4f6'}}}}});
+}
+
+function renderChartTipo(porTipo){
+  const labels=Object.keys(porTipo), data=labels.map(k=>porTipo[k].presup);
+  const colors=['#7c3aed','#0284c7','#d97706','#6b7280'];
+  const ctx=document.getElementById('chartTipo');
+  if(S.charts.tipo) S.charts.tipo.destroy();
+  S.charts.tipo=new Chart(ctx,{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors.slice(0,labels.length),borderWidth:0}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}},cutout:'65%'}});
+}
+
+function renderAvanceSectores(enriched){
+  const sec={};
+  enriched.forEach(i=>{if(!sec[i.sector]) sec[i.sector]={presup:0,ejec:0,pagado:0}; sec[i.sector].presup+=i.totalP; sec[i.sector].ejec+=i.teorico; sec[i.sector].pagado+=i.pagado;});
+  document.getElementById('avanceSectores').innerHTML = Object.entries(sec).map(([s,d])=>{
+    const av=d.presup>0?(d.ejec/d.presup*100):0;
+    return `<div class="sector-item">
+      <div class="sector-row"><span class="sector-name">${s}</span><span class="sector-pct">${av.toFixed(1)}%</span></div>
+      <div class="sector-bar"><span style="width:${Math.min(av,100)}%"></span></div>
+      <div class="sector-meta">Ejec. ${money(d.ejec)} · Pagado ${money(d.pagado)} de ${money(d.presup)}</div>
+    </div>`;
+  }).join('')||'<div class="empty">Sin datos.</div>';
+}
+
+function renderRecientes(){
+  const rows=[...S.movimientos].sort((a,b)=>new Date(b.fecha)-new Date(a.fecha)).slice(0,8);
+  document.getElementById('gastosRecientes').innerHTML = rows.map(m=>{
+    const item=S.items.find(i=>i.item_id===m.item_id);
+    return `<div class="rec-item">
+      <div>
+        <div class="rec-concepto">${item?.concepto||'Pago global'}</div>
+        <div class="rec-meta">${fmtDate(m.fecha)} · ${m.tipo_movimiento}${m.oficio?' · '+m.oficio:''} · ${m.responsable||'—'}</div>
+      </div>
+      <div>
+        ${n(m.importe_pagado)>0?`<div class="rec-importe">${money(m.importe_pagado)}</div>`:''}
+        ${n(m.cantidad_ejecutada)>0?`<div class="rec-meta" style="text-align:right">${num(m.cantidad_ejecutada)} ${item?.unidad||''}</div>`:''}
+      </div>
+    </div>`;
+  }).join('')||'<div class="empty">Sin movimientos.</div>';
+}
+
+/* ════════════════════════════════════════════════════════
+   SEGUIMIENTO SEMANAL
+════════════════════════════════════════════════════════ */
+function renderSemanal(){
+  const oficioFiltro = document.getElementById('filtroOficioSemanal')?.value||'';
+  const moItems = S.items.filter(i=>i.tipo==='Mano de obra');
+  const totalTeoricoMO = moItems.map(enrich).reduce((a,i)=>a+i.teorico,0);
+
+  // Pagos con importe > 0, filtrados por oficio
+  const pagos = S.movimientos.filter(m=>n(m.importe_pagado)>0 && m.fecha && (!oficioFiltro || m.oficio===oficioFiltro));
+
+  // Agrupar por semana
+  const semanas={};
+  pagos.forEach(m=>{
+    const d=new Date(m.fecha+'T12:00:00');
+    const key=isoWeekKey(d);
+    if(!semanas[key]) semanas[key]={key,fechaInicio:weekStart(d),pagos:[],total:0,porOficio:{}};
+    semanas[key].total+=n(m.importe_pagado);
+    semanas[key].pagos.push(m);
+    const o=m.oficio||'Sin oficio';
+    semanas[key].porOficio[o]=(semanas[key].porOficio[o]||0)+n(m.importe_pagado);
+  });
+
+  const semanasArr=Object.values(semanas).sort((a,b)=>a.key.localeCompare(b.key));
+  let acum=0;
+  semanasArr.forEach(s=>{ acum+=s.total; s.acum=acum; s.desvio=acum-totalTeoricoMO; });
+
+  // KPIs MO
+  const totalPagadoMO=S.movimientos.filter(m=>n(m.importe_pagado)>0&&(!oficioFiltro||m.oficio===oficioFiltro)).reduce((a,m)=>a+n(m.importe_pagado),0);
+  const desvioMO=totalPagadoMO-totalTeoricoMO;
+  document.getElementById('kpiMO').innerHTML=`
+    <div class="kpi bl-mat"><div class="kpi-label">Total pagado MO</div><div class="kpi-value">${money(totalPagadoMO)}</div><div class="kpi-sub">${pagos.length} pagos registrados</div></div>
+    <div class="kpi bl-ok"><div class="kpi-label">Ejecutado teórico</div><div class="kpi-value">${money(totalTeoricoMO)}</div><div class="kpi-sub">Avance × costo unitario</div></div>
+    <div class="kpi ${Math.abs(desvioMO)<50000?'bl-ok':'bl-warn'}"><div class="kpi-label">Desvío acumulado</div><div class="kpi-value ${desvioMO>50000?'desvio-bad':desvioMO<-50000?'desvio-warn':''}">${money(desvioMO)}</div><div class="kpi-sub">${desvioMO>0?'Pagaste más del avance':desvioMO<0?'Pagaste menos del avance':'En línea con el avance'}</div></div>
+    <div class="kpi"><div class="kpi-label">Semanas con pago</div><div class="kpi-value">${semanasArr.length}</div><div class="kpi-sub">Promedio ${money(semanasArr.length?totalPagadoMO/semanasArr.length:0)}</div></div>`;
+
+  // Gráfico barras semanales
+  renderChartSemanal(semanasArr, totalTeoricoMO);
+
+  // Tabla
+  document.getElementById('tbSemanal').innerHTML = semanasArr.map(s=>{
+    const oficios=[...new Set(s.pagos.map(p=>p.oficio||'Sin oficio'))];
+    const desvClass=s.desvio>50000?'desvio-bad':s.desvio<-50000?'desvio-warn':'desvio-ok';
+    const pct=totalTeoricoMO>0?Math.min(s.acum/totalTeoricoMO*100,100):0;
+    return `<tr>
+      <td><strong>${fmtSemana(s.fechaInicio)}</strong></td>
+      <td style="font-size:12px;color:var(--muted)">${s.pagos.length} pago${s.pagos.length!==1?'s':''}: ${s.pagos.map(p=>money(n(p.importe_pagado))).join(' + ')}</td>
+      <td>${oficios.map(o=>`<span class="chip chip-${oficioClass(o)}">${o}</span>`).join(' ')}</td>
+      <td class="mono" style="text-align:right"><strong>${money(s.total)}</strong></td>
+      <td class="mono" style="text-align:right">
+        <div class="bar-inline" style="justify-content:flex-end">
+          ${money(s.acum)}
+          <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:#7F77DD"></div></div>
+        </div>
+      </td>
+      <td class="mono" style="text-align:right">${money(totalTeoricoMO)}</td>
+      <td class="mono ${desvClass}" style="text-align:right">${s.desvio>=0?'+':''}${money(s.desvio)}</td>
+    </tr>`;
+  }).join('')||`<tr><td colspan="7"><div class="empty">Sin pagos registrados${oficioFiltro?' para '+oficioFiltro:''}.</div></td></tr>`;
+
+  // Tabla ítems MO
+  const moEnriched=moItems.map(enrich).filter(i=>!oficioFiltro||i.oficio===oficioFiltro);
+  document.getElementById('tbItemsMO').innerHTML = moEnriched.map(item=>{
+    const estadoCls=item.avance>=100?'estado-fin':item.avance>0?'estado-cur':'estado-pen';
+    const estadoLbl=item.avance>=100?'Finalizado':item.avance>0?'En curso':'Pendiente';
+    return `<tr>
+      <td><span class="chip chip-${oficioClass(item.oficio)}">${item.oficio||'—'}</span></td>
+      <td><strong>${item.concepto}</strong></td>
+      <td>${item.sector}</td>
+      <td>${item.unidad}</td>
+      <td class="mono">${num(item.cantidad_presupuestada)}</td>
+      <td class="mono">${num(item.cantEjec)}</td>
+      <td>
+        <div class="prog-wrap">
+          <div class="prog"><span style="background:${OFICIO_COLORS[item.oficio]||'#7F77DD'};width:${Math.min(item.avance,100)}%"></span></div>
+          <span class="mono" style="font-size:12px">${item.avance.toFixed(0)}%</span>
+        </div>
+      </td>
+      <td class="mono">${money(item.teorico)}</td>
+      <td><span class="${estadoCls}">${estadoLbl}</span></td>
+    </tr>`;
+  }).join('')||`<tr><td colspan="9"><div class="empty">Sin ítems de mano de obra.</div></td></tr>`;
+}
+
+function renderChartSemanal(semanasArr, totalTeorico){
+  const ctx=document.getElementById('chartSemanal');
+  if(S.charts.sem) S.charts.sem.destroy();
+  if(!semanasArr.length) return;
+  S.charts.sem=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:semanasArr.map(s=>fmtSemana(s.fechaInicio)),
+      datasets:[
+        {type:'bar',label:'Pagado semana',data:semanasArr.map(s=>s.total),backgroundColor:'#AFA9EC',borderColor:'#534AB7',borderWidth:1,borderRadius:5,order:2},
+        {type:'line',label:'Acumulado pagado',data:semanasArr.map(s=>s.acum),borderColor:'#3C3489',borderWidth:2,pointRadius:4,pointBackgroundColor:'#3C3489',fill:false,tension:.3,order:1},
+        {type:'line',label:'Teórico total',data:semanasArr.map(()=>totalTeorico),borderColor:'#639922',borderWidth:1.5,borderDash:[5,4],pointRadius:0,fill:false,order:0},
+      ]
     },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: { y: { ticks: { callback: v => money(v) }, grid: { color: '#f3f4f6' } } }
-    }
+    options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'bottom',labels:{font:{size:11}}}},scales:{y:{ticks:{callback:v=>money(v)},grid:{color:'#f3f4f6'}}}}
   });
 }
 
-function renderChartTipo(porTipo) {
-  const labels = Object.keys(porTipo);
-  const data   = labels.map(k => porTipo[k].presup);
-  const colors = ['#7c3aed','#0284c7','#d97706','#6b7280'];
-  const ctx    = document.getElementById('chartTipo');
-  if (state.charts.tipo) state.charts.tipo.destroy();
-  state.charts.tipo = new Chart(ctx, {
-    type: 'doughnut',
-    data: { labels, datasets: [{ data, backgroundColor: colors.slice(0, labels.length), borderWidth: 0 }] },
-    options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } }, cutout: '65%' }
-  });
-}
-
-function renderAvanceSectores(enriched) {
-  const sectores = {};
-  enriched.forEach(item => {
-    if (!sectores[item.sector]) sectores[item.sector] = { presup: 0, ejec: 0, pagado: 0 };
-    sectores[item.sector].presup  += item.totalPresup;
-    sectores[item.sector].ejec    += item.costoEjec;
-    sectores[item.sector].pagado  += item.totalPagado;
-  });
-
-  const html = Object.entries(sectores).map(([sector, d]) => {
-    const avance = d.presup > 0 ? (d.ejec / d.presup) * 100 : 0;
-    return `
-      <div class="sector-item">
-        <div class="sector-row">
-          <span class="sector-name">${sector}</span>
-          <span class="sector-pct">${avance.toFixed(1)}%</span>
-        </div>
-        <div class="sector-bar"><span style="width:${Math.min(avance,100)}%"></span></div>
-        <div class="sector-meta">Ejec. ${money(d.ejec)} · Pagado ${money(d.pagado)} de ${money(d.presup)}</div>
-      </div>
-    `;
-  }).join('');
-
-  document.getElementById('avanceSectores').innerHTML = html || '<div class="empty">Sin datos por sector.</div>';
-}
-
-function renderGastosRecientes() {
-  const recientes = [...state.movimientos]
-    .sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
-    .slice(0, 8);
-
-  const html = recientes.map(m => {
-    const item = state.items.find(i => i.item_id === m.item_id);
-    const tipo = m.tipo_movimiento;
-    return `
-      <div class="reciente-item">
-        <div>
-          <div class="reciente-concepto">${item?.concepto || 'Pago global'}</div>
-          <div class="reciente-meta">${formatDate(m.fecha)} · ${tipo} · ${m.responsable || '—'}</div>
-        </div>
-        <div>
-          ${n(m.importe_pagado) > 0 ? `<div class="reciente-importe">${money(n(m.importe_pagado))}</div>` : ''}
-          ${n(m.cantidad_ejecutada) > 0 ? `<div class="reciente-meta" style="text-align:right">${num(m.cantidad_ejecutada)} ${item?.unidad || ''}</div>` : ''}
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  document.getElementById('gastosRecientes').innerHTML = html || '<div class="empty">Sin movimientos registrados.</div>';
-}
-
-/* ══════════════════════════════════════════════════════════
+/* ════════════════════════════════════════════════════════
    PRESUPUESTO TABLE
-══════════════════════════════════════════════════════════ */
-function renderPresupuesto() {
-  const search = document.getElementById('filterSearch')?.value?.toLowerCase() || '';
-  const tipo   = document.getElementById('filterTipo')?.value || '';
-  const sector = document.getElementById('filterSector')?.value || '';
-  const estado = document.getElementById('filterEstado')?.value || '';
-
-  const rows = state.items.map(enrichItem).filter(item => {
-    const itemEstado = item.avance === 0 ? 'pendiente' : item.avance >= 100 ? 'finalizado' : 'en_curso';
-    const text = `${item.concepto} ${item.sector} ${item.responsable}`.toLowerCase();
-    return (!search || text.includes(search))
-      && (!tipo   || item.tipo   === tipo)
-      && (!sector || item.sector === sector)
-      && (!estado || itemEstado  === estado);
+════════════════════════════════════════════════════════ */
+function renderPresupuesto(){
+  const search=q('fSearch'),tipo=q('fTipo'),oficio=q('fOficio'),sector=q('fSector'),estado=q('fEstado');
+  const rows=S.items.map(enrich).filter(item=>{
+    const est=item.avance===0?'pendiente':item.avance>=100?'finalizado':'en_curso';
+    const txt=`${item.concepto} ${item.sector} ${item.responsable}`.toLowerCase();
+    return (!search||txt.includes(search))&&(!tipo||item.tipo===tipo)&&(!oficio||item.oficio===oficio)&&(!sector||item.sector===sector)&&(!estado||est===estado);
   });
-
-  const isMO = t => t === 'Mano de obra';
-
-  document.getElementById('presupuestoTable').innerHTML = rows.map(item => {
-    const estadoKey = item.avance === 0 ? 'pendiente' : item.avance >= 100 ? 'finalizado' : 'en_curso';
-    const estadoLabel = { pendiente: 'Pendiente', en_curso: 'En curso', finalizado: 'Finalizado' }[estadoKey];
-    return `
-      <tr>
-        <td>${typeBadge(item.tipo)}</td>
-        <td><strong>${item.concepto}</strong></td>
-        <td>${item.sector}</td>
-        <td>${item.responsable || '—'}</td>
-        <td>${item.unidad}</td>
-        <td class="mono">${num(item.cantidad_presupuestada)}</td>
-        <td class="mono">${num(item.cantEjec)}</td>
-        <td>
-          <div class="progress-wrap">
-            <div class="progress"><span class="${isMO(item.tipo)?'mo':''}" style="width:${Math.min(item.avance,100)}%"></span></div>
-            <span class="mono" style="font-size:12px">${item.avance.toFixed(1)}%</span>
-          </div>
-        </td>
-        <td class="mono">${money(item.costo_unitario)}</td>
-        <td class="mono"><strong>${money(item.totalPresup)}</strong></td>
-        <td class="mono">${money(item.costoEjec)}</td>
-        <td class="mono">${money(item.totalPagado)}</td>
-        <td class="mono ${item.desvio > 5000 ? 'desvio-bad' : item.desvio < -5000 ? 'desvio-warn' : 'desvio-ok'}">${money(item.desvio)}</td>
-        <td>
-          <div style="display:flex;gap:5px;flex-wrap:wrap;">
-            <button class="btn btn-soft btn-sm" onclick="openItemModal('${item.item_id}')">Editar</button>
-            <button class="btn btn-mo btn-sm" onclick="openMovimientoModal('${item.item_id}')">+ Mov.</button>
-            <button class="btn btn-danger-soft btn-sm" onclick="deleteItem('${item.item_id}')">✕</button>
-          </div>
-        </td>
-      </tr>
-    `;
-  }).join('') || `<tr><td colspan="14"><div class="empty">No hay ítems para mostrar.</div></td></tr>`;
+  document.getElementById('tbPresupuesto').innerHTML=rows.map(item=>{
+    const est=item.avance===0?'pendiente':item.avance>=100?'finalizado':'en_curso';
+    const estLbl={pendiente:'Pendiente',en_curso:'En curso',finalizado:'Finalizado'}[est];
+    const estCls={pendiente:'estado-pen',en_curso:'estado-cur',finalizado:'estado-fin'}[est];
+    const color=item.tipo==='Mano de obra'?(OFICIO_COLORS[item.oficio]||'#7F77DD'):'#0284c7';
+    return `<tr>
+      <td>${tipoBadge(item.tipo)}</td>
+      <td>${item.oficio?`<span class="chip chip-${oficioClass(item.oficio)}">${item.oficio}</span>`:'—'}</td>
+      <td><strong>${item.concepto}</strong></td>
+      <td>${item.sector}</td>
+      <td>${item.responsable||'—'}</td>
+      <td>${item.unidad}</td>
+      <td class="mono">${num(item.cantidad_presupuestada)}</td>
+      <td class="mono">${num(item.cantEjec)}</td>
+      <td><div class="prog-wrap"><div class="prog"><span style="background:${color};width:${Math.min(item.avance,100)}%"></span></div><span class="mono" style="font-size:12px">${item.avance.toFixed(1)}%</span></div></td>
+      <td class="mono">${money(item.costo_unitario)}</td>
+      <td class="mono"><strong>${money(item.totalP)}</strong></td>
+      <td class="mono">${money(item.teorico)}</td>
+      <td class="mono">${money(item.pagado)}</td>
+      <td class="mono ${item.desvio>5000?'desvio-bad':item.desvio<-5000?'desvio-warn':'desvio-ok'}">${money(item.desvio)}</td>
+      <td>
+        <div style="display:flex;gap:4px;flex-wrap:wrap">
+          <button class="btn btn-soft btn-sm" onclick="openItemModal('${item.item_id}')">Editar</button>
+          <button class="btn btn-mo btn-sm" onclick="openMovModal('${item.item_id}')">+ Mov.</button>
+          <button class="btn btn-danger-soft btn-sm" onclick="delItem('${item.item_id}')">✕</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('')||`<tr><td colspan="15"><div class="empty">Sin ítems.</div></td></tr>`;
 }
 
-/* ══════════════════════════════════════════════════════════
+/* ════════════════════════════════════════════════════════
    MOVIMIENTOS TABLE
-══════════════════════════════════════════════════════════ */
-function renderMovimientos() {
-  const rows = [...state.movimientos].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-
-  document.getElementById('movimientosTable').innerHTML = rows.map(m => {
-    const item = state.items.find(i => i.item_id === m.item_id);
-    return `
-      <tr>
-        <td>${formatDate(m.fecha)}</td>
-        <td>${item ? `<strong>${item.concepto}</strong><br><span style="font-size:11px;color:var(--muted)">${item.sector}</span>` : '<span style="color:var(--muted);font-size:12px">Pago global</span>'}</td>
-        <td><span class="estado-badge ${m.tipo_movimiento === 'Avance' ? 'en_curso' : m.tipo_movimiento === 'Pago' ? 'finalizado' : 'en_curso'}">${m.tipo_movimiento}</span></td>
-        <td class="mono">${n(m.cantidad_ejecutada) > 0 ? num(m.cantidad_ejecutada) : '—'}</td>
-        <td class="mono"><strong>${money(m.importe_pagado)}</strong></td>
-        <td>${m.medio_pago || '—'}</td>
-        <td>${m.responsable || '—'}</td>
-        <td style="max-width:180px;font-size:12px;color:var(--muted)">${m.observacion || '—'}</td>
-        <td>
-          <div style="display:flex;gap:5px;">
-            <button class="btn btn-soft btn-sm" onclick="openMovimientoModal(null,'${m.movimiento_id}')">Editar</button>
-            <button class="btn btn-danger-soft btn-sm" onclick="deleteMovimiento('${m.movimiento_id}')">✕</button>
-          </div>
-        </td>
-      </tr>
-    `;
-  }).join('') || `<tr><td colspan="9"><div class="empty">Sin movimientos registrados.</div></td></tr>`;
+════════════════════════════════════════════════════════ */
+function renderMovimientos(){
+  const rows=[...S.movimientos].sort((a,b)=>new Date(b.fecha)-new Date(a.fecha));
+  document.getElementById('tbMovimientos').innerHTML=rows.map(m=>{
+    const item=S.items.find(i=>i.item_id===m.item_id);
+    return `<tr>
+      <td>${fmtDate(m.fecha)}</td>
+      <td>${item?`<strong>${item.concepto}</strong><br><span style="font-size:11px;color:var(--muted)">${item.sector}</span>`:'<span style="color:var(--muted);font-size:12px">Pago global</span>'}</td>
+      <td>${m.oficio?`<span class="chip chip-${oficioClass(m.oficio)}">${m.oficio}</span>`:'—'}</td>
+      <td><span class="${m.tipo_movimiento==='Avance'?'estado-cur':m.tipo_movimiento==='Pago'?'estado-fin':'estado-cur'}">${m.tipo_movimiento}</span></td>
+      <td class="mono">${n(m.cantidad_ejecutada)>0?num(m.cantidad_ejecutada):'—'}</td>
+      <td class="mono"><strong>${money(m.importe_pagado)}</strong></td>
+      <td>${m.medio_pago||'—'}</td>
+      <td>${m.responsable||'—'}</td>
+      <td style="max-width:160px;font-size:12px;color:var(--muted)">${m.observacion||'—'}</td>
+      <td><div style="display:flex;gap:4px">
+        <button class="btn btn-soft btn-sm" onclick="openMovModal(null,'${m.movimiento_id}')">Editar</button>
+        <button class="btn btn-danger-soft btn-sm" onclick="delMov('${m.movimiento_id}')">✕</button>
+      </div></td>
+    </tr>`;
+  }).join('')||`<tr><td colspan="10"><div class="empty">Sin movimientos.</div></td></tr>`;
 }
 
-/* ══════════════════════════════════════════════════════════
-   RESPONSABLES TABLE
-══════════════════════════════════════════════════════════ */
-function renderResponsables() {
-  const resumen = {};
-  state.items.map(enrichItem).forEach(item => {
-    const key = item.responsable || 'Sin responsable';
-    if (!resumen[key]) resumen[key] = { presup:0, ejec:0, pagado:0, saldo:0 };
-    resumen[key].presup  += item.totalPresup;
-    resumen[key].ejec    += item.costoEjec;
-    resumen[key].pagado  += item.totalPagado;
-    resumen[key].saldo   += item.totalPresup - item.totalPagado;
+/* ════════════════════════════════════════════════════════
+   RESPONSABLES / SECTORES
+════════════════════════════════════════════════════════ */
+function renderResponsables(){
+  const map={};
+  S.items.map(enrich).forEach(i=>{
+    const k=i.responsable||'Sin responsable';
+    if(!map[k]) map[k]={presup:0,ejec:0,pagado:0,saldo:0};
+    map[k].presup+=i.totalP; map[k].ejec+=i.teorico; map[k].pagado+=i.pagado; map[k].saldo+=i.totalP-i.pagado;
   });
-
-  document.getElementById('responsablesTable').innerHTML = Object.entries(resumen).map(([r, d]) => {
-    const desvio = d.pagado - d.ejec;
-    return `
-      <tr>
-        <td><strong>${r}</strong></td>
-        <td class="mono">${money(d.presup)}</td>
-        <td class="mono">${money(d.ejec)}</td>
-        <td class="mono">${money(d.pagado)}</td>
-        <td class="mono">${money(d.saldo)}</td>
-        <td class="mono ${desvio > 5000 ? 'desvio-bad' : desvio < -5000 ? 'desvio-warn' : 'desvio-ok'}">${money(desvio)}</td>
-      </tr>
-    `;
-  }).join('') || `<tr><td colspan="6"><div class="empty">Sin datos.</div></td></tr>`;
+  document.getElementById('tbResponsables').innerHTML=Object.entries(map).map(([r,d])=>{
+    const dv=d.pagado-d.ejec;
+    return `<tr><td><strong>${r}</strong></td><td class="mono">${money(d.presup)}</td><td class="mono">${money(d.ejec)}</td><td class="mono">${money(d.pagado)}</td><td class="mono">${money(d.saldo)}</td><td class="mono ${dv>5000?'desvio-bad':dv<-5000?'desvio-warn':'desvio-ok'}">${money(dv)}</td></tr>`;
+  }).join('')||`<tr><td colspan="6"><div class="empty">Sin datos.</div></td></tr>`;
 }
 
-/* ══════════════════════════════════════════════════════════
-   SECTORES TAB
-══════════════════════════════════════════════════════════ */
-function renderSectoresTab() {
-  const enriched = state.items.map(enrichItem);
-  const sectores = {};
-
-  enriched.forEach(item => {
-    if (!sectores[item.sector]) sectores[item.sector] = { items:0, presup:0, ejec:0, pagado:0 };
-    sectores[item.sector].items++;
-    sectores[item.sector].presup  += item.totalPresup;
-    sectores[item.sector].ejec    += item.costoEjec;
-    sectores[item.sector].pagado  += item.totalPagado;
+function renderSectoresTab(){
+  const map={};
+  S.items.map(enrich).forEach(i=>{
+    if(!map[i.sector]) map[i.sector]={items:0,presup:0,ejec:0,pagado:0};
+    map[i.sector].items++; map[i.sector].presup+=i.totalP; map[i.sector].ejec+=i.teorico; map[i.sector].pagado+=i.pagado;
   });
-
-  document.getElementById('sectoresTable').innerHTML = Object.entries(sectores).map(([sector, d]) => {
-    const avance = d.presup > 0 ? (d.ejec / d.presup) * 100 : 0;
-    return `
-      <tr>
-        <td><strong>${sector}</strong></td>
-        <td class="mono">${d.items}</td>
-        <td class="mono">${money(d.presup)}</td>
-        <td class="mono">${money(d.ejec)}</td>
-        <td class="mono">${money(d.pagado)}</td>
-        <td>
-          <div class="progress-wrap">
-            <div class="progress" style="width:120px"><span style="width:${Math.min(avance,100)}%"></span></div>
-            <span class="mono" style="font-size:12px">${avance.toFixed(1)}%</span>
-          </div>
-        </td>
-        <td class="mono">${money(d.presup - d.pagado)}</td>
-      </tr>
-    `;
-  }).join('') || `<tr><td colspan="7"><div class="empty">Sin datos.</div></td></tr>`;
+  document.getElementById('tbSectores').innerHTML=Object.entries(map).map(([s,d])=>{
+    const av=d.presup>0?(d.ejec/d.presup*100):0;
+    return `<tr><td><strong>${s}</strong></td><td class="mono">${d.items}</td><td class="mono">${money(d.presup)}</td><td class="mono">${money(d.ejec)}</td><td class="mono">${money(d.pagado)}</td>
+    <td><div class="prog-wrap"><div class="prog" style="width:100px"><span style="width:${Math.min(av,100)}%"></span></div><span class="mono" style="font-size:12px">${av.toFixed(1)}%</span></div></td>
+    <td class="mono">${money(d.presup-d.pagado)}</td></tr>`;
+  }).join('')||`<tr><td colspan="7"><div class="empty">Sin datos.</div></td></tr>`;
 }
 
-/* ══════════════════════════════════════════════════════════
+/* ════════════════════════════════════════════════════════
    MODAL ÍTEM
-══════════════════════════════════════════════════════════ */
-function openItemModal(itemId = null) {
+════════════════════════════════════════════════════════ */
+function onItemTipoChange(){
+  const isMO = document.getElementById('itemTipo').value==='Mano de obra';
+  document.getElementById('wrapOficio').style.opacity = isMO?'1':'0.4';
+  document.getElementById('itemOficio').disabled = !isMO;
+}
+
+function openItemModal(itemId=null){
   document.getElementById('itemForm').reset();
-  document.getElementById('itemId').value = '';
-  document.getElementById('itemModalTitle').textContent = 'Agregar ítem presupuestado';
-
-  if (itemId) {
-    const item = state.items.find(i => i.item_id === itemId);
-    if (!item) return;
-    document.getElementById('itemModalTitle').textContent = 'Editar ítem presupuestado';
-    document.getElementById('itemId').value            = item.item_id;
-    document.getElementById('itemTipo').value          = item.tipo;
-    document.getElementById('itemSector').value        = item.sector;
-    document.getElementById('itemResponsable').value   = item.responsable;
-    document.getElementById('itemConcepto').value      = item.concepto;
-    document.getElementById('itemUnidad').value        = item.unidad;
-    document.getElementById('itemCantidad').value      = item.cantidad_presupuestada;
-    document.getElementById('itemCosto').value         = item.costo_unitario;
-    document.getElementById('itemObservacion').value   = item.observacion || '';
+  document.getElementById('itemId').value='';
+  document.getElementById('itemModalTitle').textContent='Agregar ítem presupuestado';
+  if(itemId){
+    const item=S.items.find(i=>i.item_id===itemId); if(!item) return;
+    document.getElementById('itemModalTitle').textContent='Editar ítem';
+    document.getElementById('itemId').value     = item.item_id;
+    document.getElementById('itemTipo').value   = item.tipo;
+    document.getElementById('itemOficio').value = item.oficio||'';
+    document.getElementById('itemSector').value = item.sector;
+    document.getElementById('itemResponsable').value = item.responsable;
+    document.getElementById('itemConcepto').value    = item.concepto;
+    document.getElementById('itemUnidad').value      = item.unidad;
+    document.getElementById('itemCantidad').value    = item.cantidad_presupuestada;
+    document.getElementById('itemCosto').value       = item.costo_unitario;
+    document.getElementById('itemObs').value         = item.observacion||'';
   }
-
-  updateItemTotalPreview();
+  onItemTipoChange();
+  updateTotalPreview();
   document.getElementById('itemModal').classList.add('active');
 }
 
-function updateItemTotalPreview() {
-  const cant  = n(document.getElementById('itemCantidad').value);
-  const costo = n(document.getElementById('itemCosto').value);
-  document.getElementById('itemTotalPreview').value = money(cant * costo);
+function updateTotalPreview(){
+  const c=n(document.getElementById('itemCantidad').value);
+  const p=n(document.getElementById('itemCosto').value);
+  document.getElementById('itemTotal').value=money(c*p);
 }
 
-async function saveItem(event) {
-  event.preventDefault();
-  const id   = document.getElementById('itemId').value || genId('ITM');
-  const item = {
-    item_id:               id,
-    tipo:                  document.getElementById('itemTipo').value,
-    sector:                document.getElementById('itemSector').value,
-    responsable:           document.getElementById('itemResponsable').value.trim(),
-    concepto:              document.getElementById('itemConcepto').value.trim(),
-    unidad:                document.getElementById('itemUnidad').value,
+async function saveItem(e){
+  e.preventDefault();
+  const id=document.getElementById('itemId').value||genId('ITM');
+  const item={
+    item_id:id,
+    tipo:      document.getElementById('itemTipo').value,
+    oficio:    document.getElementById('itemOficio').value,
+    sector:    document.getElementById('itemSector').value,
+    responsable: document.getElementById('itemResponsable').value.trim(),
+    concepto:  document.getElementById('itemConcepto').value.trim(),
+    unidad:    document.getElementById('itemUnidad').value,
     cantidad_presupuestada: n(document.getElementById('itemCantidad').value),
     costo_unitario:        n(document.getElementById('itemCosto').value),
-    observacion:           document.getElementById('itemObservacion').value.trim(),
+    observacion: document.getElementById('itemObs').value.trim(),
   };
-
-  const idx = state.items.findIndex(i => i.item_id === id);
-  if (idx >= 0) state.items[idx] = item; else state.items.push(item);
-
-  await sendToApi(idx >= 0 ? 'updateItem' : 'createItem', item);
-  persistDemo();
-  closeModal('itemModal');
-  renderAll();
+  const idx=S.items.findIndex(i=>i.item_id===id);
+  if(idx>=0) S.items[idx]=item; else S.items.push(item);
+  await sendToApi(idx>=0?'updateItem':'createItem',item);
+  persistDemo(); closeModal('itemModal'); renderAll();
 }
 
-async function deleteItem(itemId) {
-  if (!confirm('¿Eliminar este ítem? Sus movimientos quedan en el historial.')) return;
-  state.items = state.items.filter(i => i.item_id !== itemId);
-  await sendToApi('deleteItem', { item_id: itemId });
-  persistDemo();
-  renderAll();
+async function delItem(id){
+  if(!confirm('¿Eliminar este ítem?')) return;
+  S.items=S.items.filter(i=>i.item_id!==id);
+  await sendToApi('deleteItem',{item_id:id});
+  persistDemo(); renderAll();
 }
 
-/* ══════════════════════════════════════════════════════════
+/* ════════════════════════════════════════════════════════
    MODAL MOVIMIENTO
-══════════════════════════════════════════════════════════ */
-function openMovimientoModal(itemId = null, movimientoId = null) {
-  document.getElementById('movimientoForm').reset();
-  document.getElementById('movimientoId').value          = '';
-  document.getElementById('movimientoFecha').valueAsDate = new Date();
-  document.getElementById('movimientoCantidad').value    = 0;
-  document.getElementById('movimientoImporte').value     = 0;
-  document.getElementById('movimientoPorcentaje').value  = 0;
-  document.getElementById('movimientoModalTitle').textContent = 'Registrar avance / pago';
+════════════════════════════════════════════════════════ */
+function onMovTipoChange(){
+  const tipo=document.getElementById('movTipo').value;
+  const showAvance = tipo==='Avance'||tipo==='Avance y pago';
+  const showPago   = tipo==='Pago'||tipo==='Avance y pago'||tipo==='Ajuste';
+  document.getElementById('wrapAvance').style.display  = showAvance?'':'none';
+  document.getElementById('sepAvance').style.display   = showAvance?'':'none';
+  document.getElementById('sepPago').style.display     = showPago?'':'none';
+  document.getElementById('movImporte').parentElement.style.display = showPago?'':'none';
+  document.getElementById('movMedio').parentElement.style.display   = showPago?'':'none';
+  document.getElementById('wrapItemMov').style.display = showAvance?'':'none';
+}
 
-  if (itemId) document.getElementById('movimientoItem').value = itemId;
+function onMovItemChange(){
+  const itemId=document.getElementById('movItem').value;
+  const item=S.items.find(i=>i.item_id===itemId);
+  document.getElementById('movUnidLabel').textContent = item?`Unidad: ${item.unidad} · Presup: ${num(item.cantidad_presupuestada)}`:'';
+  document.getElementById('movPresup').value = item?money(n(item.cantidad_presupuestada)*n(item.costo_unitario)):'';
+  if(item && item.oficio) document.getElementById('movOficio').value=item.oficio;
+  syncDesdeCanidad();
+}
 
-  if (movimientoId) {
-    const mov = state.movimientos.find(m => m.movimiento_id === movimientoId);
-    if (!mov) return;
-    document.getElementById('movimientoModalTitle').textContent = 'Editar movimiento';
-    document.getElementById('movimientoId').value              = mov.movimiento_id;
-    document.getElementById('movimientoFecha').value           = mov.fecha;
-    document.getElementById('movimientoItem').value            = mov.item_id || '';
-    document.getElementById('movimientoTipo').value            = mov.tipo_movimiento;
-    document.getElementById('movimientoCantidad').value        = mov.cantidad_ejecutada;
-    document.getElementById('movimientoImporte').value         = mov.importe_pagado;
-    document.getElementById('movimientoMedioPago').value       = mov.medio_pago || '';
-    document.getElementById('movimientoResponsable').value     = mov.responsable || '';
-    document.getElementById('movimientoSector').value          = mov.sector || '';
-    document.getElementById('movimientoObservacion').value     = mov.observacion || '';
+function syncDesdeCanidad(){
+  const cant=n(document.getElementById('movCantidad').value);
+  const item=S.items.find(i=>i.item_id===document.getElementById('movItem').value);
+  if(!item) return;
+  const base=n(item.cantidad_presupuestada);
+  const pct=base>0?(cant/base*100):0;
+  document.getElementById('movPct').value=pct.toFixed(1);
+  document.getElementById('movTeorico').value=money(cant*n(item.costo_unitario));
+}
 
-    const item = state.items.find(i => i.item_id === mov.item_id);
-    const base = n(item?.cantidad_presupuestada || 0);
-    document.getElementById('movimientoPorcentaje').value = base > 0
-      ? ((n(mov.cantidad_ejecutada) / base) * 100).toFixed(2) : 0;
+function syncDesdePct(){
+  const pct=n(document.getElementById('movPct').value);
+  const item=S.items.find(i=>i.item_id===document.getElementById('movItem').value);
+  if(!item) return;
+  const base=n(item.cantidad_presupuestada);
+  const cant=base*pct/100;
+  document.getElementById('movCantidad').value=cant.toFixed(2);
+  document.getElementById('movTeorico').value=money(cant*n(item.costo_unitario));
+}
+
+function openMovModal(itemId=null, movId=null){
+  document.getElementById('movForm').reset();
+  document.getElementById('movId').value='';
+  document.getElementById('movFecha').valueAsDate=new Date();
+  document.getElementById('movCantidad').value=0;
+  document.getElementById('movImporte').value=0;
+  document.getElementById('movPct').value=0;
+  document.getElementById('movModalTitle').textContent='Registrar avance / pago';
+  if(itemId){ document.getElementById('movItem').value=itemId; onMovItemChange(); }
+  if(movId){
+    const m=S.movimientos.find(x=>x.movimiento_id===movId); if(!m) return;
+    document.getElementById('movModalTitle').textContent='Editar movimiento';
+    document.getElementById('movId').value=m.movimiento_id;
+    document.getElementById('movFecha').value=m.fecha;
+    document.getElementById('movTipo').value=m.tipo_movimiento;
+    document.getElementById('movItem').value=m.item_id||'';
+    document.getElementById('movOficio').value=m.oficio||'';
+    document.getElementById('movCantidad').value=m.cantidad_ejecutada;
+    document.getElementById('movImporte').value=m.importe_pagado;
+    document.getElementById('movMedio').value=m.medio_pago||'';
+    document.getElementById('movResponsable').value=m.responsable||'';
+    document.getElementById('movSector').value=m.sector||'';
+    document.getElementById('movObs').value=m.observacion||'';
+    onMovItemChange();
   }
-
-  document.getElementById('movimientoModal').classList.add('active');
+  onMovTipoChange();
+  document.getElementById('movModal').classList.add('active');
 }
 
-function syncCantidadFromAvance() {
-  const itemId = document.getElementById('movimientoItem').value;
-  const item   = state.items.find(i => i.item_id === itemId);
-  const pct    = n(document.getElementById('movimientoPorcentaje').value);
-  const base   = n(item?.cantidad_presupuestada || 0);
-  document.getElementById('movimientoCantidad').value = base > 0 ? ((base * pct) / 100).toFixed(2) : 0;
-}
-
-function syncAvanceFromCantidad() {
-  const itemId = document.getElementById('movimientoItem').value;
-  const item   = state.items.find(i => i.item_id === itemId);
-  const cant   = n(document.getElementById('movimientoCantidad').value);
-  const base   = n(item?.cantidad_presupuestada || 0);
-  document.getElementById('movimientoPorcentaje').value = base > 0 ? ((cant / base) * 100).toFixed(2) : 0;
-}
-
-async function saveMovimiento(event) {
-  event.preventDefault();
-  const id  = document.getElementById('movimientoId').value || genId('MOV');
-  const mov = {
-    movimiento_id:     id,
-    fecha:             document.getElementById('movimientoFecha').value,
-    item_id:           document.getElementById('movimientoItem').value,
-    tipo_movimiento:   document.getElementById('movimientoTipo').value,
-    cantidad_ejecutada: n(document.getElementById('movimientoCantidad').value),
-    importe_pagado:    n(document.getElementById('movimientoImporte').value),
-    medio_pago:        document.getElementById('movimientoMedioPago').value,
-    responsable:       document.getElementById('movimientoResponsable').value.trim(),
-    sector:            document.getElementById('movimientoSector').value,
-    observacion:       document.getElementById('movimientoObservacion').value.trim(),
+async function saveMov(e){
+  e.preventDefault();
+  const id=document.getElementById('movId').value||genId('MOV');
+  const mov={
+    movimiento_id:    id,
+    fecha:            document.getElementById('movFecha').value,
+    item_id:          document.getElementById('movItem').value,
+    tipo_movimiento:  document.getElementById('movTipo').value,
+    cantidad_ejecutada: n(document.getElementById('movCantidad').value),
+    importe_pagado:   n(document.getElementById('movImporte').value),
+    oficio:           document.getElementById('movOficio').value,
+    medio_pago:       document.getElementById('movMedio').value,
+    responsable:      document.getElementById('movResponsable').value.trim(),
+    sector:           document.getElementById('movSector').value,
+    observacion:      document.getElementById('movObs').value.trim(),
   };
-
-  const idx = state.movimientos.findIndex(m => m.movimiento_id === id);
-  if (idx >= 0) state.movimientos[idx] = mov; else state.movimientos.push(mov);
-
-  await sendToApi(idx >= 0 ? 'updateMovimiento' : 'createMovimiento', mov);
-  persistDemo();
-  closeModal('movimientoModal');
-  renderAll();
+  const idx=S.movimientos.findIndex(m=>m.movimiento_id===id);
+  if(idx>=0) S.movimientos[idx]=mov; else S.movimientos.push(mov);
+  await sendToApi(idx>=0?'updateMovimiento':'createMovimiento',mov);
+  persistDemo(); closeModal('movModal'); renderAll();
 }
 
-async function deleteMovimiento(movimientoId) {
-  if (!confirm('¿Eliminar este movimiento?')) return;
-  state.movimientos = state.movimientos.filter(m => m.movimiento_id !== movimientoId);
-  await sendToApi('deleteMovimiento', { movimiento_id: movimientoId });
-  persistDemo();
-  renderAll();
+async function delMov(id){
+  if(!confirm('¿Eliminar este movimiento?')) return;
+  S.movimientos=S.movimientos.filter(m=>m.movimiento_id!==id);
+  await sendToApi('deleteMovimiento',{movimiento_id:id});
+  persistDemo(); renderAll();
 }
 
-/* ══════════════════════════════════════════════════════════
+/* ════════════════════════════════════════════════════════
    MAINTENANCE
-══════════════════════════════════════════════════════════ */
-async function runRebuild() {
-  if (state.settings.dataMode !== 'api' || !state.settings.apiUrl) {
-    alert('Solo disponible en modo API conectado.'); return;
-  }
-  await sendToApi('rebuildResumen', {});
-  alert('Resumen recalculado en Sheets. Actualizando datos...');
-  loadData();
+════════════════════════════════════════════════════════ */
+async function runRebuild(){
+  if(S.settings.dataMode!=='api'||!S.settings.apiUrl){alert('Solo en modo API.');return;}
+  await sendToApi('rebuildResumen',{});
+  alert('Recalculado. Actualizando…'); loadData();
 }
 
-async function runMigration() {
-  if (!confirm('Esta acción migra pagos huérfanos de la v2 asignándoles ítems globales. ¿Continuar?')) return;
-
-  const el = document.getElementById('migrationResult');
-  el.style.display = 'block';
-  el.className = 'warn';
-  el.textContent = 'Ejecutando migración...';
-
-  if (state.settings.dataMode !== 'api' || !state.settings.apiUrl) {
-    el.textContent = 'Solo disponible en modo API. Conectá primero el Apps Script.';
-    return;
-  }
-
-  try {
-    const res  = await fetch(state.settings.apiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'migrateOrphanPayments', payload: {} })
-    });
-    const json = await res.json();
-    if (json.ok) {
-      el.className = 'ok';
-      el.textContent = `✓ ${json.data?.message || 'Migración completada.'}`;
-      loadData();
-    } else {
-      el.textContent = `Error: ${json.error}`;
-    }
-  } catch(e) {
-    el.textContent = `Error de red: ${e.message}`;
-  }
+async function runMigration(){
+  if(!confirm('Migrar pagos sin item_id a ítems globales. ¿Continuar?')) return;
+  const el=document.getElementById('migrationResult');
+  el.style.display='block'; el.className='warn'; el.textContent='Ejecutando…';
+  if(S.settings.dataMode!=='api'||!S.settings.apiUrl){el.textContent='Solo en modo API.';return;}
+  try{
+    const res=await fetch(S.settings.apiUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'migrateOrphanPayments',payload:{}})});
+    const json=await res.json();
+    if(json.ok){el.className='ok';el.textContent='✓ '+json.data?.message;loadData();}
+    else el.textContent='Error: '+json.error;
+  }catch(e){el.textContent='Error: '+e.message;}
 }
 
-/* ══════════════════════════════════════════════════════════
+/* ════════════════════════════════════════════════════════
    UTILS
-══════════════════════════════════════════════════════════ */
-function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+════════════════════════════════════════════════════════ */
+function closeModal(id){ document.getElementById(id).classList.remove('active'); }
+function set(id,v){ document.getElementById(id).textContent=v; }
+function q(id){ return document.getElementById(id)?.value?.toLowerCase()||''; }
+function genId(p){ return `${p}${Date.now().toString().slice(-10)}`; }
 
-function typeBadge(tipo) {
-  const cls = tipo === 'Material' ? 'material' : tipo === 'Mano de obra' ? 'mo' : tipo === 'Servicio' ? 'servicio' : 'otro';
-  return `<span class="badge ${cls}"><span class="status-dot"></span>${tipo}</span>`;
+function n(v){
+  if(v===null||v===undefined||v==='') return 0;
+  if(typeof v==='number') return v;
+  const s=String(v).replace(/\./g,'').replace(',','.').replace(/[^0-9.-]/g,'');
+  const p=Number(s); return isFinite(p)?p:0;
 }
 
-function genId(prefix) { return `${prefix}${Date.now().toString().slice(-10)}`; }
-
-function n(v) {
-  if (v === null || v === undefined || v === '') return 0;
-  if (typeof v === 'number') return v;
-  const s = String(v).replace(/\./g,'').replace(',','.').replace(/[^0-9.-]/g,'');
-  const p = Number(s);
-  return isFinite(p) ? p : 0;
+function money(v){
+  return new Intl.NumberFormat('es-AR',{style:'currency',currency:/^[A-Z]{3}$/.test(S.settings.currency||'')?S.settings.currency:'ARS',maximumFractionDigits:0}).format(Number(v||0));
 }
 
-function money(v) {
-  return new Intl.NumberFormat('es-AR', {
-    style: 'currency',
-    currency: /^[A-Z]{3}$/.test(state.settings.currency || '') ? state.settings.currency : 'ARS',
-    maximumFractionDigits: 0
-  }).format(Number(v || 0));
+function num(v){ return new Intl.NumberFormat('es-AR',{maximumFractionDigits:2}).format(Number(v||0)); }
+
+function fmtDate(d){
+  if(!d) return '—';
+  return new Date(d+'T12:00:00').toLocaleDateString('es-AR');
 }
 
-function num(v) { return new Intl.NumberFormat('es-AR', { maximumFractionDigits: 2 }).format(Number(v || 0)); }
+function fmtSemana(d){
+  if(!d) return '—';
+  return new Date(d+'T12:00:00').toLocaleDateString('es-AR',{day:'2-digit',month:'short'});
+}
 
-function formatDate(d) {
-  if (!d) return '—';
-  return new Date(`${d}T00:00:00`).toLocaleDateString('es-AR');
+function isoWeekKey(date){
+  const d=new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate()));
+  const day=d.getUTCDay()||7; d.setUTCDate(d.getUTCDate()+4-day);
+  const yearStart=new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  const w=Math.ceil((((d-yearStart)/86400000)+1)/7);
+  return `${d.getUTCFullYear()}-W${String(w).padStart(2,'0')}`;
+}
+
+function weekStart(date){
+  const d=new Date(date); const day=d.getDay()||7;
+  d.setDate(d.getDate()-day+1);
+  return d.toISOString().slice(0,10);
+}
+
+function tipoBadge(tipo){
+  const cls=tipo==='Material'?'chip-material':tipo==='Mano de obra'?'chip-mo':tipo==='Servicio'?'chip-servicio':'chip-otro';
+  return `<span class="chip ${cls}"><span class="status-dot"></span>${tipo}</span>`;
+}
+
+function oficioClass(o){
+  const m={'Albañilería':'albanil','Plomería':'plomeria','Electricidad':'electrico','Herrería':'herreria'};
+  return m[o]||'otro';
 }
 </script>
 </body>
