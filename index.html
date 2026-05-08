@@ -530,7 +530,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--alb);box-shadow:0 0 0
         <div style="font-size:14px;font-weight:600;margin-bottom:14px">Mantenimiento</div>
         <div style="display:flex;flex-direction:column;gap:10px">
           <button class="btn btn-ghost" onclick="runRebuild()" style="width:fit-content">↻ Recalcular resumen en Sheets</button>
-          <button class="btn btn-danger" onclick="runMigration()" style="width:fit-content">⚠ Migrar pagos huérfanos</button>
           <div id="cfgMsg" style="display:none;padding:10px 14px;border-radius:8px;font-size:13px"></div>
         </div>
       </div>
@@ -558,8 +557,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--alb);box-shadow:0 0 0
           <select id="tTipo" required onchange="onTipoChange()">
             <option value="Mano de obra">Mano de obra</option>
             <option value="Material">Material</option>
-            <option value="Servicio">Servicio</option>
-          </select>
+            </select>
         </div>
         <div class="form-row" id="wTOficio">
           <div class="form-label">Oficio</div>
@@ -798,9 +796,12 @@ function fillSelects(){
   const mo  = G.items.filter(i=>i.tipo==='Mano de obra');
   const mat = G.items.filter(i=>i.tipo==='Material');
 
-  document.getElementById('mItem').innerHTML =
-    '<option value="">— seleccioná —</option>' +
-    mat.map(i=>`<option value="${i.item_id}">${i.concepto} (${i.cantidad_presupuestada} ${i.unidad})</option>`).join('');
+  const mItem = document.getElementById('mItem');
+  if(mItem){
+    mItem.innerHTML =
+      '<option value="">— seleccioná —</option>' +
+      mat.map(i=>`<option value="${i.item_id}">${i.concepto} (${i.cantidad_presupuestada} ${i.unidad})</option>`).join('');
+  }
 
   const resps = [...new Set([...G.items.map(i=>i.responsable),...G.movs.map(m=>m.responsable)].filter(Boolean))];
   document.getElementById('respList').innerHTML = resps.map(r=>`<option value="${r}"></option>`).join('');
@@ -978,6 +979,8 @@ function renderTareas(){
     `;
     return;
   }
+
+  if(!filtrados.length){
     document.getElementById('tareasLista').innerHTML =
       `<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">No hay tareas en esta categoría.<br>Usá el botón "+ Nueva tarea" para agregar una.</div></div>`;
     return;
@@ -1237,72 +1240,6 @@ async function eliminarMovimiento(movId, itemId){
 }
 
 /* ──── PAGOS ──── */
-function renderPagos(g){
-  // Gráfico semanal
-  const pagosMO = G.movs.filter(m => n(m.importe_pagado)>0 && m.fecha);
-  const semanas = {};
-  pagosMO.forEach(m => {
-    const d   = new Date(m.fecha+'T12:00:00');
-    const key = isoWeekKey(d);
-    if(!semanas[key]) semanas[key]={key,inicio:weekStart(d),total:0,pagos:[]};
-    semanas[key].total += n(m.importe_pagado);
-    semanas[key].pagos.push(m);
-  });
-  const semanasArr = Object.values(semanas).sort((a,b)=>a.key.localeCompare(b.key));
-  let acum=0;
-  semanasArr.forEach(s=>{acum+=s.total;s.acum=acum;});
-
-  // Chart
-  const ctx = document.getElementById('chartPagos');
-  if(G.charts.pagos) G.charts.pagos.destroy();
-  if(semanasArr.length){
-    G.charts.pagos = new Chart(ctx,{
-      type:'bar',
-      data:{
-        labels:semanasArr.map(s=>fmtSemana(s.inicio)),
-        datasets:[
-          {type:'bar',label:'Pagado semana',data:semanasArr.map(s=>s.total),backgroundColor:'rgba(91,79,204,.2)',borderColor:'var(--alb)',borderWidth:1.5,borderRadius:4,order:2},
-          {type:'line',label:'Acumulado',data:semanasArr.map(s=>s.acum),borderColor:'#1C1917',borderWidth:2,pointRadius:4,pointBackgroundColor:'#1C1917',fill:false,tension:.3,order:1},
-          {type:'line',label:'Teórico MO',data:semanasArr.map(()=>g.moTeorico),borderColor:'var(--ok)',borderWidth:1.5,borderDash:[5,4],pointRadius:0,fill:false,order:0},
-        ]
-      },
-      options:{responsive:true,interaction:{mode:'index',intersect:false},
-        plugins:{legend:{position:'bottom',labels:{font:{size:11},usePointStyle:true}}},
-        scales:{y:{ticks:{callback:v=>money(v)},grid:{color:'#f0ece4'}}}}
-    });
-  }
-
-  // Cards semanales
-  const maxSem = Math.max(...semanasArr.map(s=>s.total),1);
-  document.getElementById('semanasHistorial').innerHTML = semanasArr.length
-    ? semanasArr.reverse().map(s=>{
-        const pct = s.total/maxSem*100;
-        return `<div class="semana-bloque">
-          <div class="semana-hd" onclick="toggleSemana(this)">
-            <div class="semana-fecha">${fmtSemana(s.inicio)}</div>
-            <div class="semana-barra-wrap"><div class="semana-barra" style="width:${pct}%"></div></div>
-            <div class="semana-total">${money(s.total)}</div>
-            <div class="semana-desvio" style="color:var(--text3)">${s.pagos.length} pago${s.pagos.length!==1?'s':''}</div>
-          </div>
-          <div class="semana-body">
-            ${s.pagos.map(p=>{
-              const item = G.items.find(i=>i.item_id===p.item_id);
-              const c = oc(p.oficio||(item?.tipo==='Material'?'Material':''));
-              return `<div class="pago-linea">
-                <div style="width:8px;height:8px;border-radius:50%;background:${c.color};flex-shrink:0"></div>
-                <div style="flex:1">
-                  <div class="pago-linea-concepto">${item?.concepto||p.observacion||'Pago global MO'}</div>
-                  <div class="pago-linea-meta">${p.responsable||'—'} ${p.oficio?'· '+p.oficio:''} ${p.medio_pago?'· '+p.medio_pago:''}</div>
-                </div>
-                <div class="pago-linea-monto">${money(n(p.importe_pagado))}</div>
-              </div>`;
-            }).join('')}
-          </div>
-        </div>`;
-      }).join('')
-    : '<div class="empty-state"><div class="empty-icon">₱</div><div class="empty-text">Sin pagos registrados.</div></div>';
-}
-
 function toggleSemana(hd){
   const body = hd.nextElementSibling;
   body.classList.toggle('open');
@@ -1516,8 +1453,8 @@ async function pagarMaterialCompleto(itemId){
   const item = G.items.find(i=>i.item_id===itemId);
   if(!item) return;
   const ei = enrich(item);
-  const pendiente = item.total - ei.pagado;
   const totalItem = n(item.cantidad_presupuestada) * n(item.costo_unitario);
+  const pendiente = totalItem - ei.pagado;
 
   // Confirmar con contexto claro
   const ok = confirm(
@@ -1528,10 +1465,12 @@ async function pagarMaterialCompleto(itemId){
   );
   if(!ok) return;
 
-  const importeAPagar = ei.pagado > 0 ? pendiente : totalItem;
-  const cantAPagar    = ei.pagado > 0
-    ? n(item.cantidad_presupuestada) - ei.ejec
-    : n(item.cantidad_presupuestada);
+  const importeAPagar = Math.max(0, ei.pagado > 0 ? pendiente : totalItem);
+  if(importeAPagar <= 0){
+    alert('El material ya se encuentra pagado.');
+    return;
+  }
+  const cantAPagar    = n(item.cantidad_presupuestada);
 
   const mov = {
     movimiento_id:     genId('MOV'),
@@ -1579,7 +1518,7 @@ async function runMigration(){
   try{
     const r = await fetch(G.apiUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'migrateOrphanPayments',payload:{}})});
     const j = await r.json();
-    showMsg(j.ok?'✓ '+j.data?.message:'Error: '+j.error, j.ok?'ok':'warn');
+    showMsg(j.ok?'✓ '+(j.data?.msg || 'Migración ejecutada.'):'Error: '+j.error, j.ok?'ok':'warn');
     if(j.ok) loadData();
   }catch(ex){showMsg('Error: '+ex.message,'warn');}
 }
