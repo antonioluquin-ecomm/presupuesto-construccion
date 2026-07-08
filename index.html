@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Obra — Presupuesto & Contabilidad</title>
+  <script>(function(){var s=localStorage.getItem('obra_theme');var t=s?s:(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);if(localStorage.getItem('obra_sidebar')==='collapsed')document.documentElement.setAttribute('data-sidebar','collapsed');})();</script>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="src/css/main.css" />
+</head>
+<body>
+  <div class="app-layout">
+    <!-- ─── Sidebar ─────────────────────────────────────── -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <span class="brand-icon">OB</span>
+        <div>
+          <div class="brand-name">Obra</div>
+          <div class="brand-meta" id="sidebarVersionBtn" title="Ver historial de cambios">
+            <span id="sidebarVersion">v…</span>
+            <span>· Presupuesto</span>
+          </div>
+          <div class="sidebar-version-popover" id="versionPopover" style="display:none;"></div>
+        </div>
+      </div>
+      <nav class="nav">
+        <button class="nav-item active" data-page="resumen">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+          Resumen
+        </button>
+        <button class="nav-item" data-page="partidas">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v4H4z"/><path d="M4 10h16v10H4z"/><path d="M9 14h6"/></svg>
+          Partidas
+          <span class="nav-badge" id="badgePartidas">0</span>
+        </button>
+        <button class="nav-item" data-page="pagos">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+          Pagos y avances
+          <span class="nav-badge" id="badgeMovs">0</span>
+        </button>
+        <button class="nav-item" data-page="configuracion">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>
+          Configuración
+        </button>
+      </nav>
+      <div class="sidebar-spacer"></div>
+      <div class="sidebar-footer">
+        <div id="modeIndicator"><span class="mode-dot"></span>Cargando…</div>
+      </div>
+    </aside>
+
+    <!-- ─── Contenido ───────────────────────────────────── -->
+    <div class="content-area">
+      <div class="topbar">
+        <button class="topbar-toggle" id="sidebarCollapseBtn" type="button" title="Ocultar menú lateral" aria-label="Mostrar u ocultar menú lateral"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="2.5" width="13" height="11" rx="2"/><line x1="6" y1="2.5" x2="6" y2="13.5"/></svg></button>
+        <span class="topbar-brand">Obra</span>
+        <span class="topbar-sep">›</span>
+        <span class="topbar-crumb" id="topbarCrumb">Resumen</span>
+        <div class="topbar-actions">
+          <button class="theme-toggle" id="themeToggle" title="Cambiar tema" aria-label="Cambiar tema"><span class="th-icon">☾</span></button>
+        </div>
+      </div>
+
+      <main class="container">
+        <!-- ═══ RESUMEN ═══ -->
+        <section class="page active" id="page-resumen">
+          <div class="page-header">
+            <div class="eyebrow" id="resProyectoEyebrow">Proyecto</div>
+            <h1 id="resProyectoNombre">Resumen</h1>
+            <div class="subtitle" id="resProyectoDesc"></div>
+          </div>
+          <div id="resStatus" class="status-bar">Cargando…</div>
+          <section class="panel" style="margin-top:16px"><div class="kpi-grid" id="resKpis"></div></section>
+
+          <div class="section-title"><h2>Materiales — presupuestado vs pagado</h2></div>
+          <div class="panel" id="resMateriales"></div>
+
+          <div class="section-title"><h2>Mano de obra por oficio</h2></div>
+          <div class="oficio-grid" id="resOficios"></div>
+
+          <div class="section-title"><h2>Desvío por partida (valor real vs pagado)</h2></div>
+          <div class="table-wrap"><table id="resDesvioTable"></table></div>
+        </section>
+
+        <!-- ═══ PARTIDAS ═══ -->
+        <section class="page" id="page-partidas">
+          <div class="page-header">
+            <h1>Partidas presupuestadas</h1>
+            <div class="subtitle">El costo unitario que te pasa el albañil (mano de obra) o el corralón (material). Con los avances se calcula el valor real.</div>
+          </div>
+          <div class="tabs" id="partidasTabs">
+            <button class="tab-btn active" data-ptab="Material">📦 Materiales</button>
+            <button class="tab-btn" data-ptab="Mano de obra">🧱 Mano de obra</button>
+          </div>
+          <div class="toolbar">
+            <input type="search" class="search-input" id="partidasSearch" placeholder="Buscar concepto…" />
+            <span class="spacer"></span>
+            <button class="secondary sm" id="partidasExport">Exportar CSV</button>
+            <button class="sm" id="partidasNueva">+ Nueva partida</button>
+          </div>
+          <div class="table-wrap"><table id="partidasTable"></table></div>
+        </section>
+
+        <!-- ═══ PAGOS Y AVANCES ═══ -->
+        <section class="page" id="page-pagos">
+          <div class="page-header">
+            <h1>Pagos y avances</h1>
+            <div class="subtitle">Registrá compras de material, pagos al albañil y el avance de cada trabajo.</div>
+          </div>
+          <div class="tabs" id="pagoTabs">
+            <button class="tab-btn active" data-pgtab="material">📦 Compra de material</button>
+            <button class="tab-btn" data-pgtab="mano">🧱 Pago mano de obra</button>
+            <button class="tab-btn" data-pgtab="avance">📈 Avance de obra</button>
+          </div>
+          <div id="pagoForms"></div>
+
+          <div class="section-title"><h2>Movimientos registrados</h2></div>
+          <div class="toolbar">
+            <input type="search" class="search-input" id="movsSearch" placeholder="Buscar…" />
+            <select id="movsFiltroTipo" style="max-width:170px"><option value="">Todos los tipos</option><option>Pago</option><option>Avance</option><option>Ajuste</option></select>
+            <select id="movsFiltroOficio" style="max-width:170px"></select>
+            <span class="spacer"></span>
+            <button class="secondary sm" id="movsExport">Exportar CSV</button>
+          </div>
+          <div class="table-wrap"><table id="movsTable"></table></div>
+        </section>
+
+        <!-- ═══ CONFIGURACIÓN ═══ -->
+        <section class="page" id="page-configuracion">
+          <div class="page-header">
+            <h1>Configuración</h1>
+            <div class="subtitle">Datos del proyecto, catálogos y conexión con Google Sheets.</div>
+          </div>
+          <div id="configContent"></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- ─── Modal genérico ─────────────────────────────────── -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="modalBox"></div>
+  </div>
+
+  <!-- Scripts: config → app → módulos → bootstrap -->
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+  <script src="src/js/resumen.js"></script>
+  <script src="src/js/partidas.js"></script>
+  <script src="src/js/pagos.js"></script>
+  <script src="src/js/configuracion.js"></script>
+  <script>
+    /* ─── Navegación entre secciones (SPA) ─────────────── */
+    const PAGES = {
+      resumen:       { crumb: 'Resumen',         render: renderResumen },
+      partidas:      { crumb: 'Partidas',        render: renderPartidas },
+      pagos:         { crumb: 'Pagos y avances', render: renderPagos },
+      configuracion: { crumb: 'Configuración',   render: renderConfiguracion },
+    };
+
+    function showPage(name) {
+      if (!PAGES[name]) name = 'resumen';
+      document.querySelectorAll('.page').forEach(function (p) { p.classList.remove('active'); });
+      document.getElementById('page-' + name).classList.add('active');
+      document.querySelectorAll('.nav-item[data-page]').forEach(function (b) { b.classList.toggle('active', b.dataset.page === name); });
+      document.getElementById('topbarCrumb').textContent = PAGES[name].crumb;
+      if (location.hash.slice(1) !== name) history.replaceState(null, '', '#' + name);
+      try { PAGES[name].render(); } catch (e) { console.error(e); }
+      if (window.innerWidth <= 900) document.getElementById('sidebar').classList.remove('open');
+    }
+
+    function renderAll() {
+      document.getElementById('badgePartidas').textContent = STATE.partidas.filter(function (p) { return p.estado !== 'Cancelada'; }).length;
+      document.getElementById('badgeMovs').textContent = STATE.movimientos.length;
+      const current = (location.hash.slice(1)) || 'resumen';
+      showPage(current);
+    }
+    window.renderAll = renderAll;
+
+    /* ─── Init ─────────────────────────────────────────── */
+    document.addEventListener('DOMContentLoaded', async function () {
+      initTheme();
+      initVersionBadge();
+      _updateThemeToggles();
+
+      document.querySelectorAll('.nav-item[data-page]').forEach(function (b) {
+        b.addEventListener('click', function () { showPage(b.dataset.page); });
+      });
+      document.getElementById('themeToggle').addEventListener('click', function () { toggleTheme(); });
+      document.getElementById('sidebarCollapseBtn').addEventListener('click', function () {
+        const collapsed = document.documentElement.getAttribute('data-sidebar') === 'collapsed';
+        if (collapsed) { document.documentElement.removeAttribute('data-sidebar'); localStorage.removeItem('obra_sidebar'); }
+        else { document.documentElement.setAttribute('data-sidebar', 'collapsed'); localStorage.setItem('obra_sidebar', 'collapsed'); }
+      });
+      window.addEventListener('hashchange', function () { showPage(location.hash.slice(1) || 'resumen'); });
+
+      try {
+        await loadInitialData();
+        setStatus('resStatus', 'Datos cargados.', 'success');
+      } catch (e) {
+        console.error(e);
+        setStatus('resStatus', 'Error al cargar datos: ' + e.message, 'error');
+      }
+      renderAll();
+    });
+
+    /* ─── Modal helpers (compartidos) ──────────────────── */
+    function openModal(html) {
+      document.getElementById('modalBox').innerHTML = html;
+      document.getElementById('modalOverlay').classList.add('open');
+    }
+    function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+    document.getElementById('modalOverlay').addEventListener('click', function (e) {
+      if (e.target === this) closeModal();
+    });
+    window.openModal = openModal;
+    window.closeModal = closeModal;
+  </script>
+</body>
+</html>
